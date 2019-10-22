@@ -45,6 +45,10 @@ class Data(object):
 		return (self.stop_time - self.start_time).seconds
 
 	def _check_if_comment(self, items):
+		if not items:
+			# if items is an empty list - [] - then the line is empty
+			self.is_comment = True
+			return True
 		if items[0][0] == '#':
 			self.is_comment = True
 			return True
@@ -341,13 +345,13 @@ class TimeParser(object):
 					items
 				))
 				total_seconds = sum(int(i) for i in title_items)
-				print(("    %-14s (%3d) : %s (%5.2f%%) ; item average %s" % (
+				print("    %-14s (%3d) : %s (%5.2f%%) ; item average %s" % (
 					t,
 					len(title_items),
 					seconds_to_str(total_seconds),
-					sum(int(i) for i in title_items) / month_total * 100,
+					total_seconds / month_total * 100,
 					seconds_to_str(total_seconds / len(title_items) if title_items else 0),
-				)).replace(" 0 days", "       ").replace(" 0 hours", "        "))
+				))
 
 			print("    " + '-'*57)
 			print("    %-14s (%3d) : %2d days %2d hours %2d minutes" % (
@@ -358,6 +362,27 @@ class TimeParser(object):
 				month_total // (60) % (60*24) % 60,
 			))
 			print()
+
+	def basic_stats_by_description(self, s, year=None, month=None, date_range=None, case_sensitive=True):
+		items, time_representation, amount_of_days = self.get_data(year, month, date_range)
+		all_time_total = sum(int(i) for i in items)
+
+		if case_sensitive:
+			filter_func = lambda x: s in x.description
+		else:
+			filter_func = lambda x: s.lower() in x.description.lower()
+		items = list(filter(filter_func, items))
+
+		print(time_representation)
+		print("  events per day = %.2f" % (len(items) / amount_of_days))
+		total_seconds = sum(int(i) for i in items)
+
+		print("(%3d) : %s (%5.2f%%) ; item average %s" % (
+			len(items),
+			seconds_to_str(total_seconds),
+			total_seconds / all_time_total * 100,
+			seconds_to_str(total_seconds / len(items) if items else 0),
+		))
 
 
 if __name__ == '__main__':

@@ -23,9 +23,12 @@ import sys
 
 def main():
 	a = Time.statistics.TimeParser(path="/home/me/Dropbox/Projects/Time/data/big_holiday_2019.tcsv")
-	try:
-		a.basic_stats(int(sys.argv[1]))
-	except:
+	if len(sys.argv) > 1:
+		if sys.argv[1].isdigit():
+			a.basic_stats(int(sys.argv[1]))
+		else:
+			a.basic_stats_by_description(sys.argv[1])
+	else:
 		a.basic_stats(1)
 
 
