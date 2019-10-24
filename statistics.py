@@ -9,13 +9,7 @@ import datetime
 
 import Time.plotters as plotters
 from Time.consts import *
-
-def seconds_to_str(n):
-	return ("%2d days %2d hours %2d minutes" % (
-		n // (60*60*24),
-		n // (60*60) % (24),
-		n // (60) % (60*24) % 60,
-	)).replace(" 0 days", "       ").replace(" 0 hours", "        ")
+from Time.time_utils import *
 
 
 class Data(object):
@@ -33,7 +27,7 @@ class Data(object):
 		return self._items[n]
 
 	def __repr__(self):
-		return "%s : %s : %s : %-10s : %s" % (
+		return "%s : %s : %s : %-14s : %s" % (
 			self._str_date(),
 			self._str_start_time(),
 			self._str_stop_time(),
@@ -162,12 +156,18 @@ class Data(object):
 		else:
 			return self.start_time.strftime("%H:%M")
 	def _str_stop_time(self):
+		days = "    "
+
 		if type(self.stop_time) is str:
-			return self.stop_time
+			hour = self.stop_time
 		elif type(self.stop_time) is datetime.timedelta:
-			return int(self.stop_time.total_seconds())
+			hour = int(self.stop_time.total_seconds())
 		else:
-			return self.stop_time.strftime("%H:%M")
+			hour = self.stop_time.strftime("%H:%M")
+			if get_ymd_tuple(self.start_time) != get_ymd_tuple(self.stop_time):
+				days = "(+%d)" % ((self.stop_time - self.start_time).days + 1)
+		return hour + ' ' + days
+
 	def _str_group(self):
 		return self.group
 	def _str_description(self):
@@ -202,12 +202,24 @@ class Data(object):
 				if type(self.stop_time) is datetime.timedelta:
 					self.stop_time = self.date + self.stop_time
 
-		if self.stop_time > self.start_time:
+		if self.stop_time < self.start_time:
 			self.stop_time += datetime.timedelta(days=1)
 	def reevaluate(self, prev, next):
 		self._reevaluate_date(prev, next)
 		self._reevaluate_start_time(prev, next)
 		self._reevaluate_stop_time(prev, next)
+
+	def is_in_date_range(self, start_date, end_date, inclusive=True):
+		"""
+		returns True if:
+			The whole Data object        is contained within the date_range
+			inclusive && Data.start_time is contained within the date_range
+		"""
+		if (start_date <= self.start_time) and (self.stop_time <= end_date):
+			return True
+		if inclusive and (start_date <= self.start_time <= end_date):
+			return True
+		return False
 
 class TimeParser(object):
 	def __init__(self, path=None):
@@ -280,14 +292,15 @@ class TimeParser(object):
 		if date_range is not None:
 			selected_time = "date range"
 			days_representation = DATE_REPRESENTATION_PATTERN % (
-				date_range[0].date.year,
-				date_range[0].date.month,
-				date_range[0].date.day,
-				date_range[1].date.year,
-				date_range[1].date.month,
-				date_range[1].date.day,
+				date_range[0].year,
+				date_range[0].month,
+				date_range[0].day,
+				date_range[1].year,
+				date_range[1].month,
+				date_range[1].day,
 			)
-			filter_func = lambda i: date_range[0] <= i <= date_range[1]
+			filter_func = lambda i: i.is_in_date_range(*date_range)
+			# filter_func = lambda i: date_range[0] <= i.date <= date_range[1]
 		else:
 			if month is None:
 				if year is None:
@@ -389,5 +402,7 @@ if __name__ == '__main__':
 	import main
 	main.main()
 else:
-	# a = TimeParser(path="/home/me/Dropbox/Projects/Time/data/big_holiday_2019.tcsv")
+	a = TimeParser(path="/home/me/Dropbox/Projects/Time/data/big_holiday_2019.tcsv")
+	b = TelegramBotAPI(a.get_data)
 	pass
+

@@ -2,34 +2,25 @@
 
 import Time.statistics
 import sys
+import os
 
-# def main():
-# 	# a = Data()
-# 	# # a.stats(2 if len(sys.argv) == 1 else int(sys.argv[1]))
-# 	# a._display_month_by_date(2016, 12)
-# 	# a._display_month_by_date(2017, 1)
-# 	# a._display_month_by_date(2017, 2)
-# 	# a._display_month_by_date(2017, 3)
-# 	# # a._display_month_by_date(2016, 11)
-# 	# # a._display_month_by_date(2016, 10)
-# 	# # a._display_month_by_date(2016, 9)
-# 	# # a._display_month_by_date(2016, 9, False)
-# 	a = Visa()
-# 	a._plot_text_money_title()
-# 	# a._plot_text_money_title(2017,8)
-# 	# a._plot_text_money_title(2017,9)
-# 	# a._plot_text_money_title(2017,10)
-# 	a._plot_text_money_title(2018,5)
+def newest(path):
+	files = os.listdir(path)
+	paths = [os.path.join(path, basename) for basename in files]
+	return max(paths, key=os.path.getctime)
 
 def main():
-	a = Time.statistics.TimeParser(path="/home/me/Dropbox/Projects/Time/data/big_holiday_2019.tcsv")
+	a = Time.statistics.TimeParser(path=newest("/home/me/Dropbox/Projects/Time/data"))
+
+	arg = 1 # default value
 	if len(sys.argv) > 1:
 		if sys.argv[1].isdigit():
-			a.basic_stats(int(sys.argv[1]))
-		else:
-			a.basic_stats_by_description(sys.argv[1])
+			arg = int(sys.argv[1])
+
+	if type(arg) is int:
+		a.basic_stats(arg)
 	else:
-		a.basic_stats(1)
+		a.basic_stats_by_description(sys.argv[1])
 
 
 if __name__ == '__main__':
