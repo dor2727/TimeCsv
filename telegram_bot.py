@@ -10,6 +10,8 @@ from pdb import set_trace
 
 MY_CHAT_ID = int(open('chat_id').read().strip())
 
+FILENAME = "/home/me/Dropbox/Projects/Time/data/2020_year_2_semester_1.tcsv"
+
 # handlers
 def test(message, update):
 	print("[*] got command - test")
@@ -27,8 +29,8 @@ def start(message, update):
 	
 # initialization funcitons
 def init_time_data():
-	print("[*] initializing time data")
-	my_time_data = Time.statistics.TimeParser(path="/home/me/Dropbox/Projects/Time/data/big_holiday_2019.tcsv")
+	print(f"[*] initializing time data : {FILENAME.split('/')[-1]}")
+	my_time_data = Time.statistics.TimeParser(path=FILENAME)
 	my_bot_api   = Time.statistics.TelegramBotAPI(my_time_data.get_data)
 	return my_bot_api
 
@@ -60,17 +62,19 @@ def add_handlers_time(dp, my_bot_api):
 # schedualing functions
 def send_message(updater, text):
 	updater.bot.sendMessage(MY_CHAT_ID, text)
-def send_report(updater, my_bot_api, report_name):
-	report_data = my_bot_api.create_report(report_name)
-	report_text = '\n'.join(report_data)
+def send_report(updater, my_bot_api, report_name, full_report=False):
+	reporters = Time.statistics.FULL_REPORTERS if full_report else None
+
+	report_data = my_bot_api.create_report(report_name, reporters=reporters)
+
+	report_text = report_name + '\n' + '\n'.join(report_data)
 	send_message(updater, report_text)
 
 def schedule_tasks(updater, my_bot_api):
-	daily  = lambda : send_report(updater, my_bot_api, "last_day")
+	daily  = lambda : send_report(updater, my_bot_api, "last_day", full_report=True)
 	schedule.every().day.at("08:00").do(daily)
-	
 
-	weekly = lambda : send_report(updater, my_bot_api, "last_week")
+	weekly = lambda : send_report(updater, my_bot_api, "last_week", full_report=True)
 	schedule.every().sunday.at("08:00").do(weekly)
 
 	def run_scheduler():
