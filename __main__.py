@@ -3,6 +3,22 @@
 import Time.statistics
 import sys
 import os
+import argparse
+import datetime
+
+def parse_args():
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--days-back", "-d", type=int , default=7   , dest='days_back'  , help="how many days back to query")
+	parser.add_argument("--month",     "-m", type=int , default=None, dest='months_back', help='how many month summaries to show')
+	parser.add_argument("--debug"          , action="store_true")
+	parser.add_argument("search_string"    , type=str , default=''  , nargs=argparse.REMAINDER)
+
+	args = parser.parse_args()
+
+	if args.debug:
+		print(args)
+
+	return args
 
 def newest(path):
 	files = os.listdir(path)
@@ -12,15 +28,20 @@ def newest(path):
 def main():
 	a = Time.statistics.TimeParser(path=newest("/home/me/Dropbox/Projects/Time/data"))
 
-	arg = 1 # default value
-	if len(sys.argv) > 1:
-		if sys.argv[1].isdigit():
-			arg = int(sys.argv[1])
+	args = parse_args()
+	if args.months_back is None:
+		search_string = ' '.join(args.search_string)
 
-	if type(arg) is int:
-		a.basic_stats(arg)
+		end_date = datetime.datetime.now()
+		start_date = Time.statistics.get_midnight(end_date - datetime.timedelta(days=args.days_back))
+
+		if args.debug:
+			print(( start_date, end_date ))
+		
+		a.basic_stats_by_description(search_string, date_range=( start_date, end_date ))
 	else:
-		a.basic_stats_by_description(sys.argv[1])
+		a.basic_stats(args.months_back)
+
 
 
 if __name__ == '__main__':
