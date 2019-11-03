@@ -181,9 +181,15 @@ class Data(object):
 				self.date = prev.date + datetime.timedelta(days=365)
 
 		if type(self.start_time) is datetime.timedelta:
-			self.start_time = self.date + self.start_time
+			try:
+				self.start_time = self.date + self.start_time
+			except:
+				import pdb; pdb.set_trace()
 		if type(self.stop_time) is datetime.timedelta and self.stop_time_type == "stop":
-			self.stop_time = self.date + self.stop_time
+			try:
+				self.stop_time = self.date + self.stop_time
+			except:
+				import pdb; pdb.set_trace()
 	def _reevaluate_start_time(self, prev, next=None):
 		if type(self.start_time) is str:
 			if self.start_time == COPY_LAST_START_TIME:
@@ -326,7 +332,10 @@ class TimeParser(object):
 				selected_time = datetime.datetime(year=year, month=month, day=1).strftime("%Y - %m (%B)")
 
 		items = list(filter( filter_func, self.data ))
-		amount_of_days = (items[-1].date - items[0].date).days
+		try:
+			amount_of_days = (items[-1].date - items[0].date).days
+		except:
+			amount_of_days = 0
 		time_representation = "%s (%s) (found %d days)" % (
 			selected_time,
 			days_representation,

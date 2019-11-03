@@ -128,8 +128,15 @@ class TelegramBotAPI(object):
 			self._description_getter(name)
 		)()
 
-		seconds_percentage = n_seconds / self._all_time_total * 100
-		avg_per_item       = n_seconds / n_items if n_items else 0
+		try:
+			seconds_percentage = n_seconds / self._all_time_total * 100
+		except Exception as e:
+			seconds_percentage = 0
+
+		try:
+			avg_per_item       = n_seconds / n_items if n_items else 0
+		except Exception as e:
+			avg_per_item = 0
 
 		return f"{name:20s} : {n_items:3d} : {seconds_to_str(n_seconds)} ({seconds_percentage:.2f}%) ; item average {seconds_to_str(avg_per_item)}"
 
