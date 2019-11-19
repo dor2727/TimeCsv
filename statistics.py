@@ -229,7 +229,8 @@ class Data(object):
 
 class TimeParser(object):
 	def __init__(self, path=None):
-		self._load_data(path or self.file_path)
+		self._path = path or self.file_path
+		self._load_data(self._path)
 		self._reevaluate_data()
 		self._create_titles()
 		self._create_friends_list()
@@ -237,6 +238,12 @@ class TimeParser(object):
 		# self.plot = Plotter(self, "_plot")
 		# self.plot = plotters.Plot(get_data=self.get_data)
 	
+	def reload(self):
+		self._load_data(self._path)
+		self._reevaluate_data()
+		self._create_titles()
+		self._create_friends_list()
+
 	@property
 	def file_path(self):
 		path_without_extension = os.path.join(DEFAULT_DATA_DIRECTORY, self.__class__.__name__)
