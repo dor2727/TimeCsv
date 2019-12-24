@@ -11,12 +11,15 @@ from pdb import set_trace
 MY_CHAT_ID = int(open('chat_id').read().strip())
 
 FILENAME = "/home/me/Dropbox/Projects/Time/data/2020_year_2_semester_1.tcsv"
+FILENAME = Time.statistics.newest(Time.statistics.DEFAULT_DATA_FOLDER)
 
 MY_TIME_DATA = None
 MY_BOT_API   = None
 
+
 def log_command(s):
 	print(f"[*] got command - {s}\t{time.asctime()}")
+
 
 # handlers
 def test(message, update):
@@ -33,6 +36,7 @@ def start(message, update):
 	MY_CHAT_ID = message['message']['chat']['id']
 	print(f"[*] start - {MY_CHAT_ID}")
 	
+
 # initialization funcitons
 def init_time_data():
 	print(f"[*] initializing time data : {FILENAME.split('/')[-1]}")
@@ -59,6 +63,7 @@ def reload_csv(message, update):
 	chat_id = message['message']['chat']['id']
 	update.bot.sendMessage(chat_id, "done")
 
+
 def add_handlers_time(dp):
 	print("[*] adding handlers - time")
 	for i in ("last_day", "last_week", "current_week", "today"):
@@ -73,6 +78,15 @@ def add_handlers_time(dp):
 
 	dp.add_handler(CommandHandler('reload',reload_csv))
 
+def add_homework_handler(dp):
+	dp.add_handler(CommandHandler(
+		"homework_pie",
+		MY_BOT_API.create_homework_command()
+	))
+	dp.add_handler(CommandHandler(
+		"homework_pie_amount",
+		MY_BOT_API.create_homework_command(True)
+	))
 
 
 # schedualing functions
@@ -98,6 +112,9 @@ def schedule_tasks(updater):
 		print(f"reloaded : {time.asctime()}")
 	schedule.every().hour.at(":57").do(hourly_reload)
 
+	schedule.every().hour.at(":57").do(MY_BOT_API.create_homework_command())
+	# schedule.every().sunday.at("08:00").do(MY_BOT_API.create_homework_command())
+
 
 	def run_scheduler():
 		while True:
@@ -119,6 +136,7 @@ def main():
 	dp = updater.dispatcher
 	add_handlers_basic(dp)
 	add_handlers_time(dp)
+	add_homework_handler(dp)
 	schedule_tasks(updater)
 
 	loop(updater)

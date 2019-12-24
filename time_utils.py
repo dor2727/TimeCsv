@@ -1,4 +1,6 @@
 import datetime
+import re
+import matplotlib.pyplot as plt
 
 WEEK_STARTS_AT_SUNDAY = True
 
@@ -19,29 +21,8 @@ def get_midnight(d):
 
 
 
-DEFAULT_REPORTERS = [
-	"afk arena",
-	"call of duty mobile",
-	"lol",
-]
-FULL_REPORTERS = [
-	"Gaming",
-	"afk arena",
-	"idle heroes",
-	"call of duty mobile",
-	"maplestory mobile",
-	"lol",
-	"Read",
-	"Life",
-	"Chores",
-	"Family",
-]
 
-class TelegramBotAPI(object):
-	def __init__(self, get_data, reporters=None):
-		self.get_data = get_data
-		self.reporters = reporters or DEFAULT_REPORTERS
-
+class TelegramBotAPI_TimedCommands(object):
 	def _create_report__last_day(self):
 		yesterday = get_midnight(datetime.datetime.now() - datetime.timedelta(days=1))
 		today = yesterday + datetime.timedelta(days=1)
@@ -78,54 +59,52 @@ class TelegramBotAPI(object):
 
 		self.data = self.get_data(date_range=( start_date, end_date ))
 
-	def _init_getter_format(self):
-		self._all_time_total = sum(int(i) for i in self.items)
 
-	def create_report(self, time, reporters=None):
-		reporters = reporters or self.reporters
-		# create self.data
-		getattr(self, "_create_report__" + time)()
-		self.items = self.data[0]
-		self._init_getter_format()
+DEFAULT_REPORTERS = [
+	"afk arena",
+	"call of duty mobile",
+	"lol",
+]
+FULL_REPORTERS = [
+	"Gaming",
+	"Read",
+	"Life",
+	"homework",
+	"physics lab",
+	"neuroscience lab"
+	"lol",
+	"afk arena",
+	"maplestory mobile",
+]
 
-		reporters_str = []
-		for r in reporters:
-			reporters_str.append(self._format_getter(r))
-
-		return reporters_str
-
-	def create_bot_command(self, name, full_report=False):
-		def f(message, update):
-			print(f"[*] got command - {name} [full={full_report}]")
-			chat_id = message['message']['chat']['id']
-
-			reporters = FULL_REPORTERS if full_report else None
-			report_data = self.create_report(name, reporters=reporters)
-			text = self.data[1] + '\n' + '\n'.join(report_data)
-			update.bot.sendMessage(chat_id, text)
-		return f
-
-	#
+class TelegramBotAPI_Getters(object):
 	def _find_items_by_group(self, s):
 		filter_func = lambda x: x.group == s
 		return list(filter(filter_func, self.items))
 	def _find_items_in_description(self, s):
 		filter_func = lambda x: s in x.description
 		return list(filter(filter_func, self.items))
-	def _description_getter(self, name):
+
+	def _default_getter(self, name):
 		def f():
-			items = self._find_items_in_description(name)
+			if name[0].isupper():
+				items = self._find_items_by_group(name)
+			else:
+				items = self._find_items_in_description(name)
+
 			return (
 				len(items),
 				sum(int(i) for i in items),
 			)
 		return f
 
+
+
 	def _format_getter(self, name):
 		n_items, n_seconds = getattr(
 			self,
 			"_getter__" + name,
-			self._description_getter(name)
+			self._default_getter(name)
 		)()
 
 		try:
@@ -138,36 +117,105 @@ class TelegramBotAPI(object):
 		except Exception as e:
 			avg_per_item = 0
 
-		return f"{name:20s} : {n_items:3d} : {seconds_to_str(n_seconds)} ({seconds_percentage:.2f}%) ; item average {seconds_to_str(avg_per_item)}"
+		return f"{name:20s} : {n_items:3d} : {seconds_to_str(n_seconds)} ({seconds_percentage:.2f}%)"
+		# return f"{name:20s} : {n_items:3d} : {seconds_to_str(n_seconds)} ({seconds_percentage:.2f}%) ; item average {seconds_to_str(avg_per_item)}"
 
-	def _getter__Gaming(self):
-		items = self._find_items_by_group("Gaming")
-		return (
-			len(items),
-			sum(int(i) for i in items),
-		)
-	def _getter__Read(self):
-		items = self._find_items_by_group("Read")
-		return (
-			len(items),
-			sum(int(i) for i in items),
-		)
-	def _getter__Life(self):
-		items = self._find_items_by_group("Life")
-		return (
-			len(items),
-			sum(int(i) for i in items),
-		)
-	def _getter__Chores(self):
-		items = self._find_items_by_group("Chores")
-		return (
-			len(items),
-			sum(int(i) for i in items),
-		)
-	def _getter__Family(self):
-		items = self._find_items_by_group("Family")
-		return (
-			len(items),
-			sum(int(i) for i in items),
-		)
-	
+class TelegramBotAPI_Getters_Homework(object):
+	def _create_pie(self, x, labels, title, file_index):
+		fig, ax = plt.subplots()
+
+		ax.set_title(title)
+		ax.pie(x, labels=labels)
+		ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+		fig.savefig(f"/tmp/pie_{file_index}.png")
+		plt.close(fig)
+
+		return open(f"/tmp/pie_{file_index}.png", "rb")
+	def _homework_getter(self):
+		all_homework = self._find_items_in_description("homework")
+		homework_types = list(set(
+			re.findall(
+				"\\((.*?)\\)",
+				'\n'.join(i.description for i in all_homework)
+			)
+		))
+
+		homework = {}
+		for t in homework_types:
+			homework[t] = {}
+			homework[t]["items"] = [i for i in all_homework if t in i.description]
+			homework[t]["amount"] = len(homework[t]["items"])
+			homework[t]["time"] = sum(int(i) for i in homework[t]["items"])
+
+		homework["other"] = {}
+		homework["other"]["items"] = [i for i in all_homework if not any ([t in i.description for t in homework_types])]
+		homework["other"]["amount"] = len(homework["other"]["items"])
+		homework["other"]["time"] = sum(int(i) for i in homework["other"]["items"])
+
+		labels = sorted(homework_types) + ["other"]
+		data_amount = [homework[l]["amount"] for l in labels]
+		data_time = [homework[l]["time"] for l in labels]
+
+		total_time = sum(int(i) for i in all_homework)
+		title = seconds_to_str(total_time)
+
+		pie_amount = self._create_pie(data_amount, labels, title, 1)
+		pie_time   = self._create_pie(data_time,   labels, title, 2)
+		return pie_time, pie_amount
+
+
+
+class TelegramBotAPI(TelegramBotAPI_TimedCommands, TelegramBotAPI_Getters, TelegramBotAPI_Getters_Homework):
+	def __init__(self, get_data, reporters=None):
+		self.get_data = get_data
+		self.reporters = reporters or DEFAULT_REPORTERS
+
+	def _init_getter_format(self):
+		self._all_time_total = sum(int(i) for i in self.items)
+
+	def create_report(self, report_name, reporters=None):
+		reporters = reporters or self.reporters
+
+		# create self.data
+		getattr(self, "_create_report__" + report_name)()
+		self.items = self.data[0]
+		self._init_getter_format()
+
+		reporters_str = []
+		for r in reporters:
+			reporters_str.append(self._format_getter(r))
+
+		return reporters_str
+
+	def create_pie_report(self, report_name):
+		pass
+
+	def create_bot_command(self, name, full_report=False):
+		def f(message, update):
+			print(f"[*] got command - {name} [full={full_report}]")
+			chat_id = message['message']['chat']['id']
+
+			reporters = FULL_REPORTERS if full_report else None
+			report_data = self.create_report(name, reporters=reporters)
+			text = self.data[1] + '\n' + '\n'.join(report_data)
+			update.bot.sendMessage(chat_id, text)
+		return f
+
+	def create_homework_command(self, amount=False, report_name="last_week"):
+		"""
+		if amount is true: return a pie chart with amount of instances
+		else, return pie with total time
+		"""
+
+		def f(message, update):
+			print(f"[*] got command - homework pie [amount={amount}]")
+			chat_id = message['message']['chat']['id']
+
+			# create self.data
+			getattr(self, "_create_report__" + report_name)()
+			self.items = self.data[0]
+			self._init_getter_format()
+
+			image_file = self._homework_getter()[int(amount)] # first result is time, second is amount
+			update.bot.send_photo(chat_id, photo=image_file)
+		return f

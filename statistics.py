@@ -11,6 +11,14 @@ import Time.plotters as plotters
 from Time.consts import *
 from Time.time_utils import *
 
+# get the newsest file
+def newest(path):
+	files = os.listdir(path)
+	paths = [os.path.join(path, basename) for basename in files]
+	return max(paths, key=os.path.getctime)
+
+DEFAULT_DATA_FOLDER = "/home/me/Dropbox/Projects/Time/data"
+
 
 class Data(object):
 	def __init__(self, items):
@@ -301,6 +309,8 @@ class TimeParser(object):
 		2) get_data() - all parameters will be None. all the items will be given
 		3) only set year - the whole year will be given
 		4) both year and month - the whole month will be given
+
+		return items, time_representation, amount_of_days
 		"""
 		if date_range is not None:
 			selected_time = "date range"
@@ -418,7 +428,8 @@ if __name__ == '__main__':
 	import main
 	main.main()
 else:
-	a = TimeParser(path="/home/me/Dropbox/Projects/Time/data/big_holiday_2019.tcsv")
+	# a = TimeParser(path="/home/me/Dropbox/Projects/Time/data/big_holiday_2019.tcsv")
+	a = TimeParser(path="/home/me/Dropbox/Projects/Time/data/2020_year_2_semester_1.tcsv")
 	b = TelegramBotAPI(a.get_data)
 	pass
 
