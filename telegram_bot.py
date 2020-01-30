@@ -81,12 +81,23 @@ def add_handlers_time(dp):
 def add_homework_handler(dp):
 	dp.add_handler(CommandHandler(
 		"homework_pie",
-		MY_BOT_API.create_homework_command()
+		MY_BOT_API.create_homework_pie_command()
 	))
 	dp.add_handler(CommandHandler(
 		"homework_pie_amount",
-		MY_BOT_API.create_homework_command(True)
+		MY_BOT_API.create_homework_pie_command(True)
 	))
+
+	dp.add_handler(CommandHandler(
+		"homework_text",
+		MY_BOT_API.create_homework_text_command()
+	))
+	dp.add_handler(CommandHandler(
+		"homework_text_amount",
+		MY_BOT_API.create_homework_text_command(True)
+	))
+
+	
 
 
 # schedualing functions
@@ -112,8 +123,14 @@ def schedule_tasks(updater):
 		print(f"reloaded : {time.asctime()}")
 	schedule.every().hour.at(":57").do(hourly_reload)
 
-	schedule.every().hour.at(":57").do(MY_BOT_API.create_homework_command())
-	# schedule.every().sunday.at("08:00").do(MY_BOT_API.create_homework_command())
+	def weekly_pie():
+		f = MY_BOT_API.create_homework_pie_command()
+		message = {}
+		message['message'] = {}
+		message['message']['chat'] = {}
+		message['message']['chat']['id'] = MY_CHAT_ID
+		f(message, updater)
+	schedule.every().sunday.at("08:00").do(weekly_pie)
 
 
 	def run_scheduler():

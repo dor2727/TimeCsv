@@ -428,8 +428,7 @@ if __name__ == '__main__':
 	import main
 	main.main()
 else:
-	# a = TimeParser(path="/home/me/Dropbox/Projects/Time/data/big_holiday_2019.tcsv")
-	a = TimeParser(path="/home/me/Dropbox/Projects/Time/data/2020_year_2_semester_1.tcsv")
+	a = TimeParser(path=newest(DEFAULT_DATA_FOLDER))
 	b = TelegramBotAPI(a.get_data)
 	pass
 
