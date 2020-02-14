@@ -1,26 +1,43 @@
-#!/usr/bin/env python3
 import os
-import re
 import csv
-import sys
 import utils
-import calendar
-import datetime
 
-import Time.plotters as plotters
-from Time.consts import *
-from Time.time_utils import *
-
-# get the newsest file
-def newest(path):
-	files = os.listdir(path)
-	paths = [os.path.join(path, basename) for basename in files]
-	return max(paths, key=os.path.getctime)
-
-DEFAULT_DATA_FOLDER = "/home/me/Dropbox/Projects/Time/data"
+from TimeNew.consts import *
+from TimeNew.time_utils import *
 
 
-class Data(object):
+class DataItem(object):
+	"""
+	comment lines are either empty lines or lines starting with '#'
+
+	expected input for __init__ is a list of items in the following order:
+		date        (str) (yyyy/mm/dd)
+		start_time  (str) (hh:mm)
+		end_time    (str) ('e'hh:mm) (e for End time, d for Duration)
+		group       (str) (should start with a capital letter)
+		description (str)
+
+	the parsing should go as follows:
+		first, this class should call each parser to store each value in its place
+		then, the caller should iterate the 'reevaluate' method for each data object,
+			with its 2 neighbors
+		this way, place holders such as "My date is the same as the previous object date"
+			(which is written as "----/--/--") will be evaluated
+
+	exported functions:
+		__int__:
+			return the duration in seconds
+		__getitem__:
+			return the items in the csv order
+		friends:
+			return a list of friends which were in the activity
+		reevaluate:
+			used for calling 2nd parsing functions
+		is_fully_parsed:
+			checks whether this object has finished parsing, and is in a valid state
+		is_in_date_range:
+			checks whether this object is contained within a date range
+	"""
 	def __init__(self, items):
 		if self._check_if_comment(items):
 			return
@@ -36,48 +53,44 @@ class Data(object):
 
 	def __repr__(self):
 		return "%s : %s : %s : %-14s : %s" % (
-			self._str_date(),
-			self._str_start_time(),
-			self._str_stop_time(),
-			self._str_group(),
-			self._str_description(),
+			self._format_date(),
+			self._format_start_time(),
+			self._format_stop_time(),
+			self._format_group(),
+			self._format_description(),
 		)
 
+	# return total event time in seconds
 	def __int__(self):
 		return (self.stop_time - self.start_time).seconds
 
 	def _check_if_comment(self, items):
+		"""
+		comment lines are either empty lines or lines starting with '#'
+		"""
 		if not items:
 			# if items is an empty list - [] - then the line is empty
 			self.is_comment = True
-			return True
-		if items[0][0] == '#':
+		elif items[0][0] == '#':
 			self.is_comment = True
-			return True
 		else:
 			self.is_comment = False
-			return False
+
+		return self.is_comment
 
 	@property
-	def friends(self, raw=False):
-		# get all from the patterns
-		found = (
-			PATTERN_WITH.findall(self.description)
-			 +
-			PATTERN_FOR .findall(self.description)
-			 +
-			PATTERN_TO  .findall(self.description)
-		)
-
-		if raw:
-			return found
-		else:
-			# join all results into one string
-			found = ' '.join(i[0] for i in found)
+	def friends(self):
+		return find_friends_in_str(self.description)
 		
-			return found.replace("and", "").split()
-
+	#
+	# first parse iteration
+	#
 	def _parser_date(self, s):
+		"""
+		after this initial parsing, self.date will be:
+			- str, if it was a special placeholder in the csv
+			- datetime object, if it was a regular date value
+		"""
 		if s == COPY_LAST_DATE:
 			self.date = COPY_LAST_DATE
 		elif s == ADD_LAST_DATE:
@@ -86,27 +99,53 @@ class Data(object):
 			self.date = datetime.datetime.strptime(s, "%Y/%m/%d")
 		return self.date
 	def _parser_start_time(self, s):
+		"""
+		after this initial parsing, self.start_time will be:
+			- str, if it was a special placeholder in the csv
+			- datetime object, if it was a regular start_time value
+				and self.date is a datetime object
+			- timedelta object, if it was a regular start_time value
+				and self.date is str
+		"""
 		if s == COPY_LAST_START_TIME:
 			self.start_time = COPY_LAST_START_TIME
 		else:
 			start_time = datetime.datetime.strptime(s, "%H:%M")
 			if type(self.date) is str:
 				self.start_time = datetime.timedelta(
-					hours=start_time.hour,
-					minutes=start_time.minute,
+					hours  = start_time.hour,
+					minutes= start_time.minute,
 				)
 			else:
 				self.start_time = datetime.datetime(
-					year  =self.date.year,
-					month =self.date.month,
-					day   =self.date.day,
-					hour  =start_time.hour,
-					minute=start_time.minute,
+					year   = self.date.year,
+					month  = self.date.month,
+					day    = self.date.day,
+					hour   = start_time.hour,
+					minute = start_time.minute,
 				)
 		return self.start_time
+	
+	# stop_time can either indicate when the event ended
 	_STOP_INITIALS     = ('s', 'e')
+	# or how long it lasted
 	_DURATION_INITIALS = ('d')
 	def _parser_stop_time(self, s):
+		"""
+		after this initial parsing, the following cases are possible:
+			- self.stop_time_type = "copy"
+			  self.stop_time is str
+				if stop_time is the special placeholder COPY_LAST_STOP_TIME
+			- self.stop_time_type = "stop"
+				if stop_time tells the final time
+				- self.stop_time is a datetime object
+					if self.date is a datetime object
+				- self.stop_time is a timedelta object
+					if self.date is str
+			- self.stop_time_type = "duration"
+			  self.stop_time is a timedelta object
+				if stop_time tells the duration
+		"""
 		if s == COPY_LAST_STOP_TIME:
 			self.stop_time_type = "copy"
 			self.stop_time = COPY_LAST_STOP_TIME
@@ -142,8 +181,12 @@ class Data(object):
 	def _parser_description(self, s):
 		self.description = s
 		return s
+	
 	@property
 	def PARSERS(self):
+		"""
+		returns a list of parsers by order
+		"""
 		return [
 			self._parser_date,
 			self._parser_start_time,
@@ -151,36 +194,41 @@ class Data(object):
 			self._parser_group,
 			self._parser_description,
 		]
-	def _str_date(self):
+
+	def _format_date(self):
 		if type(self.date) is str:
 			return self.date
 		else:
 			return self.date.strftime("%Y/%m/%d")
-	def _str_start_time(self):
+	def _format_start_time(self):
 		if type(self.start_time) is str:
 			return self.start_time
 		elif type(self.start_time) is datetime.timedelta:
 			return int(self.start_time.total_seconds())
 		else:
 			return self.start_time.strftime("%H:%M")
-	def _str_stop_time(self):
+	def _format_stop_time(self):
 		days = "    "
 
 		if type(self.stop_time) is str:
 			hour = self.stop_time
 		elif type(self.stop_time) is datetime.timedelta:
-			hour = int(self.stop_time.total_seconds())
+			hour = str(int(self.stop_time.total_seconds()))
 		else:
 			hour = self.stop_time.strftime("%H:%M")
+			# check if a day has passed
 			if get_ymd_tuple(self.start_time) != get_ymd_tuple(self.stop_time):
 				days = "(+%d)" % ((self.stop_time - self.start_time).days + 1)
 		return hour + ' ' + days
 
-	def _str_group(self):
+	def _format_group(self):
 		return self.group
-	def _str_description(self):
+	def _format_description(self):
 		return self.description
 
+	#
+	# second parse iteration
+	#
 	def _reevaluate_date(self, prev, next=None):
 		if type(self.date) is str:
 			if self.date == COPY_LAST_DATE:
@@ -218,34 +266,64 @@ class Data(object):
 
 		if self.stop_time < self.start_time:
 			self.stop_time += datetime.timedelta(days=1)
-	def reevaluate(self, prev, next):
-		self._reevaluate_date(prev, next)
-		self._reevaluate_start_time(prev, next)
-		self._reevaluate_stop_time(prev, next)
+	def reevaluate(self, p, n):
+		"""
+		reevaluates the start and stop times of this object
+		this calls the second parsing functions
+		p & n stands for previous & next items
+			(I avoided calling 'n' "next" because it is a builtin python function)
+		"""
 
-	def is_in_date_range(self, start_date, end_date, inclusive=True):
+		self._reevaluate_date(p, n)
+		self._reevaluate_start_time(p, n)
+		self._reevaluate_stop_time(p, n)
+
+		if get_ymd_tuple(self.start_time) != get_ymd_tuple(self.date):
+			print("[!] date & start_time mismatch!")
+			print(self)
+			import pdb; pdb.set_trace()
+
+	def is_fully_parsed(self):
+		"""
+		checks whether every object has the type it is supposed to have
+		"""
+		return all([
+			type(self.date) is datetime.datetime,
+			type(self.start_time) is datetime.datetime,
+			type(self.stop_time) is datetime.datetime,
+			type(self.group) is str,
+			type(self.description) is str,
+			self.stop_time > self.start_time,
+		])
+
+	def is_in_date_range(self, start_date, end_date,
+		include_by_start=True, include_by_stop=False):
 		"""
 		returns True if:
-			The whole Data object        is contained within the date_range
-			inclusive && Data.start_time is contained within the date_range
+			The whole Data object               is contained within the date_range
+			include_by_start && Data.start_time is contained within the date_range
+			include_by_stop  && Data.stop_time  is contained within the date_range
 		"""
 		if (start_date <= self.start_time) and (self.stop_time <= end_date):
 			return True
-		if inclusive and (start_date <= self.start_time <= end_date):
+		if include_by_start and (start_date <= self.start_time <= end_date):
+			return True
+		if include_by_stop  and (start_date <= self.stop_time  <= end_date):
 			return True
 		return False
 
-class TimeParser(object):
+class DataFile(object):
 	def __init__(self, path=None):
 		self._path = path or self.file_path
-		self._load_data(self._path)
-		self._reevaluate_data()
-		self._create_titles()
-		self._create_friends_list()
+		self.reload()
 
-		# self.plot = Plotter(self, "_plot")
-		# self.plot = plotters.Plot(get_data=self.get_data)
-	
+	def __repr__(self):
+		return "%s : %s : %d items" % (
+			self.__class__.__name__,
+			self._path,
+			len(self.data)
+		)
+
 	def reload(self):
 		self._load_data(self._path)
 		self._reevaluate_data()
@@ -277,7 +355,7 @@ class TimeParser(object):
 			lambda x: not x.is_comment,
 			map(
 				# parse each line
-				lambda x: Data(x),
+				lambda x: DataItem(x),
 				r
 			)
 		))
@@ -286,7 +364,14 @@ class TimeParser(object):
 		# ignoring first and last, which doesnt have 'prev' and 'next' respectivly
 		for i in range(len(self.data[1:-1])):
 			self.data[i+1].reevaluate(self.data[i], self.data[i+2])
+
+		# calling the last item, with its previous item
 		self.data[-1].reevaluate(self.data[-2], None)
+
+	def _validate_data(self):
+		invalid_items = [i for i in self.data if not i.is_fully_parsed()]
+		return invalid_items or True
+		return all(x.is_fully_parsed() for x in self.data)
 
 	def _create_titles(self):
 		# iterate every item in the data, collect its group into a unique list
@@ -302,135 +387,39 @@ class TimeParser(object):
 
 		self.friends = [i[0] for i in self.friends_histogram]
 
-	def get_data(self, year=None, month=None, date_range=None):
-		"""
-		there are several options to call this method
-		1) date_range as a tuple of 2 datetime objects - start end and, both are inclusive
-		2) get_data() - all parameters will be None. all the items will be given
-		3) only set year - the whole year will be given
-		4) both year and month - the whole month will be given
 
-		return items, time_representation, amount_of_days
-		"""
-		if date_range is not None:
-			selected_time = "date range"
-			days_representation = DATE_REPRESENTATION_PATTERN % (
-				date_range[0].year,
-				date_range[0].month,
-				date_range[0].day,
-				date_range[1].year,
-				date_range[1].month,
-				date_range[1].day,
-			)
-			filter_func = lambda i: i.is_in_date_range(*date_range)
-			# filter_func = lambda i: date_range[0] <= i.date <= date_range[1]
-		else:
-			if month is None:
-				if year is None:
-					selected_time = "All times"
-					# this is copied to another list, so self.data will not be changed
-					filter_func = lambda i: True
+class DataFolder(object):
+	def __init__(self, folder=None):
+		self._path = folder or DEFAULT_DATA_DIRECTORY
+		
+		self._load_data_files()
 
-					days_representation = DATE_REPRESENTATION_PATTERN % (
-						self.data[ 0].date.year,
-						self.data[ 0].date.month,
-						self.data[ 0].date.day,
-						self.data[-1].date.year,
-						self.data[-1].date.month,
-						self.data[-1].date.day,
-					)
-				else:
-					selected_time = str(year)
-					filter_func = lambda i: i.date.year == year
-					days_representation = DATE_REPRESENTATION_PATTERN % (year, 1, 1, year, 12, 31)
+	def _load_data_files(self):
+		files = next(os.walk(self._path))[2]
+		# each data file, in its constructor, loads its content
+		self.data_files = [
+			DataFile(os.path.join(self._path, i))
+			for i in files
+		]
+
+		newest_path = newest(self._path)
+		self.data_file_latest = [
+			i for i in self.data_files
+			if i._path.endswith(newest_path)
+		][0]
+		self.data_latest = self.data_file_latest.data
+
+	def reload(self):
+		for i in self.data_files:
+			i.reload()
+
+	def _validate_data(self):
+		invalid_items = []
+		res = True
+		for i in self.data_files:
+			temp = i._validate_data()
+			if type(temp) is list:
+				invalid_items += temp
 			else:
-				filter_func = lambda i: i.date.year == year and i.date.month == month
-				days_representation = DATE_REPRESENTATION_PATTERN % (year, month, 1, year, month, calendar.monthrange(year, month)[1])
-				selected_time = datetime.datetime(year=year, month=month, day=1).strftime("%Y - %m (%B)")
-
-		items = list(filter( filter_func, self.data ))
-		try:
-			amount_of_days = (items[-1].date - items[0].date).days
-		except:
-			amount_of_days = 0
-		time_representation = "%s (%s) (found %d days)" % (
-			selected_time,
-			days_representation,
-			amount_of_days
-		)
-		return items, time_representation, amount_of_days
-
-	def basic_stats(self, amount=None):
-		# get month list
-		months = list(set((i.date.year, i.date.month) for i in self.data))
-		months.sort(key=lambda x: x[0]*12 + x[1])
-		if amount:
-			months = months[:amount]
-
-		for m in months:
-			items, time_representation, amount_of_days = self.get_data(*m)
-			print(time_representation)
-
-			# print basic statistics
-			print("  events per day = %.2f" % (len(items) / amount_of_days))
-			# print("  days per item = %.2f" % (amount_of_days / len(items)))
-			# print("  avg per day   = %.2f" % (month_total / amount_of_days))
-			# print("  avg per item  = %.2f" % (month_total / len(items)))
-
-			month_total = sum(int(i) for i in items)
-			for t in self.titles:
-				title_items = list(filter(
-					lambda x: x.group == t,
-					items
-				))
-				total_seconds = sum(int(i) for i in title_items)
-				print("    %-14s (%3d) : %s (%5.2f%%) ; item average %s" % (
-					t,
-					len(title_items),
-					seconds_to_str(total_seconds),
-					total_seconds / month_total * 100,
-					seconds_to_str(total_seconds / len(title_items) if title_items else 0),
-				))
-
-			print("    " + '-'*57)
-			print("    %-14s (%3d) : %2d days %2d hours %2d minutes" % (
-				"Total",
-				len(items),
-				month_total // (60*60*24),
-				month_total // (60*60) % (24),
-				month_total // (60) % (60*24) % 60,
-			))
-			print()
-
-	def basic_stats_by_description(self, s, year=None, month=None, date_range=None, case_sensitive=True):
-		items, time_representation, amount_of_days = self.get_data(year, month, date_range)
-		all_time_total = sum(int(i) for i in items)
-
-		if case_sensitive:
-			filter_func = lambda x: s in x.description
-		else:
-			filter_func = lambda x: s.lower() in x.description.lower()
-		items = list(filter(filter_func, items))
-
-		print(time_representation)
-		if amount_of_days == 0:
-			amount_of_days = 1
-		print("  events per day = %.2f" % (len(items) / amount_of_days))
-		total_seconds = sum(int(i) for i in items)
-
-		print("(%3d) : %s (%5.2f%%) ; item average %s" % (
-			len(items),
-			seconds_to_str(total_seconds),
-			total_seconds / all_time_total * 100,
-			seconds_to_str(total_seconds / len(items) if items else 0),
-		))
-
-
-if __name__ == '__main__':
-	import main
-	main.main()
-else:
-	a = TimeParser(path=newest(DEFAULT_DATA_FOLDER))
-	b = TelegramBotAPI(a.get_data)
-	pass
-
+				res &= temp
+		return invalid_items or res

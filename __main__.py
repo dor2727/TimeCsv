@@ -1,10 +1,12 @@
 #!/usr/bin/rlwrap python3
 
-import Time.statistics
-import sys
 import os
+import sys
 import argparse
 import datetime
+
+import TimeNew.statistics
+from TimeNew.time_utils import newest
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -20,30 +22,18 @@ def parse_args():
 
 	return args
 
-def newest(path):
-	files = os.listdir(path)
-	paths = [os.path.join(path, basename) for basename in files]
-	return max(paths, key=os.path.getctime)
-
 def main():
-	a = Time.statistics.TimeParser(path=newest("/home/me/Dropbox/Projects/Time/data"))
+	filename = newest("/home/me/Dropbox/Projects/Time/data")
+	print(filename)
+	a = TimeNew.statistics.DataFile(path=filename)
+	print(a._validate_data())
 
-	args = parse_args()
-	if args.months_back is None:
-		search_string = ' '.join(args.search_string)
-
-		end_date = datetime.datetime.now()
-		start_date = Time.statistics.get_midnight(end_date - datetime.timedelta(days=args.days_back))
-
-		if args.debug:
-			print(( start_date, end_date ))
-		
-		a.basic_stats_by_description(search_string, date_range=( start_date, end_date ))
-	else:
-		a.basic_stats(args.months_back)
-
+	b = TimeNew.statistics.DataFolder("/home/me/Dropbox/Projects/Time/data")
+	print(b)
+	import pdb; pdb.set_trace()
 
 
 if __name__ == '__main__':
+	print(1)
 	main()
 	
