@@ -413,6 +413,8 @@ class TimeParser(object):
 		items = list(filter(filter_func, items))
 
 		print(time_representation)
+		if amount_of_days == 0:
+			amount_of_days = 1
 		print("  events per day = %.2f" % (len(items) / amount_of_days))
 		total_seconds = sum(int(i) for i in items)
 
