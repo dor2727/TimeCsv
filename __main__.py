@@ -6,6 +6,7 @@ import argparse
 import datetime
 
 import TimeCsv.statistics
+import TimeCsv.parsing
 from TimeCsv.time_utils import newest
 from TimeCsv.filters import *
 
@@ -31,7 +32,7 @@ def main():
 		test(debug=args.debug)
 		return
 
-	b = TimeCsv.statistics.DataFolder()
+	b = TimeCsv.parsing.DataFolder()
 
 	f = TimeFilter_Days(args.days_back)
 	for s in args.search_string:
@@ -50,11 +51,11 @@ def test(debug=False):
 	# if debug:
 	# 	print(f"filename: {filename}")
 
-	# a = TimeCsv.statistics.DataFile(path=filename)
+	# a = TimeCsv.parsing.DataFile(path=filename)
 	# if debug:
 	# 	print(f"validating: {a._validate_data()}")
 
-	b = TimeCsv.statistics.DataFolder("/home/me/Dropbox/Projects/Time/data")
+	b = TimeCsv.parsing.DataFolder("/home/me/Dropbox/Projects/Time/data")
 	if debug:
 		print(f"DataFolder: {b}")
 
