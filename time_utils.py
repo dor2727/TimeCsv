@@ -2,14 +2,14 @@ import os
 
 from collections import OrderedDict
 
-from TimeNew.consts import *
+from TimeCsv.consts import *
 
 #
 # file utils
 #
 
 # get the newsest file
-def newest(path):
+def newest(path=DEFAULT_DATA_DIRECTORY):
 	files = os.listdir(path)
 	paths = [os.path.join(path, basename) for basename in files]
 	return max(paths, key=os.path.getctime)
@@ -40,3 +40,16 @@ def get_ymd_tuple(d):
 
 def get_midnight(d):
 	return datetime.datetime(*get_ymd_tuple(d))
+
+def seconds_to_str(n):
+	return ("%2d days %2d hours %2d minutes" % (
+		n // (60*60*24),
+		n // (60*60) % (24),
+		n // (60) % (60*24) % 60,
+	)).replace(" 0 days", "       ").replace(" 0 hours", "        ")
+
+#
+# debug utils
+#
+def print_items(self, l):
+	print('\n'.join(i.__repr__() for i in l))
