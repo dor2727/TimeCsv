@@ -34,3 +34,7 @@ COPY_LAST_DATE = "----/--/--"
 ADD_LAST_DATE = "----/--/+1"
 COPY_LAST_START_TIME = "--:--"
 COPY_LAST_STOP_TIME = "---:--"
+
+
+DEFAULT_PIE_PATH = "/tmp/pie.png"
+DEFAULT_BAR_PATH = "/tmp/bar.png"
