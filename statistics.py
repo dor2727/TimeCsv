@@ -397,20 +397,32 @@ class DataFile(object):
 
 		self.friends = [i[0] for i in self.friends_histogram]
 
+	@property
+	def _data_range(self):
+		return self.data[0].start_time, self.data[-1].stop_time
+
 
 class DataFolder(object):
-	def __init__(self, folder=None):
-		self._path = folder or DEFAULT_DATA_DIRECTORY
-		
+	def __init__(self, folder=DEFAULT_DATA_DIRECTORY):
+		self._path = folder
+
 		self._load_data_files()
 
 	def _load_data_files(self):
 		files = next(os.walk(self._path))[2]
+
 		# each data file, in its constructor, loads its content
 		self.data_files = [
 			DataFile(os.path.join(self._path, i))
 			for i in files
 		]
+		# sort the data files by date
+		self.data_files = sorted(
+			self.data_files,
+			key=lambda df: df._data_range[1]
+		)
+
+		self.data = sum([i.data for i in self.data_files], [])
 
 		newest_path = newest(self._path)
 		self.data_file_latest = [
