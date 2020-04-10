@@ -2,5 +2,7 @@ __pycache__
 *.pyc
 
 data
+telegram_bot_data/*
+
 key
 chat_id
