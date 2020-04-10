@@ -5,14 +5,16 @@ import sys
 import argparse
 import datetime
 
-import TimeNew.statistics
-from TimeNew.time_utils import newest
+import TimeCsv.statistics
+from TimeCsv.time_utils import newest
+from TimeCsv.filters import *
 
 def parse_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--days-back", "-d", type=int , default=7   , dest='days_back'  , help="how many days back to query")
-	parser.add_argument("--month",     "-m", type=int , default=None, dest='months_back', help='how many month summaries to show')
+	# parser.add_argument("--month",     "-m", type=int , default=None, dest='months_back', help='how many month summaries to show')
 	parser.add_argument("--debug"          , action="store_true")
+	parser.add_argument("--test"           , action="store_true")
 	parser.add_argument("search_string"    , type=str , default=''  , nargs=argparse.REMAINDER)
 
 	args = parser.parse_args()
@@ -23,13 +25,49 @@ def parse_args():
 	return args
 
 def main():
-	filename = newest("/home/me/Dropbox/Projects/Time/data")
-	print(filename)
-	a = TimeNew.statistics.DataFile(path=filename)
-	print(a._validate_data())
+	args = parse_args()
 
-	b = TimeNew.statistics.DataFolder("/home/me/Dropbox/Projects/Time/data")
-	print(b)
+	if args.test:
+		test(debug=args.debug)
+		return
+
+	b = TimeCsv.statistics.DataFolder()
+
+	f = TimeFilter_Days(args.days_back)
+	for s in args.search_string:
+		f &= AutoFilter(s)
+
+	if args.debug:
+		print(f"filter: {f}")
+
+	print(TimeCsv.statistics.FilteredStats(
+		f % b.data,
+		selected_time=f.selected_time
+	).to_text())
+
+def test(debug=False):
+	# filename = newest()
+	# if debug:
+	# 	print(f"filename: {filename}")
+
+	# a = TimeCsv.statistics.DataFile(path=filename)
+	# if debug:
+	# 	print(f"validating: {a._validate_data()}")
+
+	b = TimeCsv.statistics.DataFolder("/home/me/Dropbox/Projects/Time/data")
+	if debug:
+		print(f"DataFolder: {b}")
+
+	f = TimeFilter_Month(3) | TimeFilter_Month(4)
+	f_data = f.get_filtered_data(b.data)
+	print(len(f_data))
+
+	# g = TimeCsv.statistics.GroupedStats_Games(f_data, group_value="amount")
+	# g = TimeCsv.statistics.GroupedStats_Youtube(f_data, group_value="time")
+	g = TimeCsv.statistics.GroupGroupedStats(f_data, group_value="time", category_name="Youtube")
+	print(g.group())
+	print(g.to_pie(save=False))
+
 	import pdb; pdb.set_trace()
 
 
