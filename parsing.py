@@ -425,12 +425,7 @@ class DataFolder(object):
 
 		self.data = sum([i.data for i in self.data_files], [])
 
-		# TODO
-		newest_path = newest(self._path)
-		self.data_file_latest = [
-			i for i in self.data_files
-			if i._path.endswith(newest_path)
-		][0]
+		self.data_file_latest = self.data_files[-1]
 		self.data_latest = self.data_file_latest.data
 
 	def reload(self):

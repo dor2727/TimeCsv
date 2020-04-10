@@ -273,6 +273,11 @@ class GroupedStats(Stats):
 			fig.show()
 			return None
 
+	#
+	def to_text(self):
+		# TODO
+		raise NotImplemented()
+
 class GroupedStats_Friend(GroupedStats):
 	def _get_headers(self):
 		# get all headers
@@ -384,11 +389,6 @@ class GroupedStats_Read(GroupGroupedStats):
 	_category_name = "Read"
 
 
-"""
-TODO:
-total_amount
-means counting lol games
-"""
 class ExtraDetailsGroupedStats(GroupedStats):
 	_allowed_group_values = ("time", "amount", "total_amount")
 	"""
