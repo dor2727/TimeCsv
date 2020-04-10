@@ -81,7 +81,7 @@ class DataItem(object):
 	@property
 	def friends(self):
 		return find_friends_in_str(self.description)
-		
+
 	#
 	# first parse iteration
 	#
@@ -125,7 +125,7 @@ class DataItem(object):
 					minute = start_time.minute,
 				)
 		return self.start_time
-	
+
 	# stop_time can either indicate when the event ended
 	_STOP_INITIALS     = ('s', 'e')
 	# or how long it lasted
@@ -180,8 +180,17 @@ class DataItem(object):
 		return s
 	def _parser_description(self, s):
 		self.description = s
+
+		# get both the word before the brackets, and the value of the brackets
+		extra_details = re.findall("(\\w+)\\s+\\((.*?)\\)", s)
+		if not extra_details:
+			# TODO: maybe make it an empy dict instead of None
+			self.extra_details = None
+		else:
+			self.extra_details = dict(extra_details)
+
 		return s
-	
+
 	@property
 	def PARSERS(self):
 		"""
@@ -311,6 +320,7 @@ class DataItem(object):
 		if include_by_stop  and (start_date <= self.stop_time  <= end_date):
 			return True
 		return False
+
 
 class DataFile(object):
 	def __init__(self, path=None):
