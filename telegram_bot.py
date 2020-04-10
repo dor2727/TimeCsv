@@ -8,7 +8,7 @@ from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
 from pdb import set_trace
 
-MY_CHAT_ID = int(open('chat_id').read().strip())
+MY_CHAT_ID = int(open('telegram_bot_data/chat_id').read().strip())
 
 FILENAME = "/home/me/Dropbox/Projects/Time/data/2020_year_2_semester_1.tcsv"
 FILENAME = Time.statistics.newest(Time.statistics.DEFAULT_DATA_FOLDER)
@@ -47,7 +47,7 @@ def init_time_data():
 
 def init_telegram():
 	print("[*] connecting to telegram")
-	key = open('key').read().strip()
+	key = open('telegram_bot_data/key').read().strip()
 	updater = Updater(key, use_context=True)
 	return updater
 
