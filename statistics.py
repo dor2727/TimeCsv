@@ -279,7 +279,45 @@ class GroupedStats(Stats):
 
 	#
 	def to_text(self):
-		# TODO
+		"""
+		TODO
+
+		2020 - 04 (April) (2020/04/01 - 2020/04/30) (found 9 days)
+		  events per day = float
+		Blog           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Chen           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Chill          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Chores         (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Computer       (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Family         (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Friends        (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Gaming         (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Life           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Meditate       (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Phone          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Read           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Reddit         (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Sport          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Study          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Think          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Time           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Transportation (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		University     (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		Youtube        (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
+		---------------------------------------------------------
+		Total          (num) :  seconds_to_str
+
+		TODO
+		change _get_value_of_header to set both
+			self.time_per_value
+			self.amount_per_value
+		and create a wrapper
+			self._value
+			that brings the relevant one based on self.group_value
+
+		then, here, in to_text, ignore that and use both
+		"""
+		return "NotImplemented()"
 		raise NotImplemented()
 
 class GroupedStats_Friend(GroupedStats):
