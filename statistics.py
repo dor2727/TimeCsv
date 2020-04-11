@@ -11,7 +11,11 @@ from TimeCsv.filters import *
 class Stats(object):
 	def __init__(self, data, selected_time="All times"):
 		self.data = data
-		self.selected_time = selected_time
+		
+		if len(selected_time) > 33:
+			self.selected_time = "Multiple Time Filters"
+		else:
+			self.selected_time = selected_time
 
 	@property
 	def time_representation_str(self):
@@ -374,7 +378,6 @@ class GroupGroupedStats(GroupedStats):
 			raise NotImplemented
 		else:
 			raise ValueError
-
 
 class GroupedStats_Games(GroupGroupedStats):
 	_category_name = "Gaming"

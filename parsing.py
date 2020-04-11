@@ -402,7 +402,6 @@ class DataFile(object):
 		return self.data[0].start_time, self.data[-1].stop_time
 
 
-
 class DataFolder(object):
 	def __init__(self, folder=DEFAULT_DATA_DIRECTORY):
 		self._path = folder

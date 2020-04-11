@@ -51,5 +51,5 @@ def seconds_to_str(n):
 #
 # debug utils
 #
-def print_items(self, l):
+def print_items(l):
 	print('\n'.join(i.__repr__() for i in l))

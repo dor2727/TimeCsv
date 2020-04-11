@@ -13,6 +13,9 @@ class Filter(object):
 	def get_filtered_data(self, data):
 		return list(itertools.compress(data, self.filter(data)))
 
+	def get_selected_time(self):
+		return getattr(self, "_selected_time", "All time")
+
 	def __mod__(self, other):
 		# verify input
 		if type(other) is not list:
@@ -63,15 +66,15 @@ class MultiFilter(Filter):
 		return f"({self.filter_1.__repr__()}) {self.operation} ({self.filter_2.__repr__()})"
 
 	@property
-	def selected_time(self):
-		if hasattr(self.filter_1, "selected_time") and hasattr(self.filter_2, "selected_time"):
-			return f"{self.filter_1.selected_time} {self.operation} {self.filter_2.selected_time}"
-		elif hasattr(self.filter_1, "selected_time"):
-			return self.filter_1.selected_time
-		elif hasattr(self.filter_2, "selected_time"):
-			return self.filter_2.selected_time
+	def _selected_time(self):
+		if hasattr(self.filter_1, "_selected_time") and hasattr(self.filter_2, "_selected_time"):
+			return f"({self.filter_1._selected_time} {self.operation} {self.filter_2._selected_time})"
+		elif hasattr(self.filter_1, "_selected_time"):
+			return self.filter_1._selected_time
+		elif hasattr(self.filter_2, "_selected_time"):
+			return self.filter_2._selected_time
 		else:
-			return ''
+			return 'All time'
 
 class NotFilter(Filter):
 	def __init__(self, filter_obj):
@@ -85,8 +88,6 @@ class NotFilter(Filter):
 
 	def __repr__(self):
 		return f"not ({self.filter_obj.__repr__()})"
-
-
 
 # used for debug purpose
 class TrueFilter(Filter):
@@ -206,7 +207,6 @@ class HasExtraDetailsFilter(Filter):
 		]
 
 
-
 # find str in either group or description
 class StrFilter(Filter):
 	def __init__(self, string, case_sensitive=None, regex=False):
@@ -228,7 +228,6 @@ class StrFilter(Filter):
 
 	def __repr__(self):
 		return self._multi.__repr__()
-
 
 # auto classify which filter to use
 class AutoFilter(Filter):
@@ -291,7 +290,7 @@ class TimeFilter(Filter):
 		return f"{name}({start} --> {stop})"
 
 	@property
-	def selected_time(self):
+	def _selected_time(self):
 		raise NotImplemented
 	
 
@@ -314,8 +313,6 @@ class TimeFilter_Days(TimeFilter):
 			datetime.timedelta(days=days-1)
 		)
 
-		self.selected_time
-
 	def filter(self, data):
 		return [
 			i.is_in_date_range(self.start_time, self.stop_time)
@@ -326,10 +323,9 @@ class TimeFilter_Days(TimeFilter):
 		return f"{self.__class__.__name__}({self.days or 'today'})"
 
 	@property
-	def selected_time(self):
+	def _selected_time(self):
 		return f"days ({self.days})"
 	
-
 class TimeFilter_Year(TimeFilter):
 	def __init__(self, year: int=0):
 		self.year = year or datetime.datetime.now().year
@@ -353,7 +349,7 @@ class TimeFilter_Year(TimeFilter):
 		return f"{self.__class__.__name__}({self.year})"
 
 	@property
-	def selected_time(self):
+	def _selected_time(self):
 		return f"year ({self.year})"
 
 class TimeFilter_Month(TimeFilter):
@@ -388,7 +384,7 @@ class TimeFilter_Month(TimeFilter):
 		return f"{self.__class__.__name__}({self.year}/{self.month})"
 
 	@property
-	def selected_time(self):
+	def _selected_time(self):
 		return f"month ({self.year}/{self.month})"
 
 class TimeFilter_DateRange(TimeFilter):
@@ -412,7 +408,7 @@ class TimeFilter_DateRange(TimeFilter):
 		]
 
 	@property
-	def selected_time(self):
+	def _selected_time(self):
 		return "daterange"
 
 
@@ -477,7 +473,32 @@ class AutoTimeFilter(TimeFilter):
 		return self._filter.__repr__()
 
 	@property
-	def selected_time(self):
-		return self._filter.selected_time
+	def _selected_time(self):
+		return self._filter._selected_time
 
 # __all__ = list(filter( lambda i: "Filter" in i, locals() ))
+
+
+def join_filters_with_or(l):
+	# check if list is empty
+	l = list(filter(bool, l))
+	if not l:
+		return None
+
+	f = l[0]
+	for i in l[1:]:
+		f |= i
+
+	return f
+
+def join_filters_with_and(l):
+	l = list(filter(bool, l))
+	# check if list is empty
+	if not l:
+		return None
+
+	f = l[0]
+	for i in l[1:]:
+		f &= i
+
+	return f
