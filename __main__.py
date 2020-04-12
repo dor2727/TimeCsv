@@ -11,9 +11,6 @@ from TimeCsv.time_utils import newest
 from TimeCsv.filters import *
 
 
-import tracemalloc
-tracemalloc.start()
-
 
 def parse_args():
 	parser = argparse.ArgumentParser()
