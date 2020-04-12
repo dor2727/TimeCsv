@@ -10,6 +10,11 @@ from TimeCsv.parsing import DataFolder
 from TimeCsv.time_utils import newest
 from TimeCsv.filters import *
 
+
+import tracemalloc
+tracemalloc.start()
+
+
 def parse_args():
 	parser = argparse.ArgumentParser()
 
@@ -160,6 +165,7 @@ def main():
 			print_items(found_items)
 
 def test(debug=False):
+	print("[*] test")
 
 	b = DataFolder("/home/me/Dropbox/Projects/Time/data")
 	if debug:
@@ -180,6 +186,5 @@ def test(debug=False):
 
 
 if __name__ == '__main__':
-	print(1)
 	main()
 	

@@ -6,6 +6,9 @@ import utils
 from TimeCsv.consts import *
 from TimeCsv.time_utils import *
 
+import warnings
+warnings.filterwarnings("ignore", category=ResourceWarning)
+
 class DataItem(object):
 	"""
 	comment lines are either empty lines or lines starting with '#'
