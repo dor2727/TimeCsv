@@ -146,18 +146,50 @@ class GroupedStats(Stats):
 	def __init__(self, data, selected_time="All times", group_value="time"):
 		self.data = data
 		self.selected_time = selected_time
+
 		self.group_value = group_value.lower()
 		if self.group_value not in self._allowed_group_values:
 			raise ValueError("invalid group_value: %s" % group_value)
 
+		self.values_dict = {}
+
 	#
-	def _get_all_headers(self):
-		"return list"
+	def _get_headers(self):
+		"""
+		return list
+		and creates self._headers for caching
+		"""
 		raise NotImplemented()
 
-	def _get_value_of_header(self, header):
-		"return list"
+	@property
+	def headers(self):
+		return getattr(self, "_headers", self._get_headers())
+
+
+	def _get_filtered_data_per_header(self, header):
 		raise NotImplemented()
+
+	def _set_value_of_header(self, header):
+		items = self._get_filtered_data_per_header(header)
+
+		self.values_dict[header] = {}
+		self.values_dict[header]["amount_of_time"]  = amount_of_time  = sum(map(int, items))
+		self.values_dict[header]["amount_of_items"] = amount_of_items = len(items)
+
+		if items:
+			self.values_dict[header]["item_average"] = amount_of_time / amount_of_items
+		else:
+			self.values_dict[header]["item_average"] = 0
+
+	def _get_value_of_header(self, header):
+		self._set_value_of_header(header)
+
+		if self.group_value == "time":
+			return self.values_dict[header]["amount_of_time"]
+		elif self.group_value == "amount":
+			return self.values_dict[header]["amount_of_items"]
+		else:
+			raise ValueError
 
 	def _sort(self, headers, values):
 		# sort, either alphabetically or by the values
@@ -177,8 +209,8 @@ class GroupedStats(Stats):
 			headers
 		))
 
-		self.headers, self.values = self._sort(headers, values)
-		return self.headers, self.values
+		self.headers_sorted, self.values_sorted = self._sort(headers, values)
+		return self.headers_sorted, self.values_sorted
 
 	#
 	@property
@@ -197,9 +229,9 @@ class GroupedStats(Stats):
 
 		# initializing values
 		if headers is None:
-			headers = self.headers
+			headers = self.headers_sorted
 		if values is None:
-			values = self.values
+			values = self.values_sorted
 		if title is None:
 			title = self.title
 
@@ -241,9 +273,9 @@ class GroupedStats(Stats):
 
 		# initializing values
 		if headers is None:
-			headers = self.headers
+			headers = self.headers_sorted
 		if values is None:
-			values = self.values
+			values = self.values_sorted
 		if title is None:
 			title = self.title
 
@@ -341,18 +373,13 @@ class GroupedStats_Friend(GroupedStats):
 		headers = set()
 		for i in self.data:
 			headers.update(i.friends)
+
 		# return a list, sorted alphabetically
-		return sorted(headers)
+		self._headers = sorted(headers)
+		return self._headers
 
-	def _get_value_of_header(self, header):
-		items = FriendFilter(header).get_filtered_data(self.data)
-
-		if self.group_value == "time":
-			return sum(map(int, items))
-		elif self.group_value == "amount":
-			return len(items)
-		else:
-			raise ValueError
+	def _get_filtered_data_per_header(self, header):
+		return FriendFilter(header).get_filtered_data(self.data)
 
 class GroupedStats_Group(GroupedStats):
 	def _get_headers(self):
@@ -360,22 +387,26 @@ class GroupedStats_Group(GroupedStats):
 		headers = set()
 		for i in self.data:
 			headers.add(i.group)
+
 		# return a list, sorted alphabetically
-		return sorted(headers)
+		self._headers = sorted(headers)
+		return self._headers
 
-	def _get_value_of_header(self, header):
-		items = GroupFilter(header).get_filtered_data(self.data)
-
-		if self.group_value == "time":
-			return sum(map(int, items))
-		elif self.group_value == "amount":
-			return len(items)
-		else:
-			raise ValueError
+	def _get_filtered_data_per_header(self, header):
+		return GroupFilter(header).get_filtered_data(self.data)
 
 
+"""
+TODO:
+add "total_amount" to _allowed_group_values
+and add it to _get_value_of_header & _set_value_of_header
+
+both to GroupGroupedStats and ExtraDetailsGroupedStats
+
+maybe merge them with some 3rd party class?
+"""
 class GroupGroupedStats(GroupedStats):
-	_allowed_group_values = ("time", "amount")
+	# _allowed_group_values = ("time", "amount", "total_amount")
 
 	STRIPPING_REGEX = [
 		"\\(.*",
@@ -398,7 +429,8 @@ class GroupGroupedStats(GroupedStats):
 		self._initialize_data()
 
 	def _initialize_data(self):
-		self.filtered_data = self._filter_obj % self.data
+		self._original_data = self.data
+		self.data = self._filter_obj % self.data
 
 	def _strip(self, s):
 		for r in self.STRIPPING_REGEX:
@@ -409,28 +441,18 @@ class GroupGroupedStats(GroupedStats):
 		# get all headers
 		headers = set()
 
-		for i in self.filtered_data:
+		for i in self.data:
 			headers.add(self._strip(i.description))
 
 		# return a list, sorted alphabetically
-		return sorted(headers)
+		self._headers = sorted(headers)
+		return self._headers
 
-	def _get_value_of_header(self, header):
-		items = filter(
+	def _get_filtered_data_per_header(self, header):
+		return list(filter(
 			lambda i: bool(re.findall(f"\\b{header}\\b", i.description)),
-			self.filtered_data
-		)
-
-		if self.group_value == "time":
-			return sum(map(int, items))
-		elif self.group_value == "amount":
-			# object of type 'filter' has no len()
-			return sum(1 for _ in items)
-		elif self.group_value == "total_amount":
-			# TODO
-			raise NotImplemented
-		else:
-			raise ValueError
+			self.data
+		))
 
 class GroupedStats_Games(GroupGroupedStats):
 	_category_name = "Gaming"
@@ -446,7 +468,7 @@ class GroupedStats_Read(GroupGroupedStats):
 
 
 class ExtraDetailsGroupedStats(GroupedStats):
-	_allowed_group_values = ("time", "amount", "total_amount")
+	# _allowed_group_values = ("time", "amount", "total_amount")
 	"""
 	requires:
 		self._filter_obj
@@ -456,7 +478,8 @@ class ExtraDetailsGroupedStats(GroupedStats):
 			since it reuiqures self._filter_obj
 	"""
 	def _initialize_data(self):
-		self.filtered_data = self._filter_obj % self.data
+		self._original_data = self.data
+		self.data = self._filter_obj % self.data
 
 	def _get_headers(self):
 		# get all headers
@@ -466,24 +489,14 @@ class ExtraDetailsGroupedStats(GroupedStats):
 			headers.add(i.extra_details[self._extra_details_name])
 
 		# return a list, sorted alphabetically
-		return sorted(headers)
+		self._headers = sorted(headers)
+		return self._headers
 
-	def _get_value_of_header(self, header):
-		items = filter(
+	def _get_filtered_data_per_header(self, header):
+		return list(filter(
 			lambda i: i.extra_details[self._extra_details_name] == header,
 			self.filtered_data
-		)
-
-		if self.group_value == "time":
-			return sum(map(int, items))
-		elif self.group_value == "amount":
-			# object of type 'filter' has no len()
-			return sum(1 for _ in items)
-		elif self.group_value == "total_amount":
-			# TODO
-			raise NotImplemented
-		else:
-			raise ValueError
+		))
 
 class GroupedStats_Lecture(ExtraDetailsGroupedStats):
 	def __init__(self, *args, **kwargs):
