@@ -310,6 +310,39 @@ class GroupedStats(Stats):
 			return None
 
 	#
+	def _generate_to_text_statistics_per_header(self, header, header_format, amount_of_time):
+		self._get_value_of_header(header)
+		stats = self.values_dict[header]
+
+		stats["time_percentage"] = 100.0 * stats["amount_of_time"] / amount_of_time
+
+		return "    %-14s (%4d) : %s (%5.2f%%) ; item average %s" % (
+			(header_format % header),
+			stats["amount_of_items"],
+			seconds_to_str(stats["amount_of_time"]),
+			stats["time_percentage"],
+			seconds_to_str(stats["item_average"]),
+		)
+
+	def _generate_to_text_footer(self, header_format, amount_of_items, amount_of_time):
+		s  = "    " + '-'*57
+		s += "\n"
+		s += "    %-14s (%4d) : %2d days %2d hours %2d minutes" % (
+			(header_format % "Total"),
+			amount_of_items,
+			amount_of_time // (60*60*24),
+			amount_of_time // (60*60) % (24),
+			amount_of_time // (60) % (60*24) % 60,
+		)
+		return s
+
+	def _generate_to_text_header(self, events_per_day):
+		s  = self.time_representation_str
+		s += "\n"
+		s += f"  events per day = {events_per_day:.2f}"
+
+		return s
+
 	def to_text(self):
 		"""
 		TODO
@@ -318,16 +351,9 @@ class GroupedStats(Stats):
 			that brings the relevant one based on self.group_value
 
 		clean this function
-
-		generate automatic length for title
 		"""
+
 		# calculate statistics for the whole time period
-
-		# print header
-		s  = self.time_representation_str
-		s += "\n"
-
-		# print general statistics
 		amount_of_items = len(self.data)
 		amount_of_time = sum(map(int, self.data))
 
@@ -336,34 +362,16 @@ class GroupedStats(Stats):
 		else:
 			events_per_day = amount_of_items / amount_of_time
 
-		s += f"  events per day = {events_per_day:.2f}"
+		s = self._generate_to_text_header(events_per_day)
 
+		# print per-header statistics
+		header_format = "%%-%ds" % (max(map(len, self.headers)) + 1)
 		for h in self.headers:
 			s += "\n"
-
-			self._get_value_of_header(h)
-			stats = self.values_dict[h]
-			stats["time_percentage"] = 1.2
-
-			s += "    %-14s (%4d) : %s (%5.2f%%) ; item average %s" % (
-				h,
-				stats["amount_of_items"],
-				seconds_to_str(stats["amount_of_time"]),
-				stats["time_percentage"],
-				seconds_to_str(stats["item_average"]),
-			)
+			s += self._generate_to_text_statistics_per_header(h, header_format, amount_of_time)
 
 		s += "\n"
-		s += "    " + '-'*57
-		s += "\n"
-		s += "    %-14s (%4d) : %2d days %2d hours %2d minutes" % (
-			"Total",
-			amount_of_items,
-			amount_of_time // (60*60*24),
-			amount_of_time // (60*60) % (24),
-			amount_of_time // (60) % (60*24) % 60,
-		)
-
+		s += self._generate_to_text_footer(header_format, amount_of_items, amount_of_time)
 
 		return s
 
