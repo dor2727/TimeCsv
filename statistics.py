@@ -281,44 +281,59 @@ class GroupedStats(Stats):
 	def to_text(self):
 		"""
 		TODO
-
-		2020 - 04 (April) (2020/04/01 - 2020/04/30) (found 9 days)
-		  events per day = float
-		Blog           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Chen           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Chill          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Chores         (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Computer       (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Family         (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Friends        (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Gaming         (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Life           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Meditate       (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Phone          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Read           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Reddit         (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Sport          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Study          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Think          (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Time           (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Transportation (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		University     (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		Youtube        (%3d) : seconds_to_str (5.2f%) ; item average seconds_to_str
-		---------------------------------------------------------
-		Total          (num) :  seconds_to_str
-
-		TODO
-		change _get_value_of_header to set both
-			self.time_per_value
-			self.amount_per_value
 		and create a wrapper
 			self._value
 			that brings the relevant one based on self.group_value
 
-		then, here, in to_text, ignore that and use both
+		clean this function
+
+		generate automatic length for title
 		"""
-		return "NotImplemented()"
-		raise NotImplemented()
+		# calculate statistics for the whole time period
+
+		# print header
+		s  = self.time_representation_str
+		s += "\n"
+
+		# print general statistics
+		amount_of_items = len(self.data)
+		amount_of_time = sum(map(int, self.data))
+
+		if amount_of_time == 0:
+			events_per_day = 0
+		else:
+			events_per_day = amount_of_items / amount_of_time
+
+		s += f"  events per day = {events_per_day:.2f}"
+
+		for h in self.headers:
+			s += "\n"
+
+			self._get_value_of_header(h)
+			stats = self.values_dict[h]
+			stats["time_percentage"] = 1.2
+
+			s += "    %-14s (%4d) : %s (%5.2f%%) ; item average %s" % (
+				h,
+				stats["amount_of_items"],
+				seconds_to_str(stats["amount_of_time"]),
+				stats["time_percentage"],
+				seconds_to_str(stats["item_average"]),
+			)
+
+		s += "\n"
+		s += "    " + '-'*57
+		s += "\n"
+		s += "    %-14s (%4d) : %2d days %2d hours %2d minutes" % (
+			"Total",
+			amount_of_items,
+			amount_of_time // (60*60*24),
+			amount_of_time // (60*60) % (24),
+			amount_of_time // (60) % (60*24) % 60,
+		)
+
+
+		return s
 
 class GroupedStats_Friend(GroupedStats):
 	def _get_headers(self):

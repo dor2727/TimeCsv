@@ -141,7 +141,11 @@ def main():
 	"""
 	if search_filter is None:
 		# default statistics
-		g = TimeCsv.statistics.GroupedStats_Group(data, group_value="time")
+		g = TimeCsv.statistics.GroupedStats_Group(
+			data,
+			selected_time=selected_time,
+			group_value="time"
+		)
 		print(g.to_text())
 	else:
 		found_items = search_filter % data
@@ -165,10 +169,11 @@ def test(debug=False):
 	f_data = f.get_filtered_data(b.data)
 	print(len(f_data))
 
-	# g = TimeCsv.statistics.GroupedStats_Games(f_data, group_value="amount")
+	g = TimeCsv.statistics.GroupedStats_Games(f_data, group_value="amount")
 	# g = TimeCsv.statistics.GroupedStats_Youtube(f_data, group_value="time")
-	g = TimeCsv.statistics.GroupGroupedStats(f_data, group_value="time", category_name="Youtube")
+	# g = TimeCsv.statistics.GroupGroupedStats(f_data, group_value="time", category_name="Youtube")
 	print(g.group())
+	print(g.to_text())
 	# print(g.to_pie(save=False))
 
 	import pdb; pdb.set_trace()
