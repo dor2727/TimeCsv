@@ -92,18 +92,18 @@ class FilteredStats(Stats):
 
 		if amount_of_time == 0:
 			events_per_day = 0
-		else:
-			events_per_day = amount_of_items / amount_of_time
-
-		if amount_of_items == 0:
 			time_percentage = 0
-			item_average = 0
 		else:
-			# this is 24 hours times the amount of days of this data
 			days = (self.data[-1].date - self.data[0].date).days + 1
+			events_per_day = amount_of_items / days
+
+			# this is 24 hours times the amount of days of this data
 			days_time = days * 24 * 60 * 60
 			time_percentage = amount_of_time / days_time * 100
 
+		if amount_of_items == 0:
+			item_average = 0
+		else:
 			item_average = amount_of_time / amount_of_items
 
 		return {
