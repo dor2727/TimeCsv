@@ -39,3 +39,6 @@ COPY_LAST_STOP_TIME = "---:--"
 
 DEFAULT_PIE_PATH = "/tmp/pie.png"
 DEFAULT_BAR_PATH = "/tmp/bar.png"
+
+
+WEEK_STARTS_AT_SUNDAY = True

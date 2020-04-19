@@ -7,6 +7,7 @@ import TimeCsv.cli
 from TimeCsv.parsing import DataFolder
 
 from TimeCsv.consts import *
+from TimeCsv.filters import *
 
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
@@ -64,6 +65,9 @@ class TelegramServer(object):
 		self.updater.idle()
 
 class TelegramCommands(object):
+	def _command_name(self, c):
+		return c[8:]
+
 	def add_all_handlers(self):
 		commands = filter(
 			lambda s: s.startswith("command_"),
@@ -72,10 +76,102 @@ class TelegramCommands(object):
 
 		for command_name in commands:
 			self.dp.add_handler(CommandHandler(
-				command_name[8:],
+				self._command_name(command_name),
 				getattr(self, command_name)
 			))
 
+	@log_command
+	def command_cli(self, update, context):
+		args_list = ["--telegram"] + shlex.split(' '.join(context.args))
+		self.send_text(
+			TimeCsv.cli.main(self.datafolder, args_list),
+			update
+		)
+
+	#
+	def filtered_time_command(self, f, update=None):
+		g = TimeCsv.statistics.GroupedStats_Group(
+			f % self.datafolder.data,
+			selected_time=f.get_selected_time(),
+			group_value="time"
+		)
+
+		self.send_text(
+			g.to_telegram(),
+			update
+		)
+
+	@log_command
+	def command_today(self, update, context):
+		self.filtered_time_command(TimeFilter_Days(1), update)
+
+	@log_command
+	def command_week(self, update, context):
+		self.filtered_time_command(TimeFilter_Days(7), update)
+
+	@log_command
+	def command_month(self, update, context):
+		if context.args:
+			try:
+				month = int(context.args[0])
+			except Exception as e:
+				self.send_text(f"command_month error: {e}", update)
+		else:
+			month = 0 # the default value
+
+		self.filtered_time_command(TimeFilter_Month(month), update)
+
+	@log_command
+	def command_year(self, update, context):
+		if context.args:
+			try:
+				year = int(context.args[0])
+			except Exception as e:
+				self.send_text(f"command_year error: {e}", update)
+		else:
+			year = 0 # the default value
+
+		self.filtered_time_command(TimeFilter_Year(year), update)
+
+	@log_command
+	def command_yesterday(self, update, context):
+		stop_time  = get_midnight( datetime.datetime.now() )
+		start_time = get_midnight(
+			stop_time
+			 -
+			datetime.timedelta(days=1)
+		)
+
+		self.filtered_time_command(
+			TimeFilter_DateRange(
+				start_time,
+				stop_time
+			),
+			update
+		)
+
+	@log_command
+	def command_last_week(self, update, context):
+		today = datetime.datetime.now()
+
+		if WEEK_STARTS_AT_SUNDAY:
+			weekday = today.weekday() + WEEK_STARTS_AT_SUNDAY
+			if weekday == 7:
+				weekday = 0
+		else:
+			weekday = today.weekday()
+		this_sunday = get_midnight(today - datetime.timedelta(days=weekday))
+		prev_sunday = this_sunday - datetime.timedelta(days=7)
+
+		self.filtered_time_command(
+			TimeFilter_DateRange(
+				prev_sunday,
+				this_sunday
+			),
+			update
+		)
+
+	#
 	@log_command
 	def command_test(self, update, context):
 		s = "test"
@@ -93,35 +189,30 @@ class TelegramCommands(object):
 		self.send_text("done", update)
 
 	@log_command
-	def command_cli(self, update, context):
-		args_list = ["--telegram"] + shlex.split(' '.join(context.args))
+	def command_list_commands(self, update, context):
+		commands = filter(
+			lambda s: s.startswith("command_"),
+			dir(self)
+		)
+
 		self.send_text(
-			TimeCsv.cli.main(self.datafolder, args_list),
+			'\n'.join(
+				f"{self._command_name(c)} - {self._command_name(c)}"
+				for c in commands
+			),
 			update
 		)
 
+"""
+TODO:
+add homework command
+which sends a pie chart
+"""
 
 class TelegramAPI(TelegramServer, TelegramCommands):
 	def __init__(self):
 		super().__init__()
 		self.add_all_handlers()
-
-"""
-TODO
-add all handlers
-how?
-1)
-	def add_all_handlers(self):
-		for i in seld.__dict__:
-			if key(i).startswith("command_"):
-				self.dp.add_handler(CommandHandler('start', start))
-2)
-	@add_handler
-
-	def add_handler(func, handler_name=None):
-		func.__self__.dp.add_handler(CommandHandler('start', start))
-		return func
-"""
 
 def main():
 	t = TelegramAPI()
