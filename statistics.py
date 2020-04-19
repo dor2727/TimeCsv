@@ -52,6 +52,9 @@ class Stats(object):
 	def to_text(self):
 		raise NotImplemented()
 
+	def to_telegram(self):
+		return self.to_text()
+
 	def to_csv(self):
 		items = self.get_stats_dict().items()
 		# sort by keys

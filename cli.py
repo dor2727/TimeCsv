@@ -12,7 +12,8 @@ from TimeCsv.filters import *
 
 
 
-def parse_args():
+# may pass arguments as a list (used in the telegram bot)
+def parse_args(args_list=None):
 	parser = argparse.ArgumentParser()
 
 	search = parser.add_argument_group("search")
@@ -30,8 +31,9 @@ def parse_args():
 
 
 	debugging = parser.add_argument_group("debugging")
-	debugging.add_argument("--debug"          , action="store_true")
-	debugging.add_argument("--test"           , action="store_true")
+	debugging.add_argument("--debug"   , action="store_true")
+	debugging.add_argument("--test"    , action="store_true")
+	debugging.add_argument("--telegram", action="store_true")
 
 	special = parser.add_argument_group("special")
 	special.add_argument("--group"   , type=str , default=None, dest="group"   , help="show statistics per group")
@@ -41,13 +43,19 @@ def parse_args():
 	special.add_argument("--lecture" , action="store_true"    , dest="lecture" , help="show lecture statistics")
 	special.add_argument("--homework", action="store_true"    , dest="homework", help="show homework statistics")
 
-	args = parser.parse_args()
+	if args_list is None:
+		args = parser.parse_args()
+	else:
+		args = parser.parse_args(args_list)
 
 	if args.debug:
 		print(f"[*] args: {args}")
 
 	return args
 
+#
+# time filters
+#
 def build_time_filter(args):
 	filters = []
 
@@ -118,102 +126,115 @@ def initialize_search_filter(args):
 
 	return f
 
+# use the filters & the DataFolder to filter out the relevant data
+def get_data(datafolder, args):
+	# initialize filters
+	time_filter   = initialize_time_filter(args)
+	search_filter = initialize_search_filter(args)
 
-def main():
-	args = parse_args()
+	
+	# filter data by time
+	if time_filter is None:
+		data = datafolder.data
+		selected_time = "All time"
+	else:
+		data = time_filter % datafolder.data
+		selected_time = time_filter.get_selected_time()
+
+	return data, selected_time, search_filter
+
+# telegram helper
+def get_text(g, args):
+	if args.telegram:
+		return g.to_telegram()
+	else:
+		return g.to_text()
+
+# handles the 'special' category of the args, or the default
+def get_special_text(data, selected_time, args):
+	# big switch-case for different GroupedStats classes
+	if args.gaming:
+		g = TimeCsv.statistics.GroupedStats_Games(
+			data,
+			selected_time=selected_time,
+			group_value="time"
+		)
+
+	elif args.friend:
+		g = TimeCsv.statistics.GroupedStats_Friend(
+			data,
+			selected_time=selected_time,
+			group_value="time",
+		)
+
+	elif args.youtube:
+		g = TimeCsv.statistics.GroupedStats_Youtube(
+			data,
+			selected_time=selected_time,
+			group_value="time",
+		)
+
+	elif args.group:
+		g = TimeCsv.statistics.GroupGroupedStats(
+			data,
+			selected_time=selected_time,
+			group_value="time",
+			category_name=args.group.capitalize()
+		)
+
+	elif args.lecture:
+		g = TimeCsv.statistics.GroupedStats_Lecture(
+			data,
+			selected_time=selected_time,
+			group_value="time",
+		)
+
+	elif args.homework:
+		g = TimeCsv.statistics.GroupedStats_Homework(
+			data,
+			selected_time=selected_time,
+			group_value="time",
+		)
+
+
+	else: # default statistics
+		g = TimeCsv.statistics.GroupedStats_Group(
+			data,
+			selected_time=selected_time,
+			group_value="time"
+		)
+
+	return get_text(g, args)
+
+# handles search_filter
+def get_search_filter_text(data, selected_time, search_filter, args):
+	found_items = search_filter % data
+
+	g = TimeCsv.statistics.FilteredStats(
+		found_items,
+		selected_time=selected_time
+	)
+	result = get_text(g, args)
+
+	if args.show_items:
+		result += "\n------\n"
+		result += print_items(found_items, ret=True)
+
+	return result
+
+def main(datafolder, args_list=None):
+	args = parse_args(args_list=args_list)
 
 	if args.test:
 		test(debug=args.debug)
 		return
 
+	data, selected_time, search_filter = get_data(datafolder, args)
 
-	# initialize filters
-	time_filter   = initialize_time_filter(args)
-	search_filter = initialize_search_filter(args)
-
-	# initialize data
-	d = DataFolder()
-
-	# filter data by time
-	if time_filter is None:
-		data = d.data
-		selected_time = "All time"
-	else:
-		data = time_filter % d.data
-		selected_time = time_filter.get_selected_time()
-
-	"""
-	if search_filter:
-		filter data by the search_filter
-		and show FilteredStats
-	else:
-		print GroupedStats_Group
-	"""
 	if search_filter is None:
-		# big switch-case for different GroupedStats classes
-		if args.gaming:
-			g = TimeCsv.statistics.GroupedStats_Games(
-				data,
-				selected_time=selected_time,
-				group_value="time"
-			)
-
-		elif args.friend:
-			g = TimeCsv.statistics.GroupedStats_Friend(
-				data,
-				selected_time=selected_time,
-				group_value="time",
-			)
-
-		elif args.youtube:
-			g = TimeCsv.statistics.GroupedStats_Youtube(
-				data,
-				selected_time=selected_time,
-				group_value="time",
-			)
-
-		elif args.group:
-			g = TimeCsv.statistics.GroupGroupedStats(
-				data,
-				selected_time=selected_time,
-				group_value="time",
-				category_name=args.group.capitalize()
-			)
-
-		elif args.lecture:
-			g = TimeCsv.statistics.GroupedStats_Lecture(
-				data,
-				selected_time=selected_time,
-				group_value="time",
-			)
-
-		elif args.homework:
-			g = TimeCsv.statistics.GroupedStats_Homework(
-				data,
-				selected_time=selected_time,
-				group_value="time",
-			)
-
-
-		else: # default statistics
-			g = TimeCsv.statistics.GroupedStats_Group(
-				data,
-				selected_time=selected_time,
-				group_value="time"
-			)
-
-		print(g.to_text())
+		return get_special_text(data, selected_time, args)
 	else:
-		found_items = search_filter % data
-
-		print(TimeCsv.statistics.FilteredStats(
-			found_items,
-			selected_time=selected_time
-		).to_text())
-
-		if args.show_items:
-			print("------")
-			print_items(found_items)
+		return get_search_filter_text(data, selected_time, search_filter, args)
 
 def test(debug=False):
 	print("[*] test")
