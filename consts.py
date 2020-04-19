@@ -3,6 +3,7 @@ import re
 import datetime
 
 DEFAULT_DATA_DIRECTORY = os.path.expanduser("~/Dropbox/Projects/Time/data")
+TELEGRAM_DATA_DIRECTORY = "/home/me/Dropbox/Projects/Time/telegram_bot_data"
 POSSIBLE_FILE_EXTENSIONS = [".tcsv", ".csv", ".txt", ""]
 
 
