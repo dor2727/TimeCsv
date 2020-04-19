@@ -397,8 +397,10 @@ class TimeFilter_DateRange(TimeFilter):
 			include_by_stop  && Data.stop_time  is contained within the date_range
 		"""
 		
-		self.start_time = start_time
-		self.stop_time  = stop_time
+		self.start_time       = start_time
+		self.stop_time        = stop_time
+		self.include_by_start = include_by_start
+		self.include_by_stop  = include_by_stop
 
 	def filter(self, data):
 		return [
