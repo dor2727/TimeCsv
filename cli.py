@@ -17,21 +17,29 @@ def parse_args():
 
 	search = parser.add_argument_group("search")
 	search.add_argument("search_string"     , type=str , default=''  , nargs=argparse.REMAINDER)
-	search.add_argument("--search-use-or"   , action="store_true"    , dest='search_use_or', help='whether to use AND or OR when adding the filters')
-	search.add_argument("--show-items", "-s", action="store_true"    , dest='show_items'   , help='whether to print all the items')
+	search.add_argument("--search-use-or"   , action="store_true"    , dest="search_use_or", help="whether to use AND or OR when adding the filters")
+	search.add_argument("--show-items", "-s", action="store_true"    , dest="show_items"   , help="whether to print all the items")
 
 	time = parser.add_argument_group("time")
-	time.add_argument("--days-back", "-d", type=int , default=None, dest='days_back'   , help="how many days back to query")
-	time.add_argument("--month-back"     , type=int , default=None, dest='months_back' , help='how many month summaries to show')
-	time.add_argument("--month"    , "-m", type=str , default=None, dest='month'       , help='which month to query. can be comma seperated (e.g. 1,2,3,9)')
-	time.add_argument("--year"     , "-y", type=str , default=None, dest='year'        , help='which year to query. can be comma seperated (e.g. 2019,2020)')
-	time.add_argument("--all-time"       , action="store_true"    , dest='all_time'    , help='whether to all the time')
-	time.add_argument("--time-use-and"   , action="store_true"    , dest='time_use_and', help='whether to use AND or OR when adding the filters')
+	time.add_argument("--days-back", "-d", type=int , default=None, dest="days_back"   , help="how many days back to query")
+	time.add_argument("--month-back"     , type=int , default=None, dest="months_back" , help="how many month summaries to show")
+	time.add_argument("--month"    , "-m", type=str , default=None, dest="month"       , help="which month to query. can be comma seperated (e.g. 1,2,3,9)")
+	time.add_argument("--year"     , "-y", type=str , default=None, dest="year"        , help="which year to query. can be comma seperated (e.g. 2019,2020)")
+	time.add_argument("--all-time"       , action="store_true"    , dest="all_time"    , help="whether to all the time")
+	time.add_argument("--time-use-and"   , action="store_true"    , dest="time_use_and", help="whether to use AND or OR when adding the filters")
 
 
 	debugging = parser.add_argument_group("debugging")
 	debugging.add_argument("--debug"          , action="store_true")
 	debugging.add_argument("--test"           , action="store_true")
+
+	special = parser.add_argument_group("special")
+	special.add_argument("--group"   , type=str , default=None, dest="group"   , help="show statistics per group")
+	special.add_argument("--gaming"  , action="store_true"    , dest="gaming"  , help="show gaming statistics")
+	special.add_argument("--friend"  , action="store_true"    , dest="friend"  , help="show friend statistics")
+	special.add_argument("--youtube" , action="store_true"    , dest="youtube" , help="show youtube statistics")
+	special.add_argument("--lecture" , action="store_true"    , dest="lecture" , help="show lecture statistics")
+	special.add_argument("--homework", action="store_true"    , dest="homework", help="show homework statistics")
 
 	args = parser.parse_args()
 
@@ -142,12 +150,58 @@ def main():
 		print GroupedStats_Group
 	"""
 	if search_filter is None:
-		# default statistics
-		g = TimeCsv.statistics.GroupedStats_Group(
-			data,
-			selected_time=selected_time,
-			group_value="time"
-		)
+		# big switch-case for different GroupedStats classes
+		if args.gaming:
+			g = TimeCsv.statistics.GroupedStats_Games(
+				data,
+				selected_time=selected_time,
+				group_value="time"
+			)
+
+		elif args.friend:
+			g = TimeCsv.statistics.GroupedStats_Friend(
+				data,
+				selected_time=selected_time,
+				group_value="time",
+			)
+
+		elif args.youtube:
+			g = TimeCsv.statistics.GroupedStats_Youtube(
+				data,
+				selected_time=selected_time,
+				group_value="time",
+			)
+
+		elif args.group:
+			g = TimeCsv.statistics.GroupGroupedStats(
+				data,
+				selected_time=selected_time,
+				group_value="time",
+				category_name=args.group.capitalize()
+			)
+
+		elif args.lecture:
+			g = TimeCsv.statistics.GroupedStats_Lecture(
+				data,
+				selected_time=selected_time,
+				group_value="time",
+			)
+
+		elif args.homework:
+			g = TimeCsv.statistics.GroupedStats_Homework(
+				data,
+				selected_time=selected_time,
+				group_value="time",
+			)
+
+
+		else: # default statistics
+			g = TimeCsv.statistics.GroupedStats_Group(
+				data,
+				selected_time=selected_time,
+				group_value="time"
+			)
+
 		print(g.to_text())
 	else:
 		found_items = search_filter % data
@@ -168,11 +222,12 @@ def test(debug=False):
 	if debug:
 		print(f"DataFolder: {b}")
 
-	f = TimeFilter_Month(3) | TimeFilter_Month(4)
+	# f = TimeFilter_Month(3) | TimeFilter_Month(4)
+	f = TimeFilter_Days(7)
 	f_data = f.get_filtered_data(b.data)
 	print(len(f_data))
 
-	g = TimeCsv.statistics.GroupedStats_Games(f_data, group_value="amount")
+	g = TimeCsv.statistics.GroupedStats_Games(f_data, group_value="time")
 	# g = TimeCsv.statistics.GroupedStats_Youtube(f_data, group_value="time")
 	# g = TimeCsv.statistics.GroupGroupedStats(f_data, group_value="time", category_name="Youtube")
 	print(g.group())

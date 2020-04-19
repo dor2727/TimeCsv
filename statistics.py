@@ -362,6 +362,7 @@ class GroupedStats(Stats):
 		else:
 			events_per_day = amount_of_items / amount_of_time
 
+
 		s = self._generate_to_text_header(events_per_day)
 
 		# print per-header statistics
@@ -493,7 +494,7 @@ class ExtraDetailsGroupedStats(GroupedStats):
 		# get all headers
 		headers = set()
 
-		for i in self.filtered_data:
+		for i in self.data:
 			headers.add(i.extra_details[self._extra_details_name])
 
 		# return a list, sorted alphabetically
@@ -503,7 +504,7 @@ class ExtraDetailsGroupedStats(GroupedStats):
 	def _get_filtered_data_per_header(self, header):
 		return list(filter(
 			lambda i: i.extra_details[self._extra_details_name] == header,
-			self.filtered_data
+			self.data
 		))
 
 class GroupedStats_Lecture(ExtraDetailsGroupedStats):
