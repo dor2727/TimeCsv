@@ -2,6 +2,8 @@ import os
 import pdb
 import time
 import shlex
+import schedule
+import threading
 
 import TimeCsv.cli
 from TimeCsv.parsing import DataFolder
@@ -134,7 +136,7 @@ class TelegramCommands(object):
 		self.filtered_time_command(TimeFilter_Year(year), update)
 
 	@log_command
-	def command_yesterday(self, update, context):
+	def command_yesterday(self, update=None, context=None):
 		stop_time  = get_midnight( datetime.datetime.now() )
 		start_time = get_midnight(
 			stop_time
@@ -151,7 +153,7 @@ class TelegramCommands(object):
 		)
 
 	@log_command
-	def command_last_week(self, update, context):
+	def command_last_week(self, update=None, context=None):
 		today = datetime.datetime.now()
 
 		if WEEK_STARTS_AT_SUNDAY:
@@ -184,8 +186,9 @@ class TelegramCommands(object):
 		pdb.set_trace()
 
 	@log_command
-	def command_reload(self, update, context):
+	def command_reload(self, update=None, context=None):
 		self.datafolder.reload()
+		print(f"reloaded : {time.asctime()}")
 		self.send_text("done", update)
 
 	@log_command
@@ -203,16 +206,32 @@ class TelegramCommands(object):
 			update
 		)
 
+class TelegramScheduledCommands(object):
+	def schedule_commands(self):
+		schedule.every().day.at("08:00").do(self.command_yesterday)
+		schedule.every().sunday.at("08:00").do(self.command_last_week)
+		schedule.every().hour.at(":57").do(self.command_reload)
+
+
+		def run_scheduler():
+			while True:
+				schedule.run_pending()
+				time.sleep(60*60*0.5)
+
+		threading.Thread(target=run_scheduler).start()
+
+
 """
 TODO:
 add homework command
 which sends a pie chart
 """
 
-class TelegramAPI(TelegramServer, TelegramCommands):
+class TelegramAPI(TelegramServer, TelegramCommands, TelegramScheduledCommands):
 	def __init__(self):
 		super().__init__()
 		self.add_all_handlers()
+		self.schedule_commands()
 
 def main():
 	t = TelegramAPI()
