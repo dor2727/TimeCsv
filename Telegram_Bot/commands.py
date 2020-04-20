@@ -25,7 +25,16 @@ def log_command(func):
 	def func_wrapper(*args, **kwargs):
 		# each function is named "command_something"
 		command_name = func.__name__[8:]
-		print(f"[*] got command - {args[1]['message']['text']}\tcalling {command_name}\t{time.asctime()}")
+
+		if "scheduled" in kwargs and kwargs["scheduled"]:
+			print(f"[*] scheduled command - {command_name}\t{time.asctime()}")
+		else:
+			if len(args) > 1 and args[1]:
+				command_text = args[1]['message']['text']
+			else:
+				command_text = "None"
+			print(f"[*] got command - {command_text}\tcalling {command_name}\t{time.asctime()}")
+
 		return func(*args, **kwargs)
 
 	return func_wrapper
@@ -104,16 +113,16 @@ class TelegramCommands(object):
 		)
 
 	@log_command
-	def command_today(self, update, context):
+	def command_today(self, update=None, context=None):
 		self.filtered_time_command(TimeFilter_Days(1), update)
 
 	@log_command
-	def command_week(self, update, context):
+	def command_week(self, update=None, context=None):
 		self.filtered_time_command(TimeFilter_Days(7), update)
 
 	@log_command
-	def command_month(self, update, context):
-		if context.args:
+	def command_month(self, update=None, context=None):
+		if context and context.args:
 			try:
 				month = int(context.args[0])
 			except Exception as e:
@@ -124,8 +133,8 @@ class TelegramCommands(object):
 		self.filtered_time_command(TimeFilter_Month(month), update)
 
 	@log_command
-	def command_year(self, update, context):
-		if context.args:
+	def command_year(self, update=None, context=None):
+		if context and context.args:
 			try:
 				year = int(context.args[0])
 			except Exception as e:
@@ -145,10 +154,7 @@ class TelegramCommands(object):
 		)
 
 		self.filtered_time_command(
-			TimeFilter_DateRange(
-				start_time,
-				stop_time
-			),
+			TimeFilter_DateRange( start_time, stop_time ),
 			update
 		)
 
@@ -208,9 +214,31 @@ class TelegramCommands(object):
 
 class TelegramScheduledCommands(object):
 	def schedule_commands(self):
-		schedule.every().day.at("08:00").do(self.command_yesterday)
-		schedule.every().sunday.at("08:00").do(self.command_last_week)
-		schedule.every().hour.at(":57").do(self.command_reload)
+		# daily log
+		schedule.every().day.at("08:00").do(
+			self.command_yesterday,
+			scheduled=True
+		)
+		# weekly log
+		schedule.every().sunday.at("08:00").do(
+			self.command_last_week,
+			scheduled=True
+		)
+		# weekly pies
+		schedule.every().sunday.at("08:00").do(
+			self.command_homework_pie,
+			scheduled=True
+		)
+
+		schedule.every().sunday.at("08:00").do(
+			self.command_gaming_pie,
+			scheduled=True
+		)
+
+		schedule.every().hour.at(":57").do(
+			self.command_reload,
+			scheduled=True
+		)
 
 
 		def run_scheduler():
