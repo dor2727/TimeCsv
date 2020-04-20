@@ -10,6 +10,7 @@ from TimeCsv.parsing import DataFolder
 
 from TimeCsv.consts import *
 from TimeCsv.filters import *
+from TimeCsv.statistics import *
 
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
@@ -101,7 +102,7 @@ class TelegramCommands(object):
 
 	#
 	def filtered_time_command(self, f, update=None):
-		g = TimeCsv.statistics.GroupedStats_Group(
+		g = GroupedStats_Group(
 			f % self.datafolder.data,
 			selected_time=f.get_selected_time(),
 			group_value="time"
@@ -172,12 +173,42 @@ class TelegramCommands(object):
 		prev_sunday = this_sunday - datetime.timedelta(days=7)
 
 		self.filtered_time_command(
-			TimeFilter_DateRange(
-				prev_sunday,
-				this_sunday
-			),
+			TimeFilter_DateRange( prev_sunday, this_sunday ),
 			update
 		)
+
+	#
+	def pie_command(self, g_cls, f, update=None):
+		g = g_cls(
+			f % self.datafolder.data,
+			selected_time=f.get_selected_time(),
+			group_value="time"
+		)
+
+		# TODO:
+		# this initializes self.headers_sorted, self.values_sorted
+		# there should be a better (and automated) way to initialize them
+		g.group()
+
+		pie_file = g.to_pie()
+
+		self.send_image(pie_file, update)
+
+	@log_command
+	def command_homework_pie(self, update=None, context=None):
+		self.pie_command(GroupedStats_Homework, TimeFilter_Days(7), update)
+
+	@log_command
+	def command_lecture_pie(self, update=None, context=None):
+		self.pie_command(GroupedStats_Lecture, TimeFilter_Days(7), update)
+
+	@log_command
+	def command_gaming_pie(self, update=None, context=None):
+		self.pie_command(GroupedStats_Games, TimeFilter_Days(7), update)
+
+	@log_command
+	def command_youtube_pie(self, update=None, context=None):
+		self.pie_command(GroupedStats_Youtube, TimeFilter_Days(7), update)
 
 	#
 	@log_command
@@ -248,12 +279,6 @@ class TelegramScheduledCommands(object):
 
 		threading.Thread(target=run_scheduler).start()
 
-
-"""
-TODO:
-add homework command
-which sends a pie chart
-"""
 
 class TelegramAPI(TelegramServer, TelegramCommands, TelegramScheduledCommands):
 	def __init__(self):

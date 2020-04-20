@@ -241,15 +241,21 @@ class GroupedStats(Stats):
 		# plotting initialization
 		fig, ax = plt.subplots()
 
+		total_seconds = sum(values)
+		def pct(value):
+			# value is given as a percentage - a float between 0 to 100
+			hours_str = seconds_to_hours_str(value * total_seconds / 100)
+			return f"{value:.1f}%\n{hours_str}h"
+
 		# making the pie chart
-		ax.pie(values, labels=headers)
+		ax.pie(values, labels=headers, autopct=pct)
 		ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
 		# titles & labels
 		ax.set_title(title)
 		fig.canvas.set_window_title(title)
 
-		# plotting
+		# plotting - save to file
 		if save:
 			if save is True:
 				path = DEFAULT_PIE_PATH
@@ -260,6 +266,7 @@ class GroupedStats(Stats):
 			plt.close(fig)
 
 			return open(path, "rb")
+		# plotting - interactive
 		else:
 			fig.show()
 			return None

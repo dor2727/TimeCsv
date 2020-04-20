@@ -48,6 +48,10 @@ def seconds_to_str(n):
 		n // (60) % (60*24) % 60,
 	)).replace(" 0 days", "       ").replace(" 0 hours", "        ")
 
+def seconds_to_hours_str(n):
+	h = n / (3600)
+	return f"{h:.2f}"
+	
 #
 # debug utils
 #
