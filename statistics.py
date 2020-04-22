@@ -145,14 +145,19 @@ else: sort alphabetically or whatever
 """
 class GroupedStats(Stats):
 	_allowed_group_values = ("time", "amount")
+	_allowed_sorting_methods = ("alphabetically", "by_value")
 
-	def __init__(self, data, selected_time="All times", group_value="time"):
+	def __init__(self, data, selected_time="All times", group_value="time", sort="by_value"):
 		self.data = data
 		self.selected_time = selected_time
 
 		self.group_value = group_value.lower()
 		if self.group_value not in self._allowed_group_values:
 			raise ValueError("invalid group_value: %s" % group_value)
+
+		self._sorting_method = sort.lower()
+		if self._sorting_method not in self._allowed_sorting_methods:
+			raise ValueError("invalid sorting_method: %s" % sort)
 
 		self.values_dict = {}
 
@@ -166,8 +171,20 @@ class GroupedStats(Stats):
 
 	@property
 	def headers(self):
-		return getattr(self, "_headers", self._get_headers())
+		if hasattr(self, "headers_sorted"):
+			return self.headers_sorted
+		elif hasattr(self, "_headers"):
+			return self._headers
+		else:
+			# create self._headers & sort them
+			self.group()
 
+			if hasattr(self, "headers_sorted"):
+				return self.headers_sorted
+			elif hasattr(self, "_headers"):
+				return self._headers
+			else:
+				raise NameError("could not find headers")
 
 	def _get_filtered_data_per_header(self, header):
 		raise NotImplemented()
@@ -195,8 +212,16 @@ class GroupedStats(Stats):
 			raise ValueError
 
 	def _sort(self, headers, values):
+		if self._sorting_method == "alphabetically":
+			return headers, values
+		elif self._sorting_method == "by_value":
+			z = zip(headers, values)
+			# sort by value, highest first
+			sorted_z = sorted(z, key=lambda i: i[1], reverse=True)
+			# unpack the zip into headers and values
+			h, v = list(zip(*sorted_z))
+			return h, v
 		# sort, either alphabetically or by the values
-		return headers, values
 
 	def group(self):
 		"""
@@ -372,7 +397,6 @@ class GroupedStats(Stats):
 			events_per_day = 0
 		else:
 			events_per_day = amount_of_items / amount_of_days
-
 
 		s = self._generate_to_text_header(events_per_day)
 
