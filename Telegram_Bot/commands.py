@@ -27,8 +27,10 @@ def log_command(func):
 		# each function is named "command_something"
 		command_name = func.__name__[8:]
 
-		if "scheduled" in kwargs and kwargs["scheduled"]:
-			print(f"[*] scheduled command - {command_name}\t{time.asctime()}")
+		if "scheduled" in kwargs:
+			if kwargs["scheduled"]:
+				print(f"[*] scheduled command - {command_name}\t{time.asctime()}")
+			kwargs.pop("scheduled")
 		else:
 			if len(args) > 1 and args[1]:
 				command_text = args[1]['message']['text']
@@ -212,14 +214,14 @@ class TelegramCommands(object):
 
 	#
 	@log_command
-	def command_test(self, update, context):
+	def command_test(self, update=None, context=None):
 		s = "test"
 		if context.args:
 			s += ": " + str(context.args)
 		self.send_text(s, update)
 
 	@log_command
-	def command_pdb(self, update, context):
+	def command_pdb(self, update=None, context=None):
 		pdb.set_trace()
 
 	@log_command
@@ -233,7 +235,7 @@ class TelegramCommands(object):
 			self.send_text("reload - done", update)
 
 	@log_command
-	def command_list_commands(self, update, context):
+	def command_list_commands(self, update=None, context=None):
 		commands = filter(
 			lambda s: s.startswith("command_"),
 			dir(self)
