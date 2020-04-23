@@ -239,7 +239,7 @@ def main(datafolder, args_list=None):
 def test(debug=False):
 	print("[*] test")
 
-	b = DataFolder("/home/me/Dropbox/Projects/Time/data")
+	b = DataFolder()
 	if debug:
 		print(f"DataFolder: {b}")
 
