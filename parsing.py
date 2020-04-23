@@ -411,6 +411,14 @@ class DataFolder(object):
 
 		self._load_data_files()
 
+	def __repr__(self):
+		return "%s : %s : %d files : %d items" % (
+			self.__class__.__name__,
+			self._path,
+			len(self.data_files),
+			len(self.data)
+		)
+
 	def _load_data_files(self):
 		files = next(os.walk(self._path))[2]
 
