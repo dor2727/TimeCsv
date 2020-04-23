@@ -391,11 +391,11 @@ class GroupedStats(Stats):
 		# calculate statistics for the whole time period
 		amount_of_items = len(self.data)
 		amount_of_time = sum(map(int, self.data))
-		amount_of_days = (self.data[-1].date - self.data[0].date).days + 1
 
 		if amount_of_time == 0:
 			events_per_day = 0
 		else:
+			amount_of_days = (self.data[-1].date - self.data[0].date).days + 1
 			events_per_day = amount_of_items / amount_of_days
 
 		s = self._generate_to_text_header(events_per_day)
