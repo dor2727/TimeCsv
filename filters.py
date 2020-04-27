@@ -232,8 +232,17 @@ class StrFilter(Filter):
 # auto classify which filter to use
 class AutoFilter(Filter):
 	def __init__(self, string, case_sensitive=None):
+		# check for regex
 		regex = '\\' in string
 
+		# check whether this will be a NotFilter
+		if not regex and string[0] == '~':
+			exclude = True
+			string = string[1:]
+		else:
+			exclude = False
+
+		# extract friends
 		if regex:
 			friends = False
 		else:
@@ -261,6 +270,9 @@ class AutoFilter(Filter):
 			self._filter = StrFilter(string,
 				case_sensitive=case_sensitive, regex=regex
 			)
+
+		if exclude:
+			self._filter = NotFilter(self._filter)
 
 	def filter(self, data):
 		return self._filter.filter(data)
