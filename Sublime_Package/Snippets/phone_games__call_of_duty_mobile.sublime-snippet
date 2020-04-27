@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:10}:${2:30},Gaming,call of duty mobile
+]]></content>
+	<tabTrigger>callofdutymobile</tabTrigger>
+	<scope>source.time</scope>
+	<description>call of duty mobile</description>
+</snippet>

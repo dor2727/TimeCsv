@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${4:----}/${5:--}/${6:--},${7:--}:${8:--},e${1:09}:${2:00},Study,lecture (${3:general relativity})
+]]></content>
+	<tabTrigger>lecture</tabTrigger>
+	<scope>source.time</scope>
+	<description>lecture</description>
+</snippet>

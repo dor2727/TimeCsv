@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${4:----}/${5:--}/${6:--},${7:--}:${8:--},e${1:10}:${2:30},Blog,program manim for ${3:qubit}
+]]></content>
+	<tabTrigger>blogprogram</tabTrigger>
+	<scope>source.time</scope>
+	<description>blogprogram</description>
+</snippet>

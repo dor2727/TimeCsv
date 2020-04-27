@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${7:----}/${8:--}/${9:--},${10:--}:${11:--},e${1:10}:${2:30},Gaming,lol${3:_mobile} (${4:1})${5: with ${6}}
+]]></content>
+	<tabTrigger>lolplay</tabTrigger>
+	<scope>source.time</scope>
+	<description>lolplay</description>
+</snippet>

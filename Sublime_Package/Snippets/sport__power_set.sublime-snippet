@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${6:----}/${7:--}/${8:--},${9:--}:${10:--},e${1:08}:${2:30},Sport,power_set (${3:8} ${4:10} ${5:5}*3)
+]]></content>
+	<tabTrigger>sportpowerset</tabTrigger>
+	<scope>source.time</scope>
+	<description>power set</description>
+</snippet>

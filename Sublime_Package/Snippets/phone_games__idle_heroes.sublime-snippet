@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:10}:${2:30},Gaming,idle heroes
+]]></content>
+	<tabTrigger>idleheroes</tabTrigger>
+	<scope>source.time</scope>
+	<description>idleheroes</description>
+</snippet>

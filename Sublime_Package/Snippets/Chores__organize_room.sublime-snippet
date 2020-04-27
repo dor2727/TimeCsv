@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:10}:${2:30},Chores,organize my room
+]]></content>
+	<tabTrigger>organizeroom</tabTrigger>
+	<scope>source.time</scope>
+	<description>organize room</description>
+</snippet>

@@ -1,0 +1,109 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+file_extensions:
+  - tcsv
+  - time
+scope: source.time
+first_line_match: date,start,stop/time,group,description
+
+contexts:
+  main:
+    - include: header
+    - include: columns
+    - include: unknown
+    - include: description
+    # Strings begin and end with quotes, and use backslashes as an escape
+    # character
+    - match: '"'
+      scope: punctuation.definition.string.begin.time
+      push: double_quoted_string
+
+    # Comments begin with a '//' and finish at the end of the line
+    - match: '//'
+      scope: punctuation.definition.comment.time
+      push: line_comment
+    - match: '#'
+      scope: punctuation.definition.comment.time
+      push: line_comment
+
+    
+
+    # Numbers
+    # - match: '\b(-)?[0-9.]+\b'
+      # scope: constant.numeric.time
+
+  header:
+    - match: ^[A-Z][a-z]*(,[A-Z][a-z]*)*$
+      scope: headers.time
+
+  columns:
+    # seperator
+    - match: ','
+      scope: keyword.seperator.control.time
+
+    # date
+    - match: \b[0-9]{4}/[0-9]{2}/[0-9]{2}\b
+      scope: string.date.control.time
+
+    # start time
+    - match: "(?<=,)[0-9]{2}:[0-9]{2}"
+      scope: constant.numeric.start_time.control.time
+
+    # end time
+    - match: "(?<=,)[se][0-9]{2}:[0-9]{2}"
+    # s for Stop, e for End
+      scope: constant.numeric.end_time.control.time
+
+    # duration time
+    - match: "(?<=,)[dt][0-9]{2}:[0-9]{2}"
+    # d for Duration, t for Time
+      scope: constant.numeric.duration_time.control.time
+
+    # copy last time
+    - match: "[-]{2}"
+      scope: comment.copy_last_time.control.time
+    - match: "(?<=[-]):(?=[-])"
+      scope: comment.copy_last_time.control.time
+    - match: "(?<=[-])/(?=[-])"
+      scope: comment.copy_last_time.control.time
+    - match: "/[+]1"
+      scope: string.copy_last_time.control.time
+
+    # subject
+    - match: \b[A-Z][A-Za-z_]*\b
+      scope: storage.type.subject.control.time
+
+  description:
+    # Keywords are if, else for and while.
+    # Note that blackslashes don't need to be escaped within single quoted
+    # strings in YAML. When using single quoted strings, only single quotes
+    # need to be escaped: this is done by using two single quotes next to each
+    # other.
+    - match: '\b(with|for|and|to|at)\b'
+      scope: keyword.control.time
+    - match: ' \\& '
+      scope: keyword.control.time
+    - match: '@'
+      scope: keyword.control.time
+    - match: "(?<=,)[^,]*$"
+      scope: string.description.time
+
+  unknown:
+    - match: "\\?\\?\\?"
+      scope: keyword.unknown.control.time
+
+
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.time
+    - match: '\\.'
+      scope: constant.character.escape.time
+    - match: '"'
+      scope: punctuation.definition.string.end.time
+      pop: true
+
+  line_comment:
+    - meta_scope: comment.line.time
+    - match: $
+      pop: true

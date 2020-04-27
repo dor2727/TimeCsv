@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${6:----}/${7:--}/${8:--},${9:--}:${10:--},e${1:08}:${2:30},Sport,push_ups (${3:20}*${5:3}) & crunches (${4:30}*${5:3})
+]]></content>
+	<tabTrigger>sportpushups</tabTrigger>
+	<scope>source.time</scope>
+	<description>push ups and crunches</description>
+</snippet>

@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:09}:${2:00},Read,wait but why
+]]></content>
+	<tabTrigger>readwait</tabTrigger>
+	<scope>source.time</scope>
+	<description>readwait</description>
+</snippet>
