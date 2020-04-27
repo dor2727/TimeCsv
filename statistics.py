@@ -212,7 +212,10 @@ class GroupedStats(Stats):
 			raise ValueError
 
 	def _sort(self, headers, values):
-		if self._sorting_method == "alphabetically":
+		# if either headers or values are empty
+		if not headers or not values:
+			return headers, values
+		elif self._sorting_method == "alphabetically":
 			return headers, values
 		elif self._sorting_method == "by_value":
 			z = zip(headers, values)
