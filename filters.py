@@ -206,6 +206,39 @@ class HasExtraDetailsFilter(Filter):
 			for i in data
 		]
 
+class DurationFilter(Filter):
+	def __init__(self, string):
+		if string[0] == '<':
+			self._action = "maximum"
+			self.seconds = self._int(string[1:])
+		elif string[0] == '>':
+			self._action = "minumum"
+			self.seconds = self._int(string[1:])
+		else: # default
+			self._action = "maximum"
+			self.seconds = self._int(string)
+
+	def _int(self, string):
+		# the input may be 100.0
+		return int(string.split('.')[0])
+
+	def filter(self, data):
+		if self._action == "maximum":
+			return [
+				int(i) <= self.seconds
+				for i in data
+			]
+		elif self._action == "minumum":
+			return [
+				int(i) >= self.seconds
+				for i in data
+			]
+		else:
+			raise ValueError("Invalid action")
+
+	def __repr__(self):
+		return f"{self.__class__.__name__}({self._action} {self.seconds} seconds)"
+
 
 # find str in either group or description
 class StrFilter(Filter):
@@ -248,7 +281,10 @@ class AutoFilter(Filter):
 		else:
 			friends = find_friends_in_str(string)
 
-		if not regex and friends:
+		if not string:
+			raise ValueError("AutoFilter got empty string")
+
+		elif not regex and friends:
 			self._filter = FriendFilter(friends[0],
 				case_sensitive=case_sensitive
 			)
@@ -258,6 +294,8 @@ class AutoFilter(Filter):
 					case_sensitive=case_sensitive
 				)
 
+		elif string[0] in ('<', '>'):
+			self._filter = DurationFilter(string)
 		elif string.islower():
 			self._filter = DescriptionFilter(string,
 				case_sensitive=case_sensitive, regex=regex
