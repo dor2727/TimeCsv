@@ -1,0 +1,35 @@
+the purpose of each file
+
+# CLI
+__main__.py
+	manages cli calls to the module. most of its logic lies in cli.py
+cli.py
+	here lies the logic for parsing cli arguments, and displaying the data
+
+# UTILS
+consts.py
+time_utils.py
+tests.py
+	manual tests
+
+# PARSING
+parsing.py
+	handles parsing a folder / file / line
+filters.py
+	filters data by subject/time
+statistics.py
+	calculates statistics
+functions.py
+	user specific statistics. i.e. manual statistics queries
+# DATA
+data/
+
+# Documentation
+Documentation/
+Sublime_Package/
+Readme.md
+
+# Telegram bot
+Telegram_Bot/
+
+

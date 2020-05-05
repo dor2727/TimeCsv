@@ -1,0 +1,29 @@
+from the format of a data file
+into parsing of a line
+then parsing of a file (reevaluate)
+then we got a data list
+	note: list & not generator since about 6k objects
+
+choosing data - filters
+returning list of bool
+regular filters - e.g. description, group
+	time filters - self.selected_time
+	it is here because sometimes the filtered_data will have less time then the requested time, so we want to keep track of it
+not filter
+multiple filter
+
+displaying data - statistics
+
+
+displaying data - functions
+current example - sleep
+analysis of sleep patterns. it is not a general function, but the end-product. using filters & statistics to present graphs
+
+
+user interaction - cli
+argparse, trying to make every statistics class accessible
+
+user interaction - telegram
+generic commands - yesterday, today, last week, ..., reload
+timed commands
+cli command
