@@ -403,6 +403,10 @@ class GroupedStats(Stats):
 
 		s = self._generate_to_text_header(events_per_day)
 
+		if not amount_of_items:
+			s += "\n    No items found :("
+			return s
+
 		# print per-header statistics
 		header_format = "%%-%ds" % (max(map(len, self.headers)) + 1)
 		for h in self.headers:
