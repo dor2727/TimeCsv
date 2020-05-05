@@ -227,7 +227,7 @@ class TelegramCommands(object):
 	@log_command
 	def command_reload(self, update=None, context=None):
 		self.datafolder.reload()
-		print(f"reloaded : {time.asctime()}")
+		print(f"    [r] reloaded : {time.asctime()}")
 
 		# if update is None - we are called from the scheduler
 		# only answer the user if the user asks the reload

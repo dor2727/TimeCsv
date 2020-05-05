@@ -438,9 +438,17 @@ class DataFolder(object):
 		self.data_file_latest = self.data_files[-1]
 		self.data_latest = self.data_file_latest.data
 
+	"""
+	TODO - make multiple reload functions (or only one of them)
+	quick_reload - only reload self.data_file_latest
+	normal_reload - current implementatin
+	full_reload - call _load_data_files
+	"""
 	def reload(self):
 		for i in self.data_files:
 			i.reload()
+
+		self.data = sum([i.data for i in self.data_files], [])
 
 	def _validate_data(self):
 		invalid_items = []
