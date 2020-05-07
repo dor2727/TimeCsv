@@ -6,6 +6,7 @@ import TimeCsv.statistics
 from TimeCsv.parsing import DataFolder
 from TimeCsv.time_utils import newest
 from TimeCsv.filters import *
+from TimeCsv.filters_special import filter_sleep
 
 def set_x_ticks(l=[0, 5, 10, 15, 20, 24]):
 	# x_ticks_locs   = np.array([0, 5, 10, 15, 20, 24])
@@ -66,9 +67,7 @@ def get_sleep_statistics(datafolder=None):
 	datafolder = datafolder or DataFolder()
 	# using --all-time, so no time filter is needed
 
-	# only "sleep" items, no "more sleep", and only items with more than 3 houts
-	f = DescriptionFilter("sleep") & ~DescriptionFilter("more") & DurationFilter(f">{60*60*3}")
-	data = f % datafolder.data
+	data = filter_sleep % datafolder.data
 
 	sleep_start, sleep_stop, sleep_middle, sleep_start_avg, sleep_stop_avg, sleep_middle_avg = group_sleep_data(data)
 
