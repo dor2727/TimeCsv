@@ -72,9 +72,12 @@ def get_sleep_statistics(datafolder=None):
 
 	sleep_start, sleep_stop, sleep_middle, sleep_start_avg, sleep_stop_avg, sleep_middle_avg = group_sleep_data(data)
 
+	sleep_length = sleep_stop - sleep_start
+
 	print(f"sleep start  average: {sleep_start.mean() + 18}")
 	print(f"sleep stop   average: {sleep_stop.mean() + 18}")
 	print(f"sleep middle average: {sleep_middle.mean() + 18}")
+	print(f"sleep length average: {sleep_length.mean()}")
 	print(f"len items: {len(data)}")
 
 	# plot
