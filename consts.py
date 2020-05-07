@@ -42,3 +42,5 @@ DEFAULT_BAR_PATH = "/tmp/bar.png"
 
 
 WEEK_STARTS_AT_SUNDAY = True
+
+EXTRA_DETAILS_SEPERATOR = " ; "
