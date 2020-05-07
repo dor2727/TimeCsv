@@ -7,6 +7,16 @@ from TimeCsv.parsing import DataFolder
 from TimeCsv.time_utils import newest
 from TimeCsv.filters import *
 
+def set_x_ticks(l=[0, 5, 10, 15, 20, 24]):
+	# x_ticks_locs   = np.array([0, 5, 10, 15, 20, 24])
+	x_ticks_locs   = np.array(l)
+	x_ticks_lables = [
+		f"{i if i<24 else i-24:02d}:00"
+		for i in x_ticks_locs+18
+	]
+	plt.xticks(x_ticks_locs, x_ticks_lables)
+
+
 def datetime_to_shifted_hour(d):
 	# convert hours & minutes to a single number, measured in hours
 	# which ranges from 6PM to 6PM in the next day
@@ -73,12 +83,14 @@ def get_sleep_statistics(datafolder=None):
 	plt.scatter(sleep_start , range(l), c="red")
 	plt.scatter(sleep_stop  , range(l), c="green")
 	plt.scatter(sleep_middle, range(l), c="blue")
+	set_x_ticks()
 	plt.show()
 	
 	l = len(sleep_start_avg)
 	plt.scatter(sleep_start_avg , range(l), c="red")
 	plt.scatter(sleep_stop_avg  , range(l), c="green")
 	plt.scatter(sleep_middle_avg, range(l), c="blue")
+	set_x_ticks()
 	plt.show()
 	import pdb; pdb.set_trace()
 
