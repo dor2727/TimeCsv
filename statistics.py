@@ -500,8 +500,24 @@ class GroupGroupedStats(GroupedStats):
 		return self._headers
 
 	def _get_filtered_data_per_header(self, header):
+		header_re = re_escape(header)
+
+		# add \\b before & after the string
+		# unless there is a regex character
+		header_pattern = ""
+		# before
+		if header_re[0] != '\\':
+			header_pattern += "\\b"
+		# the header
+		header_pattern += re_escape(header)
+		# after
+		if len(header) > 2 and header[-2] != '\\':
+			header_pattern += "\\b"
+		elif len(header) <= 2:
+			header_pattern += "\\b"
+
 		return list(filter(
-			lambda i: bool(re.findall(f"\\b{header}\\b", i.description)),
+			lambda i: bool(re.findall(header_pattern, i.description)),
 			self.data
 		))
 

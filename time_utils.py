@@ -60,3 +60,16 @@ def print_items(l, ret=False):
 		return '\n'.join(i.__repr__() for i in l)
 	else:
 		print('\n'.join(i.__repr__() for i in l))
+
+
+def re_escape(x):
+	return ''.join(
+		(
+			'\\'+i
+			 if
+			i in re.sre_parse.SPECIAL_CHARS
+			 else
+			i
+		)
+		for i in x
+	)
