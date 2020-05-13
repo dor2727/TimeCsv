@@ -36,12 +36,12 @@ def parse_args(args_list=None):
 	debugging.add_argument("--telegram", action="store_true")
 
 	special = parser.add_argument_group("special")
-	special.add_argument("--group"   , type=str , default=None, dest="group"   , help="show statistics per group")
-	special.add_argument("--gaming"  , action="store_true"    , dest="gaming"  , help="show gaming statistics")
-	special.add_argument("--friend"  , action="store_true"    , dest="friend"  , help="show friend statistics")
-	special.add_argument("--youtube" , action="store_true"    , dest="youtube" , help="show youtube statistics")
-	special.add_argument("--lecture" , action="store_true"    , dest="lecture" , help="show lecture statistics")
-	special.add_argument("--homework", action="store_true"    , dest="homework", help="show homework statistics")
+	special.add_argument("--group"              , type=str , default=None, dest="group"   , help="show statistics per group")
+	special.add_argument("--gaming"             , action="store_true"    , dest="gaming"  , help="show gaming statistics")
+	special.add_argument("--friend", "--friends", action="store_true"    , dest="friend"  , help="show friend statistics")
+	special.add_argument("--youtube"            , action="store_true"    , dest="youtube" , help="show youtube statistics")
+	special.add_argument("--lecture"            , action="store_true"    , dest="lecture" , help="show lecture statistics")
+	special.add_argument("--homework"           , action="store_true"    , dest="homework", help="show homework statistics")
 
 	if args_list is None:
 		args = parser.parse_args()
