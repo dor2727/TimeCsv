@@ -68,32 +68,25 @@ def group_sleep_data(data, group_size=10):
 	])
 	return sleep_start, sleep_stop, sleep_middle, sleep_start_avg, sleep_stop_avg, sleep_middle_avg
 
-# this is sleep_main
-def get_sleep_statistics(datafolder=None):
-	datafolder = datafolder or DataFolder()
-	# using --all-time, so no time filter is needed
-
-	data = filter_sleep % datafolder.data
-
-	sleep_start, sleep_stop, sleep_middle, sleep_start_avg, sleep_stop_avg, sleep_middle_avg = group_sleep_data(data)
-
-	sleep_length = sleep_stop - sleep_start
-
+def print_sleep_start_end_middle(sleep_start, sleep_stop, sleep_middle, sleep_length):
 	print(f"sleep start  average: {sleep_start.mean() + 18}")
 	print(f"sleep stop   average: {sleep_stop.mean() + 18}")
 	print(f"sleep middle average: {sleep_middle.mean() + 18}")
 	print(f"sleep length average: {sleep_length.mean()}")
-	print(f"len items: {len(data)}")
+	print(f"len items: {len(sleep_start)}")
 
-	# plot
+def plot_sleep_start_end_middle(sleep_start, sleep_stop, sleep_middle):
 	# the y axis goes up as time progresses. The more recent the event, the higher it will be
-	l = len(data)
+	l = len(sleep_start)
 	plt.scatter(sleep_start , range(l), c="red")
 	plt.scatter(sleep_stop  , range(l), c="green")
 	plt.scatter(sleep_middle, range(l), c="blue")
 	set_x_ticks()
 	plt.show()
-	
+	import pdb; pdb.set_trace()
+
+def plot_sleep_start_end_middle_averaged(sleep_start_avg, sleep_stop_avg, sleep_middle_avg):
+	# the y axis goes up as time progresses. The more recent the event, the higher it will be
 	l = len(sleep_start_avg)
 	plt.scatter(sleep_start_avg , range(l), c="red")
 	plt.scatter(sleep_stop_avg  , range(l), c="green")
@@ -101,6 +94,60 @@ def get_sleep_statistics(datafolder=None):
 	set_x_ticks()
 	plt.show()
 	import pdb; pdb.set_trace()
+
+def plot_sleep_length_as_a_function_of_sleep_start(sleep_start, sleep_length):
+	# manually remove a sleep length outlier (-21 hours. probably because I slept before 18:00?)
+	index = np.where(sleep_length == min(sleep_length))
+	sleep_start  = np.delete(sleep_start , index)
+	sleep_length = np.delete(sleep_length, index)
+
+	# manually remove sleep start outliers (sleeping after 5:00, which is 11 hours after 18:00)
+	index = np.where(sleep_start > 11)
+	sleep_start  = np.delete(sleep_start , index)
+	sleep_length = np.delete(sleep_length, index)
+
+	fit = np.polyfit(sleep_start, sleep_length, 1) # linear fit
+
+	plt.scatter(
+		sleep_start,
+		sleep_length,
+		c="red"
+	)
+
+	x = np.linspace(min(sleep_start), max(sleep_start), len(sleep_start)*2)
+	p = np.poly1d(fit)
+	plt.plot(x, p(x), c="green", label=f"{fit[1]:.2f} {fit[0]:.2f} h")
+
+	set_x_ticks(l=[2, 5, 8, 11])
+
+	plt.xlabel("sleep start time")
+	plt.ylabel("sleep duration [hours]")
+	plt.legend()
+	plt.show()
+	import pdb; pdb.set_trace()
+
+# this is sleep_main
+def get_sleep_statistics(datafolder=None):
+	datafolder = datafolder or DataFolder()
+	# using --all-time, so no time filter is needed
+
+	data = filter_sleep % datafolder.data
+	# data = ((TimeFilter_Month(3) | TimeFilter_Month(4) | TimeFilter_Month(5)) & filter_sleep) % datafolder.data
+
+	sleep_start, sleep_stop, sleep_middle, sleep_start_avg, sleep_stop_avg, sleep_middle_avg = group_sleep_data(data)
+
+	sleep_length = sleep_stop - sleep_start
+
+	print_sleep_start_end_middle(sleep_start, sleep_stop, sleep_middle, sleep_length)
+
+	return
+	# plot_sleep_start_end_middle(sleep_start, sleep_stop, sleep_middle, sleep_length)
+
+	plot_sleep_length_as_a_function_of_sleep_start(sleep_start, sleep_length)
+
+	# plot_sleep_start_end_middle_averaged(sleep_start_avg, sleep_stop_avg, sleep_middle_avg)
+
+
 
 
 ##############
@@ -178,5 +225,5 @@ def get_blog_statistics(datafolder=None):
 		import pdb; pdb.set_trace()
 
 if __name__ == '__main__':
-	# get_sleep_statistics()
-	get_blog_statistics()
+	get_sleep_statistics()
+	# get_blog_statistics()
