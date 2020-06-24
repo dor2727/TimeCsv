@@ -1,3 +1,59 @@
+"""
+Filters are objects which get the data (as a list of DataItems), and returns only the relevant DataItems.
+
+Each Filter object must implement a "filter" method.
+	def filter(self, data):
+
+	the return value is a list of boolean values.
+	True  means "include this item"
+	False means "exclude this item"
+
+The reasoning behind returning a boolean list is for chaining Filters:
+Logical operations, such as "and" and "or" may be applied in the following way:
+	all_filters = (filter_1 & filter_2) | filter_3
+Additionally, there is NotFilter, which reverses the value of the filter.
+	not_filter_1 = ~filter_1
+	not_filter_1 = NotFilter(filter_1)
+
+After creating the required filter, it is used in the following way:
+	filtered_data = filter_instance.get_filtered_data(list_of_data_items)
+	# alternatively
+	filtered_data = filter_instance % list_of_data_items
+
+The availabe filters can be grouped into 3 categories:
+Data Filters:
+	they filter by the content of the DataItem
+
+	- Description
+	- Group
+	- Friend
+	- Has Extra Details
+	- Duration
+
+	- Str
+		finds an str either in the Description or in the Group
+	- Auto
+		automatically determines whether to use Description, Group, Friend, or Duration
+		mainly used for CLI, since the user input is not known in advance.
+
+Time Filters:
+	they filter by the date of the DataItem
+
+	- Days
+		returns items from the last N days (including today)
+	- Today
+		Days(1)
+	- This Week
+		Days(7)
+	- Year
+	- Month
+	- DateRange
+		gets a tuple of 2 Datetime objects, and returns objects which take place between the 2 Datetime objects
+	- Auto
+		automatically determines whether to use Days, DateRange, Year, or Month
+
+"""
+
 import datetime
 import calendar
 
@@ -375,7 +431,19 @@ class TimeFilter_Days(TimeFilter):
 	@property
 	def _selected_time(self):
 		return f"days ({self.days})"
-	
+
+class TimeFilter_Today(TimeFilter_Days):
+	def __init__(self):
+		super().__init__(days=1)
+	def __repr__(self):
+		return f"{self.__class__.__name__}"
+class TimeFilter_ThisWeek(TimeFilter_Days):
+	def __init__(self):
+		super().__init__(days=7)
+	def __repr__(self):
+		return f"{self.__class__.__name__}"
+
+
 class TimeFilter_Year(TimeFilter):
 	def __init__(self, year: int=0):
 		self.year = year or datetime.datetime.now().year
