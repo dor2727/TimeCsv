@@ -152,16 +152,16 @@ def get_text(g, args):
 		return g.to_text()
 
 # handles the 'special' category of the args, or the default
-def get_special_text(data, selected_time, sorting_method, args):
-	if sorting_method == "abc":
-		sorting_method = "alphabetically"
-	if sorting_method == "value":
-		sorting_method = "by_value"
+def get_special_text(data, selected_time, args):
+	if args.sorting_method == "abc":
+		args.sorting_method = "alphabetically"
+	if args.sorting_method == "value":
+		args.sorting_method = "by_value"
 
 	groupedstats_params = {
 		"selected_time" : selected_time,
 		"group_value"   : "time",
-		"sort"          : sorting_method,
+		"sort"          : args.sorting_method,
 	}
 	# big switch-case for different GroupedStats classes
 	if args.gaming:
@@ -236,7 +236,7 @@ def main(datafolder, args_list=None):
 	data, selected_time, search_filter = get_data(datafolder, args)
 
 	if search_filter is None:
-		return get_special_text(data, selected_time, args.sorting_method, args)
+		return get_special_text(data, selected_time, args)
 	else:
 		return get_search_filter_text(data, selected_time, search_filter, args)
 
