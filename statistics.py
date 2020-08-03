@@ -518,7 +518,7 @@ class GroupGroupedStats(GroupedStats):
 			header_pattern += "\\b"
 
 		return list(filter(
-			lambda i: bool(re.findall(header_pattern, i.description)),
+			lambda i: bool(re.findall(header_pattern, self._strip(i.description))),
 			self.data
 		))
 

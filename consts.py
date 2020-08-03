@@ -18,17 +18,19 @@ DATE_REPRESENTATION_PATTERN = "%04d/%02d/%02d - %04d/%02d/%02d"
 # PATTERN_WITH = "(?<=with )(.*?)(?=\\s[@\\(]|$)"
 # a name starts with a capital letter
 #    I write full names without spaces
-_cappital_word = "[A-Z][A-Za-z]*"
+re_cappital_word = "[A-Z][A-Za-z]*"
 # names list is
 #     Name Name Name and Name
 #     which is - at least one
 #         where the last one (if there is more than one) follows "and"
 #         and any name which is not the first nor the last has space before and after itself
-_names_list  = "((%s)( %s)*( and %s)*)" % (tuple([_cappital_word])*3)
-PATTERN_WITH = re.compile("(?<=with )" + _names_list)
-PATTERN_FOR  = re.compile("(?<=for )"  + _names_list)
-PATTERN_TO   = re.compile("(?<=to )"   + _names_list)
+PATTERN_NAMES_LIST  = "((%s)( %s)*( and %s)*)" % (tuple([re_cappital_word])*3)
+PATTERN_WITH = re.compile("(?<=with )" + PATTERN_NAMES_LIST)
+PATTERN_FOR  = re.compile("(?<=for )"  + PATTERN_NAMES_LIST)
+PATTERN_TO   = re.compile("(?<=to )"   + PATTERN_NAMES_LIST)
 FRIEND_PATTERN = [PATTERN_WITH, PATTERN_FOR, PATTERN_TO]
+
+PATTERN_LOCATION = "@ ?(.*?) ?@?"
 
 
 COPY_LAST_DATE = "----/--/--"
