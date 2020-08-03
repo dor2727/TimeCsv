@@ -17,12 +17,14 @@ def newest(path=DEFAULT_DATA_DIRECTORY):
 #
 # parsing utils
 #
-def find_friends_in_str(s):
+def find_friends_in_str(s, search_at_beginning=False):
 	# get all from the patterns
 	found = sum(
 		(pattern.findall(s) for pattern in FRIEND_PATTERN),
 		[]
 	)
+	if search_at_beginning:
+		found += re.findall('^' + PATTERN_NAMES_LIST, s)
 
 	# join all results into a big string
 	found = ' '.join(i[0] for i in found)
@@ -32,6 +34,9 @@ def find_friends_in_str(s):
 	return list(OrderedDict.fromkeys(found))
 
 def find_location_in_str(s):
+	if PATTERN_LOCATION_THEIR_PLACE in s:
+		return "Their place"
+
 	l = re.findall(PATTERN_LOCATION, s)
 	if len(l) == 0:
 		return None

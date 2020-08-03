@@ -33,6 +33,7 @@ FRIEND_PATTERN = [PATTERN_WITH, PATTERN_FOR, PATTERN_TO]
 # a location will be wrapped by @ at both ends
 # e.g.: go for a walk @ some place @
 PATTERN_LOCATION = " ?@ ?(.*?) ?@"
+PATTERN_LOCATION_THEIR_PLACE = "@@"
 
 
 COPY_LAST_DATE = "----/--/--"

@@ -85,7 +85,7 @@ class DataItem(object):
 
 	@property
 	def friends(self):
-		return find_friends_in_str(self.description)
+		return find_friends_in_str(self.description, self.group == "Friends")
 
 	@property
 	def location(self):
