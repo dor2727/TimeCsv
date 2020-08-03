@@ -17,9 +17,10 @@ def parse_args(args_list=None):
 	parser = argparse.ArgumentParser()
 
 	search = parser.add_argument_group("search")
-	search.add_argument("search_string"     , type=str , default=''  , nargs=argparse.REMAINDER)
-	search.add_argument("--search-use-or"   , action="store_true"    , dest="search_use_or", help="whether to use AND or OR when adding the filters")
-	search.add_argument("--show-items", "-s", action="store_true"    , dest="show_items"   , help="whether to print all the items")
+	search.add_argument("search_string"     , type=str, default=''        , nargs=argparse.REMAINDER)
+	search.add_argument("--sort"            , type=str, default="by_value", dest="sorting_method", help="sorting method (by_value/value or alphabetically/abc)")
+	search.add_argument("--search-use-or"   , action="store_true"         , dest="search_use_or" , help="whether to use AND or OR when adding the filters")
+	search.add_argument("--show-items", "-s", action="store_true"         , dest="show_items"    , help="whether to print all the items")
 
 	time = parser.add_argument_group("time")
 	time.add_argument("--days-back", "-d", type=int , default=None, dest="days_back"   , help="how many days back to query")
@@ -151,57 +152,60 @@ def get_text(g, args):
 		return g.to_text()
 
 # handles the 'special' category of the args, or the default
-def get_special_text(data, selected_time, args):
+def get_special_text(data, selected_time, sorting_method, args):
+	if sorting_method == "abc":
+		sorting_method = "alphabetically"
+	if sorting_method == "value":
+		sorting_method = "by_value"
+
+	groupedstats_params = {
+		"selected_time" : selected_time,
+		"group_value"   : "time",
+		"sort"          : sorting_method,
+	}
 	# big switch-case for different GroupedStats classes
 	if args.gaming:
 		g = TimeCsv.statistics.GroupedStats_Games(
 			data,
-			selected_time=selected_time,
-			group_value="time"
+			**groupedstats_params
 		)
 
 	elif args.friend:
 		g = TimeCsv.statistics.GroupedStats_Friend(
 			data,
-			selected_time=selected_time,
-			group_value="time",
+			**groupedstats_params
 		)
 
 	elif args.youtube:
 		g = TimeCsv.statistics.GroupedStats_Youtube(
 			data,
-			selected_time=selected_time,
-			group_value="time",
+			**groupedstats_params
 		)
 
 	elif args.group:
 		g = TimeCsv.statistics.GroupGroupedStats(
 			data,
-			selected_time=selected_time,
-			group_value="time",
-			category_name=args.group.capitalize()
+			category_name=args.group.capitalize(),
+			**groupedstats_params
 		)
 
 	elif args.lecture:
 		g = TimeCsv.statistics.GroupedStats_Lecture(
 			data,
-			selected_time=selected_time,
-			group_value="time",
+			**groupedstats_params
 		)
 
 	elif args.homework:
 		g = TimeCsv.statistics.GroupedStats_Homework(
 			data,
-			selected_time=selected_time,
-			group_value="time",
+			**groupedstats_params
 		)
 
 
 	else: # default statistics
 		g = TimeCsv.statistics.GroupedStats_Group(
 			data,
-			selected_time=selected_time,
-			group_value="time"
+			**groupedstats_params
 		)
 
 	return get_text(g, args)
@@ -232,7 +236,7 @@ def main(datafolder, args_list=None):
 	data, selected_time, search_filter = get_data(datafolder, args)
 
 	if search_filter is None:
-		return get_special_text(data, selected_time, args)
+		return get_special_text(data, selected_time, args.sorting_method, args)
 	else:
 		return get_search_filter_text(data, selected_time, search_filter, args)
 

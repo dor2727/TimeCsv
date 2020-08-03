@@ -215,16 +215,19 @@ class GroupedStats(Stats):
 		# if either headers or values are empty
 		if not headers or not values:
 			return headers, values
-		elif self._sorting_method == "alphabetically":
-			return headers, values
+
+		z = zip(headers, values)
+		if self._sorting_method == "alphabetically":
+			# sort by header (str), alphabetically
+			sorted_z = sorted(z, key=lambda i: i[0])
 		elif self._sorting_method == "by_value":
-			z = zip(headers, values)
 			# sort by value, highest first
 			sorted_z = sorted(z, key=lambda i: i[1], reverse=True)
-			# unpack the zip into headers and values
-			h, v = list(zip(*sorted_z))
-			return h, v
-		# sort, either alphabetically or by the values
+		else:
+			raise ValueError("invalid sorting_method")
+		# unpack the zip into headers and values
+		h, v = list(zip(*sorted_z))
+		return h, v
 
 	def group(self):
 		"""
@@ -460,19 +463,17 @@ class GroupGroupedStats(GroupedStats):
 	# _allowed_group_values = ("time", "amount", "total_amount")
 
 	STRIPPING_REGEX = [
-		"\\(.*",
-		"with .*",
+		# "\\(.*",
+		" ?\\(.*?\\)",
+		# "with .*",
+		" ?with %s" % PATTERN_NAMES_LIST,
 	]
 	"""
 	requires:
 		self._category_name
 	"""
-	def __init__(self, data, selected_time="All times", group_value="time", category_name=None):
-		super().__init__(
-			data,
-			selected_time=selected_time,
-			group_value=group_value
-		)
+	def __init__(self, data, category_name=None, **kwargs):
+		super().__init__(data, **kwargs)
 		self._category_name = getattr(self, "_category_name", category_name)
 
 		self._filter_obj = GroupFilter(self._category_name)
