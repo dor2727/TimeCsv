@@ -34,6 +34,8 @@ class DataItem(object):
 			return the items in the csv order
 		friends:
 			return a list of friends which were in the activity
+		location:
+			return a string of the location of the activity
 		reevaluate:
 			used for calling 2nd parsing functions
 		is_fully_parsed:
@@ -84,6 +86,10 @@ class DataItem(object):
 	@property
 	def friends(self):
 		return find_friends_in_str(self.description)
+
+	@property
+	def location(self):
+		return find_location_in_str(self.description)
 
 	#
 	# first parse iteration
@@ -342,6 +348,7 @@ class DataFile(object):
 		self._reevaluate_data()
 		self._create_titles()
 		self._create_friends_list()
+		self._create_locations_list()
 
 	@property
 	def file_path(self):
@@ -400,6 +407,15 @@ class DataFile(object):
 
 		self.friends = [i[0] for i in self.friends_histogram]
 
+	def _create_locations_list(self):
+		all_locations = [i.location for i in self.data if i.location]
+
+		self.locations_histogram = utils.counter(all_locations)
+		# counter object is a list of tuples (name, amount)
+		self.locations_histogram.sort(key=lambda x:x[1], reverse=True)
+
+		self.locations = [i[0] for i in self.locations_histogram]
+
 	@property
 	def _data_range(self):
 		return self.data[0].start_time, self.data[-1].stop_time
@@ -438,6 +454,9 @@ class DataFolder(object):
 		self.data_file_latest = self.data_files[-1]
 		self.data_latest = self.data_file_latest.data
 
+		self.friends   = sum([i.friends for i in self.data_files], [])
+		self.locations = sum([i.locations for i in self.data_files], [])
+
 	"""
 	TODO - make multiple reload functions (or only one of them)
 	quick_reload - only reload self.data_file_latest
@@ -448,7 +467,9 @@ class DataFolder(object):
 		for i in self.data_files:
 			i.reload()
 
-		self.data = sum([i.data for i in self.data_files], [])
+		self.data      = sum([i.data for i in self.data_files], [])
+		self.friends   = sum([i.friends for i in self.data_files], [])
+		self.locations = sum([i.locations for i in self.data_files], [])
 
 	def _validate_data(self):
 		invalid_items = []

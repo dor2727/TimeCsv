@@ -251,7 +251,6 @@ def test(debug=False):
 	f = TimeFilter_Days(7)
 	f_data = f.get_filtered_data(b.data)
 	print(len(f_data))
-	return
 
 
 	g = TimeCsv.statistics.GroupedStats_Games(f_data, group_value="time")

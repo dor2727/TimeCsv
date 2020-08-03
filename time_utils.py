@@ -31,6 +31,15 @@ def find_friends_in_str(s):
 	# unique
 	return list(OrderedDict.fromkeys(found))
 
+def find_location_in_str(s):
+	l = re.findall(PATTERN_LOCATION, s)
+	if len(l) == 0:
+		return None
+	elif len(l) == 1:
+		return l[0]
+	else:
+		return l
+
 #
 # datetime utils
 #

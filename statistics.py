@@ -469,10 +469,17 @@ class GroupGroupedStats(GroupedStats):
 	# _allowed_group_values = ("time", "amount", "total_amount")
 
 	STRIPPING_REGEX = [
+		# brackets
 		# "\\(.*",
 		" ?\\(.*?\\)",
+		# with friends
 		# "with .*",
 		" ?with %s" % PATTERN_NAMES_LIST,
+		# at location
+		PATTERN_LOCATION,
+
+		# specific patterns
+		" ?to friends"
 	]
 	"""
 	requires:

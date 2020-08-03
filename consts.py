@@ -30,7 +30,9 @@ PATTERN_FOR  = re.compile("(?<=for )"  + PATTERN_NAMES_LIST)
 PATTERN_TO   = re.compile("(?<=to )"   + PATTERN_NAMES_LIST)
 FRIEND_PATTERN = [PATTERN_WITH, PATTERN_FOR, PATTERN_TO]
 
-PATTERN_LOCATION = "@ ?(.*?) ?@?"
+# a location will be wrapped by @ at both ends
+# e.g.: go for a walk @ some place @
+PATTERN_LOCATION = " ?@ ?(.*?) ?@"
 
 
 COPY_LAST_DATE = "----/--/--"
