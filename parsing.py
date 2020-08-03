@@ -454,8 +454,8 @@ class DataFolder(object):
 		self.data_file_latest = self.data_files[-1]
 		self.data_latest = self.data_file_latest.data
 
-		self.friends   = sum([i.friends for i in self.data_files], [])
-		self.locations = sum([i.locations for i in self.data_files], [])
+		self.friends   = list(set(sum([i.friends for i in self.data_files], [])))
+		self.locations = list(set(sum([i.locations for i in self.data_files], [])))
 
 	"""
 	TODO - make multiple reload functions (or only one of them)
@@ -468,8 +468,8 @@ class DataFolder(object):
 			i.reload()
 
 		self.data      = sum([i.data for i in self.data_files], [])
-		self.friends   = sum([i.friends for i in self.data_files], [])
-		self.locations = sum([i.locations for i in self.data_files], [])
+		self.friends   = list(set(sum([i.friends for i in self.data_files], [])))
+		self.locations = list(set(sum([i.locations for i in self.data_files], [])))
 
 	def _validate_data(self):
 		invalid_items = []

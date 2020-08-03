@@ -255,6 +255,32 @@ class FriendFilter(Filter):
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self.friend})"
 
+class LocationFilter(Filter):
+	def __init__(self, location, case_sensitive=False):
+		self.case_sensitive = case_sensitive
+
+		if self.case_sensitive:
+			self.location = location
+		else:
+			self.location = location.lower()
+
+	def filter(self, data):
+		if self.case_sensitive:
+			return [
+				self.location == i.location
+				for i in data
+			]
+
+		else: # not case_sensitive
+			return [
+				self.location in i.location.lower()
+				for i in data
+				if i.location
+			]
+
+	def __repr__(self):
+		return f"{self.__class__.__name__}({self.location})"
+
 class HasExtraDetailsFilter(Filter):
 	def filter(self, data):
 		return [

@@ -411,7 +411,7 @@ class GroupedStats(Stats):
 			return s
 
 		# print per-header statistics
-		header_format = "%%-%ds" % (max(map(len, self.headers)) + 1)
+		header_format = "%%-%ds" % (max(map(len, self.headers), default=1) + 1)
 		for h in self.headers:
 			s += "\n"
 			s += self._generate_to_text_statistics_per_header(h, header_format, amount_of_time)
@@ -437,6 +437,23 @@ class GroupedStats_Friend(GroupedStats):
 
 	def _get_filtered_data_per_header(self, header):
 		return FriendFilter(header).get_filtered_data(self.data)
+
+class GroupedStats_Location(GroupedStats):
+	def _get_headers(self):
+		# get all headers
+		headers = set()
+		for i in self.data:
+			headers.add(i.location)
+
+		if None in headers:
+			headers.remove(None)
+
+		# return a list, sorted alphabetically
+		self._headers = sorted(headers)
+		return self._headers
+
+	def _get_filtered_data_per_header(self, header):
+		return LocationFilter(header).get_filtered_data(self.data)
 
 class GroupedStats_Group(GroupedStats):
 	def _get_headers(self):

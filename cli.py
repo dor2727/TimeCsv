@@ -40,6 +40,7 @@ def parse_args(args_list=None):
 	special.add_argument("--group"              , type=str , default=None, dest="group"   , help="show statistics per group")
 	special.add_argument("--gaming"             , action="store_true"    , dest="gaming"  , help="show gaming statistics")
 	special.add_argument("--friend", "--friends", action="store_true"    , dest="friend"  , help="show friend statistics")
+	special.add_argument("--location"           , action="store_true"    , dest="location", help="show location statistics")
 	special.add_argument("--youtube"            , action="store_true"    , dest="youtube" , help="show youtube statistics")
 	special.add_argument("--lecture"            , action="store_true"    , dest="lecture" , help="show lecture statistics")
 	special.add_argument("--homework"           , action="store_true"    , dest="homework", help="show homework statistics")
@@ -176,6 +177,12 @@ def get_special_text(data, selected_time, args):
 			**groupedstats_params
 		)
 
+	elif args.location:
+		g = TimeCsv.statistics.GroupedStats_Location(
+			data,
+			**groupedstats_params
+		)
+
 	elif args.youtube:
 		g = TimeCsv.statistics.GroupedStats_Youtube(
 			data,
@@ -247,15 +254,17 @@ def test(debug=False):
 	if debug:
 		print(f"DataFolder: {b}")
 
-	import pdb; pdb.set_trace()
 
-	# f = TimeFilter_Month(3) | TimeFilter_Month(4)
-	f = TimeFilter_Days(7)
+	f = TimeFilter_Month(3) | TimeFilter_Month(4)
+	# f = TimeFilter_Month(3) | TimeFilter_Month(4) | TimeFilter_Month()
+	# f = TimeFilter_Days(7)
+	# f = TimeFilter_Days(1)
 	f_data = f.get_filtered_data(b.data)
 	print(len(f_data))
 
 
-	g = TimeCsv.statistics.GroupedStats_Games(f_data, group_value="time")
+	# g = TimeCsv.statistics.GroupedStats_Games(f_data, group_value="time")
+	g = TimeCsv.statistics.GroupedStats_Location(f_data)
 	# g = TimeCsv.statistics.GroupedStats_Youtube(f_data, group_value="time")
 	# g = TimeCsv.statistics.GroupGroupedStats(f_data, group_value="time", category_name="Youtube")
 	print(g.group())
