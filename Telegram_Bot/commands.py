@@ -12,6 +12,7 @@ from TimeCsv.parsing import DataFolder
 from TimeCsv.consts import *
 from TimeCsv.filters import *
 from TimeCsv.statistics import *
+from TimeCsv.functions.productivity import get_productivity_pie
 
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
@@ -94,6 +95,7 @@ class TelegramCommands(object):
 				self._command_name(command_name),
 				getattr(self, command_name)
 			))
+
 
 	@log_command
 	def command_cli(self, update, context):
@@ -213,6 +215,101 @@ class TelegramCommands(object):
 	def command_youtube_pie(self, update=None, context=None):
 		self.pie_command(GroupedStats_Youtube, TimeFilter_Days(7), update)
 
+
+	#
+	@log_command
+	def command_productive_pie_today(self, update=None, context=None):
+		f = TimeFilter_Days(1)
+
+		pie_file = get_productivity_pie(
+			data=f % self.datafolder.data,
+			selected_time=f._selected_time,
+			save=True
+		)
+
+		self.send_image(pie_file, update)
+
+	@log_command
+	def command_productive_pie_yesterday(self, update=None, context=None):
+		stop_time  = get_midnight( datetime.datetime.now() )
+		start_time = get_midnight(
+			stop_time
+			 -
+			datetime.timedelta(days=1)
+		)
+
+		f = TimeFilter_DateRange( start_time, stop_time )
+
+		pie_file = get_productivity_pie(
+			data=f % self.datafolder.data,
+			selected_time=f._selected_time,
+			save=True
+		)
+
+		self.send_image(pie_file, update)
+
+	@log_command
+	def command_productive_pie_week(self, update=None, context=None):
+		f = TimeFilter_Days(7)
+
+		pie_file = get_productivity_pie(
+			data=f % self.datafolder.data,
+			selected_time=f._selected_time,
+			save=True
+		)
+
+		self.send_image(pie_file, update)
+
+	@log_command
+	def command_productive_pie_month(self, update=None, context=None):
+		if context and context.args:
+			try:
+				month = int(context.args[0])
+			except Exception as e:
+				self.send_text(f"command_month error: {e}", update)
+		else:
+			month = 0 # the default value
+
+		f = TimeFilter_Month(month)
+
+		pie_file = get_productivity_pie(
+			data=f % self.datafolder.data,
+			selected_time=f._selected_time,
+			save=True
+		)
+
+		self.send_image(pie_file, update)
+
+	@log_command
+	def command_productive_pie_year(self, update=None, context=None):
+		if context and context.args:
+			try:
+				year = int(context.args[0])
+			except Exception as e:
+				self.send_text(f"command_year error: {e}", update)
+		else:
+			year = 0 # the default value
+
+		f = TimeFilter_Year(year)
+
+		pie_file = get_productivity_pie(
+			data=f % self.datafolder.data,
+			selected_time=f._selected_time,
+			save=True
+		)
+
+		self.send_image(pie_file, update)
+
+	@log_command
+	def command_productive_pie_all(self, update=None, context=None):
+		pie_file = get_productivity_pie(
+			data=self.datafolder.data,
+			save=True
+		)
+
+		self.send_image(pie_file, update)
+
+
 	#
 	@log_command
 	def command_test(self, update=None, context=None):
@@ -296,6 +393,35 @@ class TelegramAPI(TelegramServer, TelegramCommands, TelegramScheduledCommands):
 def main():
 	t = TelegramAPI()
 	t.loop()
+
+"""
+# all commands:
+today - today
+yesterday - yesterday
+week - week
+last_week - last_week
+month - month
+year - year
+
+reload - reload
+
+productive_pie_today - productive_pie_today
+productive_pie_yesterday - productive_pie_yesterday
+productive_pie_week - productive_pie_week
+productive_pie_month - productive_pie_month
+productive_pie_year - productive_pie_year
+productive_pie_all - productive_pie_all
+
+gaming_pie - gaming_pie
+homework_pie - homework_pie
+lecture_pie - lecture_pie
+youtube_pie - youtube_pie
+
+list_commands - list_commands
+cli - cli
+test - test
+pdb - pdb
+"""
 
 if __name__ == '__main__':
 	main()

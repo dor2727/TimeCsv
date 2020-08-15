@@ -116,12 +116,12 @@ PRODUCTIVITY_GROUPS = [
 	},
 ]
 
-def get_productivity_pie(datafolder=None, selected_time="All time", save=True):
-	datafolder = datafolder or DataFolder()
+def get_productivity_pie(data=None, selected_time="All time", save=True):
+	data = data or DataFolder().data
 
 	headers = [i["name"] for i in PRODUCTIVITY_GROUPS]
 	filtered_data = [
-		i["filter"] % datafolder.data
+		i["filter"] % data
 		for i in PRODUCTIVITY_GROUPS
 	]
 	# sum over the DataItem list, resulting in the total amount of seconds
