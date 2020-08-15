@@ -69,6 +69,22 @@ class DataItem(object):
 	def __int__(self):
 		return (self.stop_time - self.start_time).seconds
 
+	# when __add__ is called (usually by calling `sum` on a list of DataItems), cast to int
+	def __add__(self, other):
+		if type(other) is DataItem:
+			return int(self) + int(other)
+		elif type(other) is int:
+			return int(self) + other
+		else:
+			return NotImplemented
+	def __radd__(self, other):
+		if type(other) is DataItem:
+			return int(self) + int(other)
+		elif type(other) is int:
+			return int(self) + other
+		else:
+			return NotImplemented
+
 	def _check_if_comment(self, items):
 		"""
 		comment lines are either empty lines or lines starting with '#'
