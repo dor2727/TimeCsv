@@ -346,12 +346,14 @@ class StrFilter(Filter):
 
 # auto classify which filter to use
 class AutoFilter(Filter):
+	not_filter_prefix = ('~', '!')
+
 	def __init__(self, string, case_sensitive=None):
 		# check for regex
 		regex = '\\' in string
 
 		# check whether this will be a NotFilter
-		if not regex and string[0] == '~':
+		if not regex and string[0] in self.not_filter_prefix:
 			exclude = True
 			string = string[1:]
 		else:
