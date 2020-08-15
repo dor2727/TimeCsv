@@ -354,16 +354,26 @@ class TelegramScheduledCommands(object):
 			self.command_yesterday,
 			scheduled=True
 		)
+		schedule.every().day.at("08:00").do(
+			self.command_productive_pie_yesterday,
+			scheduled=True
+		)
+		
 		# weekly log
 		schedule.every().sunday.at("08:00").do(
 			self.command_last_week,
 			scheduled=True
 		)
-		# weekly pies
 		schedule.every().sunday.at("08:00").do(
-			self.command_homework_pie,
+			self.command_productive_pie_week,
 			scheduled=True
 		)
+		
+		# weekly pies
+		# schedule.every().sunday.at("08:00").do(
+		# 	self.command_homework_pie,
+		# 	scheduled=True
+		# )
 
 		schedule.every().sunday.at("08:00").do(
 			self.command_gaming_pie,
