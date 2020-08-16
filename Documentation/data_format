@@ -1,1 +1,86 @@
-TODO
+# Data Format
+
+The data is stored in the csv format.
+
+## example
+Date,Start,Stop,Group,Description
+2020/08/16,12:25,e12:34,Shopping,search raspberry pi
+
+## Date
+the date follows the following format: yyyy/mm/dd
+in particular: datetime.strptime("%Y/%m/%d")
+
+However, there are 2 special dates:
+COPY_LAST_DATE = "----/--/--"
+ADD_LAST_DATE  = "----/--/+1"
+
+when COPY_LAST_DATE is used, then the date of the current entry will be copied from the previous entry
+when ADD_LAST_DATE  is used, then the date of the current entry will be copied from the previous entry, and then another day will be added.
+
+### example
+```
+2020/08/16,23:25,e23:34,Youtube,watch 3blue1brown
+# this entry's date will also be 2020/08/16
+----/--/--,23:34,e23:47,Youtube,watch 3blue1brown
+# this entry's date will also be 2020/08/16, however, the date of the end-time of this entry will be the next day: 2020/08/17
+----/--/--,23:47,e01:12,Reddit,scroll too much while I should sleep
+# this entry's date will also be 2020/08/17, since it will copy the previous entry's starting date, and add one day to it
+----/--/+1,01:12,e10:12,Life,sleep
+```
+
+## Start
+The starting time of the entry: hh:mm
+in particular: datetime.strptime("%H:%M")
+
+There's a special case:
+COPY_LAST_START_TIME = "--:--"
+when used, the start time of the current entry will equal the end time of the previous entry
+
+## Stop
+The starting time of the entry: shh:mm
+Where s in a single letter, taking one of the following options: 's', 'e', 'd'
+Where 's' and 'e' means: take the following hh:mm as the Stop/End time of this entry
+And 'd' means: take the following hh:mm as the Duration of this entry
+
+There's a special case:
+COPY_LAST_STOP_TIME = "---:--"
+when used, the stop time of the current entry will equal the start time of the next entry
+
+### example
+```
+2020/08/16,10:00,e11:00,Youtube,1 hour worth of youtube: 10AM to 11AM
+----/--/--,--:--,e12:30,Reddit,1.5 hours starting when youtube ended: 11AM to 12:30AM
+----/--/--,--:--,---:--,Life,nap from 12:30AM to 2PM
+----/--/--,14:00,e14:30,Life,eat from 2PM to 2:30 PM
+```
+
+## Group
+Cappitalized one-word description
+examples: Life, Youtube, Read, Sport, Family, ...
+
+## Description
+Free text description.
+Keep in mind that you cannot use comma (','), since this is a part of a csv format
+Unless you use brackets, such as:
+a,b,"c,d" --> ['a', 'b', 'c,d']
+since the parsing is done using `csv.reader(open(filepath))`. In other words - I did not change csv.reader's default options.
+
+## Other
+### Friends
+friends are listed in the description using the following format (which can be seen in consts.py):
+```
+something with Friend
+something with FriendName
+something for Friend
+something to Friend
+something to FriendA FriendB and FriendC
+```
+### extra_details
+some free text in a parsable format. e.g.:
+```
+Sport,pull ups (7)
+# or
+Gaming,lol (3) with Friend
+# meaning 3 games
+```
+the parsing is done manually, and the content of the brackets is extracted as a string
