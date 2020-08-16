@@ -116,13 +116,96 @@ PRODUCTIVITY_GROUPS = [
 	},
 ]
 
-def get_productivity_pie(data=None, selected_time="All time", save=True):
+PRODUCTIVITY_FOCUSED_GROUPS = [
+	{
+		"name": "Consuming Content",
+		"index": 1,
+		"filter": (
+			GroupFilter("Read")
+			 |
+			GroupFilter("Study")
+			 |
+			GroupFilter("Podcast")
+			 |
+			GroupFilter("Ted")
+			 |
+			(GroupFilter("Reddit") &  DescriptionFilter("weekly update"))
+		),
+	},
+	{
+		"name": "Creating Content",
+		"index": 2,
+		"filter": (
+			GroupFilter("Blog")
+			 |
+			GroupFilter("Book")
+			 |
+			GroupFilter("Programming")
+		),
+	},
+	{
+		"name": "Self Management",
+		"index": 3,
+		"filter": (
+			GroupFilter("Time")
+			 |
+			GroupFilter("Think")
+			 |
+			GroupFilter("Meditate")
+			 |
+			GroupFilter("Sport")
+		),
+	},
+	{
+		"name": "Consuming Junk",
+		"index": 4,
+		"filter": (
+			GroupFilter("Youtube")
+			 |
+			(GroupFilter("Reddit") & ~DescriptionFilter("weekly update"))
+		)
+	},
+	{
+		"name": "Gaming",
+		"index": 5,
+		"filter": (
+			GroupFilter("Gaming")
+		),
+	},
+	
+	{
+		"name": "Other - available",
+		"index": 6,
+		"filter": (
+			GroupFilter("Transportation")
+		),
+	},
+	{
+		"name": "Other - truncatble",
+		"index": 7,
+		"filter": (
+			GroupFilter("Wait")
+			 |
+			(GroupFilter("Life") &  DescriptionFilter("toilet"))
+			 |
+			GroupFilter("Chill")
+			 |
+			GroupFilter("Morning")
+			 |
+			GroupFilter("Other")
+		),
+	},
+]
+
+def get_productivity_pie(data=None, selected_time="All time", save=True, focused=False):
 	data = data or DataFolder().data
 
-	headers = [i["name"] for i in PRODUCTIVITY_GROUPS]
+	productivity_groups = PRODUCTIVITY_GROUPS if focused else PRODUCTIVITY_FOCUSED_GROUPS
+
+	headers = [i["name"] for i in productivity_groups]
 	filtered_data = [
 		i["filter"] % data
-		for i in PRODUCTIVITY_GROUPS
+		for i in productivity_groups
 	]
 	# sum over the DataItem list, resulting in the total amount of seconds
 	values = list(map(sum, filtered_data))
@@ -168,3 +251,4 @@ def get_productivity_pie(data=None, selected_time="All time", save=True):
 		fig.show()
 		import pdb; pdb.set_trace()
 		return None
+
