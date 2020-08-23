@@ -22,7 +22,7 @@ PRODUCTIVITY_GROUPS = [
 		"name": "Social",
 		"index": 3,
 		"filter": (
-			GroupFilter("Friends")
+			(GroupFilter("Friends") & ~DescriptionFilter("whatsapp"))
 			 |
 			GroupFilter("Family")
 		)
@@ -83,6 +83,8 @@ PRODUCTIVITY_GROUPS = [
 			GroupFilter("Youtube")
 			 |
 			(GroupFilter("Reddit") & ~DescriptionFilter("weekly update"))
+			 |
+			(GroupFilter("Friends") &  DescriptionFilter("whatsapp"))
 		),
 	},
 	{
@@ -193,6 +195,8 @@ PRODUCTIVITY_FOCUSED_GROUPS = [
 			GroupFilter("Morning")
 			 |
 			GroupFilter("Other")
+			 |
+			(GroupFilter("Friends") &  DescriptionFilter("whatsapp"))
 		),
 	},
 ]
@@ -200,7 +204,7 @@ PRODUCTIVITY_FOCUSED_GROUPS = [
 def get_productivity_pie(data=None, selected_time="All time", save=True, focused=False):
 	data = data or DataFolder().data
 
-	productivity_groups = PRODUCTIVITY_GROUPS if focused else PRODUCTIVITY_FOCUSED_GROUPS
+	productivity_groups = PRODUCTIVITY_FOCUSED_GROUPS if focused else PRODUCTIVITY_GROUPS
 
 	headers = [i["name"] for i in productivity_groups]
 	filtered_data = [
