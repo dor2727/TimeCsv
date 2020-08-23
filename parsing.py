@@ -1,7 +1,6 @@
 import os
 import re
 import csv
-import utils
 
 from TimeCsv.consts import *
 from TimeCsv.time_utils import *
@@ -417,7 +416,7 @@ class DataFile(object):
 	def _create_friends_list(self):
 		all_friends = sum((i.friends for i in self.data), [])
 
-		self.friends_histogram = utils.counter(all_friends)
+		self.friends_histogram = counter(all_friends)
 		# counter object is a list of tuples (name, amount)
 		self.friends_histogram.sort(key=lambda x:x[1], reverse=True)
 
@@ -426,7 +425,7 @@ class DataFile(object):
 	def _create_locations_list(self):
 		all_locations = [i.location for i in self.data if i.location]
 
-		self.locations_histogram = utils.counter(all_locations)
+		self.locations_histogram = counter(all_locations)
 		# counter object is a list of tuples (name, amount)
 		self.locations_histogram.sort(key=lambda x:x[1], reverse=True)
 
@@ -453,6 +452,12 @@ class DataFolder(object):
 
 	def _load_data_files(self):
 		files = next(os.walk(self._path))[2]
+
+		# remove files starting with either '.' or '_':
+		files = filter(
+			lambda f: not (f[0] == '.' or f[0] == '_'),
+			files
+		)
 
 		# each data file, in its constructor, loads its content
 		self.data_files = [

@@ -1,6 +1,6 @@
 import os
 
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 
 from TimeCsv.consts import *
 
@@ -44,6 +44,10 @@ def find_location_in_str(s):
 		return l[0]
 	else:
 		return l
+
+def counter(data):
+        return list(Counter(data).items())
+
 
 #
 # datetime utils
