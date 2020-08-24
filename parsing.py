@@ -8,6 +8,10 @@ from TimeCsv.time_utils import *
 import warnings
 warnings.filterwarnings("ignore", category=ResourceWarning)
 
+class ParseError(ValueError):
+	pass
+
+
 class DataItem(object):
 	"""
 	comment lines are either empty lines or lines starting with '#'
@@ -272,13 +276,15 @@ class DataItem(object):
 		if type(self.start_time) is datetime.timedelta:
 			try:
 				self.start_time = self.date + self.start_time
-			except:
-				import pdb; pdb.set_trace()
+			except Exception as exc:
+				raise ParseError(f"Error setting start_time in `_reevaluate_date` for < {self} >") from exc
+
 		if type(self.stop_time) is datetime.timedelta and self.stop_time_type == "stop":
 			try:
 				self.stop_time = self.date + self.stop_time
-			except:
-				import pdb; pdb.set_trace()
+			except Exception as exc:
+				raise ParseError(f"Error setting stop_time in `_reevaluate_date` for < {self} >") from exc
+
 	def _reevaluate_start_time(self, prev, next=None):
 		if type(self.start_time) is str:
 			if self.start_time == COPY_LAST_START_TIME:
@@ -312,9 +318,7 @@ class DataItem(object):
 		self._reevaluate_stop_time(p, n)
 
 		if get_ymd_tuple(self.start_time) != get_ymd_tuple(self.date):
-			print("[!] date & start_time mismatch!")
-			print(self)
-			import pdb; pdb.set_trace()
+			raise ParseError(f"[!] date & start_time mismatch for < {self} >")
 
 	def is_fully_parsed(self):
 		"""
