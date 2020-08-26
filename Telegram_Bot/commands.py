@@ -7,7 +7,7 @@ import schedule
 import threading
 
 import TimeCsv.cli
-from TimeCsv.parsing import DataFolder
+from TimeCsv.parsing import DataFolder, ParseError
 
 from TimeCsv.consts import *
 from TimeCsv.filters import *
@@ -401,8 +401,20 @@ class TelegramAPI(TelegramServer, TelegramCommands, TelegramScheduledCommands):
 		self.schedule_commands()
 
 def main():
-	t = TelegramAPI()
-	t.loop()
+	while True:
+		try:
+			# an exception can either happen in __init__, when self.datafolder is created
+			t = TelegramAPI()
+			# or in loop, where the `reload` method is called
+			t.loop()
+
+		except ParseError as pe:
+			print(f"[*] Caught ParseError. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+			time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
+
+		except Exception as exc:
+			print(f"[!] Caught general error - quitting")
+			raise exc
 
 """
 # all commands:
