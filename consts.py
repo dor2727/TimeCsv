@@ -5,6 +5,8 @@ import datetime
 DEFAULT_DATA_DIRECTORY = os.path.expanduser("~/Projects/TimeCsv/data")
 TELEGRAM_DATA_DIRECTORY = os.path.expanduser("~/Projects/TimeCsv/Telegram_Bot/data")
 POSSIBLE_FILE_EXTENSIONS = [".tcsv", ".csv", ".txt", ""]
+DAILY_WGET_PATH = os.path.expanduser("~/Projects/TimeCsv/daily_wget.sh")
+DAILY_WGET_LOG_PATH = os.path.expanduser("~/Projects/TimeCsv/daily_wget.log.new")
 
 
 # 01/01/01 is Monday

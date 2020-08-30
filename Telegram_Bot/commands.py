@@ -333,6 +333,24 @@ class TelegramCommands(object):
 			self.send_text("reload - done", update)
 
 	@log_command
+	def command_wget(self, update=None, context=None):
+		print("update")
+		print(update)
+		print("context")
+		print(context)
+		os.system(DAILY_WGET_PATH)
+		print(f"    [w] wget : {time.asctime()}")
+
+		# if update is None - we are called from the scheduler
+		# only answer the user if the user asks the reload
+		if update is not None:
+			f = open(DAILY_WGET_LOG_PATH)
+			s = f.read()
+			f.close()
+			self.send_text("wget - done", update)
+			self.send_text(s, update)
+
+	@log_command
 	def command_list_commands(self, update=None, context=None):
 		commands = filter(
 			lambda s: s.startswith("command_"),
