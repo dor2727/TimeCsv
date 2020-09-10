@@ -357,6 +357,10 @@ class TelegramCommands(object):
 			self.send_text("wget - done", update)
 			self.send_text(s, update)
 
+	def full_reload(self):
+		self.command_wget()
+		self.command_reload()
+
 	@log_command
 	def command_list_commands(self, update=None, context=None):
 		commands = filter(
@@ -383,7 +387,7 @@ class TelegramScheduledCommands(object):
 			self.command_productive_pie_yesterday,
 			scheduled=True
 		)
-		
+
 		# weekly log
 		schedule.every().sunday.at("08:00").do(
 			self.command_last_week,
@@ -393,7 +397,7 @@ class TelegramScheduledCommands(object):
 			self.command_productive_pie_week,
 			scheduled=True
 		)
-		
+
 		# weekly pies
 		# schedule.every().sunday.at("08:00").do(
 		# 	self.command_homework_pie,
@@ -405,9 +409,12 @@ class TelegramScheduledCommands(object):
 			scheduled=True
 		)
 
-		schedule.every().hour.at(":57").do(
-			self.command_reload,
-			scheduled=True
+		# schedule.every().hour.at(":57").do(
+		# 	self.command_reload,
+		# 	scheduled=True
+		# )
+		schedule.every().day.at("06:00").do(
+			self.full_reload,
 		)
 
 
@@ -426,6 +433,10 @@ class TelegramAPI(TelegramServer, TelegramCommands, TelegramScheduledCommands):
 		self.schedule_commands()
 
 def main():
+	log(f"----------------")
+	now = datetime.datetime.now().strftime("%Y/%m/%d_%H:%M")
+	log(f"[*] Starting: {now}")
+
 	while True:
 		try:
 			# an exception can either happen in __init__, when self.datafolder is created
