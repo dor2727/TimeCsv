@@ -17,12 +17,19 @@ from TimeCsv.functions.productivity import get_productivity_pie
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
 
+LOG_FILE = open(os.path.join(TELEGRAM_DATA_DIRECTORY, "log.log"), "a")
 # utils
 def read_file(filename):
 	return open(os.path.join(
 		TELEGRAM_DATA_DIRECTORY,
 		filename
 	)).read().strip()
+
+def log(s):
+	print(s)
+	LOG_FILE.write(s)
+	LOG_FILE.write('\n')
+	LOG_FILE.flush()
 
 def log_command(func):
 	def func_wrapper(*args, **kwargs):
@@ -31,14 +38,14 @@ def log_command(func):
 
 		if "scheduled" in kwargs:
 			if kwargs["scheduled"]:
-				print(f"[*] scheduled command - {command_name}\t{time.asctime()}")
+				log(f"[*] scheduled command - {command_name}\t{time.asctime()}")
 			kwargs.pop("scheduled")
 		else:
 			if len(args) > 1 and args[1]:
 				command_text = args[1]['message']['text']
 			else:
 				command_text = "None"
-			print(f"[*] got command - {command_text}\tcalling {command_name}\t{time.asctime()}")
+			log(f"[*] got command - {command_text}\tcalling {command_name}\t{time.asctime()}")
 
 		return func(*args, **kwargs)
 
@@ -76,7 +83,7 @@ class TelegramServer(object):
 		)
 
 	def loop(self):
-		print("[*] entering loop")
+		log("[*] entering loop")
 		self.updater.start_polling()
 		self.updater.idle()
 
@@ -325,7 +332,7 @@ class TelegramCommands(object):
 	@log_command
 	def command_reload(self, update=None, context=None):
 		self.datafolder.reload()
-		print(f"    [r] reloaded : {time.asctime()}")
+		log(f"    [r] reloaded : {time.asctime()}")
 
 		# if update is None - we are called from the scheduler
 		# only answer the user if the user asks the reload
@@ -409,12 +416,13 @@ def main():
 			t.loop()
 
 		except ParseError as pe:
-			print(f"[*] Caught ParseError. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+			log(f"[*] Caught ParseError. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
 			time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
 
 		except Exception as exc:
-			print(f"[!] Caught general error - quitting")
+			log(f"[!] Caught general error - quitting")
 			raise exc
+	LOG_FILE.close()
 
 """
 # all commands:
