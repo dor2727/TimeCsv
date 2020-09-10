@@ -4,7 +4,7 @@ __pycache__
 data
 data_backup
 Telegram_Bot/data
-daily_wget.log
+daily_wget.log*
 
 key
 chat_id
