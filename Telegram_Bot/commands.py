@@ -341,12 +341,12 @@ class TelegramCommands(object):
 
 	@log_command
 	def command_wget(self, update=None, context=None):
-		print("update")
-		print(update)
-		print("context")
-		print(context)
+		log("update")
+		log(str(update))
+		log("context")
+		log(str(context))
 		os.system(DAILY_WGET_PATH)
-		print(f"    [w] wget : {time.asctime()}")
+		log(f"    [w] wget : {time.asctime()}")
 
 		# if update is None - we are called from the scheduler
 		# only answer the user if the user asks the reload
@@ -447,6 +447,7 @@ def main():
 		except ParseError as pe:
 			log(f"[*] Caught ParseError. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
 			time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
+			os.system(DAILY_WGET_PATH)
 
 		except Exception as exc:
 			log(f"[!] Caught general error - quitting")
