@@ -46,7 +46,7 @@ def find_location_in_str(s):
 		return l
 
 def counter(data):
-        return list(Counter(data).items())
+    return list(Counter(data).items())
 
 
 #
