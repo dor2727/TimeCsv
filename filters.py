@@ -20,7 +20,7 @@ After creating the required filter, it is used in the following way:
 	# alternatively
 	filtered_data = filter_instance % list_of_data_items
 
-The availabe filters can be grouped into 3 categories:
+The availabe filters can be grouped into 2 categories:
 Data Filters:
 	they filter by the content of the DataItem
 
@@ -76,6 +76,7 @@ class Filter(object):
 		# verify input
 		if type(other) is not list:
 			raise ValueError("modulo not defined for filter and non-list object")
+		# Should check all the items
 		if other[0].__class__.__name__ != "DataItem":
 			raise ValueError("modulo is only defined for filter and a list of DataItem elements")
 
