@@ -18,13 +18,14 @@ def parse_args(args_list=None):
 
 	search = parser.add_argument_group("search")
 	search.add_argument("search_string"     , type=str, default=''        , nargs=argparse.REMAINDER)
-	search.add_argument("--sort"            , type=str, default="by_value", dest="sorting_method", help="sorting method (by_value/value or alphabetically/abc)")
-	search.add_argument("--search-use-or"   , action="store_true"         , dest="search_use_or" , help="whether to use AND or OR when adding the filters")
-	search.add_argument("--show-items", "-s", action="store_true"         , dest="show_items"    , help="whether to print all the items")
+	search.add_argument("--group-by"        , type=str, default="time"    , dest="grouping_method", help="grouping method (time or time_average/avg or amount)")
+	search.add_argument("--sort"            , type=str, default="by_value", dest="sorting_method" , help="sorting method (by_value/value or alphabetically/abc)")
+	search.add_argument("--search-use-or"   , action="store_true"         , dest="search_use_or"  , help="whether to use AND or OR when adding the filters")
+	search.add_argument("--show-items", "-s", action="store_true"         , dest="show_items"     , help="whether to print all the items")
 
 	time = parser.add_argument_group("time")
 	time.add_argument("--days-back", "-d", type=int , default=None, dest="days_back"   , help="how many days back to query")
-	time.add_argument("--month-back"     , type=int , default=None, dest="months_back" , help="how many month summaries to show")
+	time.add_argument("--months-back"    , type=int , default=None, dest="months_back" , help="how many month summaries to show")
 	time.add_argument("--month"    , "-m", type=str , default=None, dest="month"       , help="which month to query. can be comma seperated (e.g. 1,2,3,9)")
 	time.add_argument("--year"     , "-y", type=str , default=None, dest="year"        , help="which year to query. can be comma seperated (e.g. 2019,2020)")
 	time.add_argument("--all-time"       , action="store_true"    , dest="all_time"    , help="whether to all the time")
@@ -159,9 +160,12 @@ def get_special_text(data, selected_time, args):
 	if args.sorting_method == "value":
 		args.sorting_method = "by_value"
 
+	if args.grouping_method == "avg":
+		args.grouping_method = "time_average"
+
 	groupedstats_params = {
 		"selected_time" : selected_time,
-		"group_value"   : "time",
+		"group_value"   : args.grouping_method,
 		"sort"          : args.sorting_method,
 	}
 	# big switch-case for different GroupedStats classes

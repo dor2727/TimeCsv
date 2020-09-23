@@ -128,7 +128,7 @@ class FilteredStats(Stats):
 		s += "\n"
 		s += f"  events per day = {stats['events_per_day']:.2f}"
 		s += "\n"
-		s += "(%3d) : %s (%5.2f%%) ; item average %s" % (
+		s += "    (%3d) : %s (%5.2f%%) ; item average %s" % (
 			stats["amount_of_items"],
 			seconds_to_str(stats["amount_of_time"]),
 			stats["time_percentage"],
