@@ -291,10 +291,10 @@ class HasExtraDetailsFilter(Filter):
 
 class DurationFilter(Filter):
 	def __init__(self, string):
-		if string[0] == '<':
+		if   type(string) is string and string[0] == '<':
 			self._action = "maximum"
 			self.seconds = self._int(string[1:])
-		elif string[0] == '>':
+		elif type(string) is string and string[0] == '>':
 			self._action = "minumum"
 			self.seconds = self._int(string[1:])
 		else: # default
@@ -404,7 +404,7 @@ class AutoFilter(Filter):
 		return self._filter.__repr__()
 
 
-# do not use this class directly
+# do not use this class directly - it is a meta class
 class TimeFilter(Filter):
 	def filter(self, data):
 		return [
@@ -427,7 +427,7 @@ class TimeFilter(Filter):
 	@property
 	def _selected_time(self):
 		raise NotImplemented
-	
+
 
 class TimeFilter_Days(TimeFilter):
 	def __init__(self, days: int=7):
@@ -438,7 +438,7 @@ class TimeFilter_Days(TimeFilter):
 		8 means a week plus a day. E.g. from sunday to subday, inclusive
 		"""
 		self.days = days
-		
+
 		self.stop_time = datetime.datetime.now()
 		self.start_time = get_midnight(
 			self.stop_time
@@ -476,7 +476,7 @@ class TimeFilter_ThisWeek(TimeFilter_Days):
 class TimeFilter_Year(TimeFilter):
 	def __init__(self, year: int=0):
 		self.year = year or datetime.datetime.now().year
-		
+
 		self.start_time = datetime.datetime(self.year, 1,  1 )
 		self.stop_time  = datetime.datetime(self.year, 12, 31)
 
@@ -514,7 +514,7 @@ class TimeFilter_Month(TimeFilter):
 				self.year = now.year
 		else:
 			self.year = year
-		
+
 		self.start_time = datetime.datetime(self.year, self.month, 1)
 		self.stop_time  = datetime.datetime(self.year, self.month,
 			calendar.monthrange(self.year, self.month)[1])
@@ -543,7 +543,7 @@ class TimeFilter_DateRange(TimeFilter):
 			include_by_start && Data.start_time is contained within the date_range
 			include_by_stop  && Data.stop_time  is contained within the date_range
 		"""
-		
+
 		self.start_time       = start_time
 		self.stop_time        = stop_time
 		self.include_by_start = include_by_start

@@ -18,12 +18,16 @@ from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
 
 LOG_FILE = open(os.path.join(TELEGRAM_DATA_DIRECTORY, "log.log"), "a")
+
 # utils
 def read_file(filename):
-	return open(os.path.join(
+	handle = open(os.path.join(
 		TELEGRAM_DATA_DIRECTORY,
 		filename
-	)).read().strip()
+	))
+	data = handle.read().strip()
+	handle.close()
+	return data
 
 def log(s):
 	print(s)
@@ -31,6 +35,7 @@ def log(s):
 	LOG_FILE.write('\n')
 	LOG_FILE.flush()
 
+# wrappers
 def log_command(func):
 	def func_wrapper(*args, **kwargs):
 		# each function is named "command_something"
@@ -38,14 +43,44 @@ def log_command(func):
 
 		if "scheduled" in kwargs:
 			if kwargs["scheduled"]:
-				log(f"[*] scheduled command - {command_name}\t{time.asctime()}")
+				log(f"    [*] scheduled command - {command_name}\t{time.asctime()}")
 			kwargs.pop("scheduled")
 		else:
+			# args[1] is update
 			if len(args) > 1 and args[1]:
 				command_text = args[1]['message']['text']
 			else:
 				command_text = "None"
-			log(f"[*] got command - {command_text}\tcalling {command_name}\t{time.asctime()}")
+			log(f"    [*] got command - {command_text}\tcalling {command_name}\t{time.asctime()}")
+
+		return func(*args, **kwargs)
+
+	return func_wrapper
+
+def void(*args, **kwargs):
+	return None
+
+"""
+requires:
+	1) self.user_chat_ids - a list of ints
+	2) self.user_names    - a list of strings, in the same length as self.user_chat_ids
+"""
+def whitelisted_command(func):
+	def func_wrapper(*args, **kwargs):
+		self = args[0]
+		if len(args) > 1 and args[1]:
+			update = args[1]
+			chat_id = update['message']['chat']['id']
+			if chat_id == self._chat_id:
+				log(f"[+] whitelist - success - {chat_id}")
+			else:
+				log(f"[-] whitelist - error - {chat_id}")
+				log(str(update))
+				log('\n')
+				return void
+		else:
+			# scheduled command
+			log(f"[*] whitelist - ignored (scheduled)")
 
 		return func(*args, **kwargs)
 
@@ -104,6 +139,7 @@ class TelegramCommands(object):
 			))
 
 
+	@whitelisted_command
 	@log_command
 	def command_cli(self, update, context):
 		args_list = ["--telegram"] + shlex.split(' '.join(context.args))
@@ -125,14 +161,17 @@ class TelegramCommands(object):
 			update
 		)
 
+	@whitelisted_command
 	@log_command
 	def command_today(self, update=None, context=None):
 		self.filtered_time_command(TimeFilter_Days(1), update)
 
+	@whitelisted_command
 	@log_command
 	def command_week(self, update=None, context=None):
 		self.filtered_time_command(TimeFilter_Days(7), update)
 
+	@whitelisted_command
 	@log_command
 	def command_month(self, update=None, context=None):
 		if context and context.args:
@@ -145,6 +184,7 @@ class TelegramCommands(object):
 
 		self.filtered_time_command(TimeFilter_Month(month), update)
 
+	@whitelisted_command
 	@log_command
 	def command_year(self, update=None, context=None):
 		if context and context.args:
@@ -157,6 +197,7 @@ class TelegramCommands(object):
 
 		self.filtered_time_command(TimeFilter_Year(year), update)
 
+	@whitelisted_command
 	@log_command
 	def command_yesterday(self, update=None, context=None):
 		stop_time  = get_midnight( datetime.datetime.now() )
@@ -171,6 +212,7 @@ class TelegramCommands(object):
 			update
 		)
 
+	@whitelisted_command
 	@log_command
 	def command_last_week(self, update=None, context=None):
 		today = datetime.datetime.now()
@@ -206,24 +248,29 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
+	@whitelisted_command
 	@log_command
 	def command_homework_pie(self, update=None, context=None):
 		self.pie_command(GroupedStats_Homework, TimeFilter_Days(7), update)
 
+	@whitelisted_command
 	@log_command
 	def command_lecture_pie(self, update=None, context=None):
 		self.pie_command(GroupedStats_Lecture, TimeFilter_Days(7), update)
 
+	@whitelisted_command
 	@log_command
 	def command_gaming_pie(self, update=None, context=None):
 		self.pie_command(GroupedStats_Games, TimeFilter_Days(7), update)
 
+	@whitelisted_command
 	@log_command
 	def command_youtube_pie(self, update=None, context=None):
 		self.pie_command(GroupedStats_Youtube, TimeFilter_Days(7), update)
 
 
 	#
+	@whitelisted_command
 	@log_command
 	def command_productive_pie_today(self, update=None, context=None):
 		f = TimeFilter_Days(1)
@@ -236,6 +283,7 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
+	@whitelisted_command
 	@log_command
 	def command_productive_pie_yesterday(self, update=None, context=None):
 		stop_time  = get_midnight( datetime.datetime.now() )
@@ -255,6 +303,7 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
+	@whitelisted_command
 	@log_command
 	def command_productive_pie_week(self, update=None, context=None):
 		f = TimeFilter_Days(7)
@@ -267,6 +316,7 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
+	@whitelisted_command
 	@log_command
 	def command_productive_pie_month(self, update=None, context=None):
 		if context and context.args:
@@ -287,6 +337,7 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
+	@whitelisted_command
 	@log_command
 	def command_productive_pie_year(self, update=None, context=None):
 		if context and context.args:
@@ -307,6 +358,7 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
+	@whitelisted_command
 	@log_command
 	def command_productive_pie_all(self, update=None, context=None):
 		pie_file = get_productivity_pie(
@@ -318,6 +370,7 @@ class TelegramCommands(object):
 
 
 	#
+	@whitelisted_command
 	@log_command
 	def command_test(self, update=None, context=None):
 		s = "test"
@@ -325,10 +378,12 @@ class TelegramCommands(object):
 			s += ": " + str(context.args)
 		self.send_text(s, update)
 
+	@whitelisted_command
 	@log_command
 	def command_pdb(self, update=None, context=None):
 		pdb.set_trace()
 
+	@whitelisted_command
 	@log_command
 	def command_reload(self, update=None, context=None):
 		self.datafolder.reload()
@@ -339,6 +394,7 @@ class TelegramCommands(object):
 		if update is not None:
 			self.send_text("reload - done", update)
 
+	@whitelisted_command
 	@log_command
 	def command_wget(self, update=None, context=None):
 		log("update")
