@@ -144,7 +144,7 @@ if true: sort the result of self.group by the values, and show the top values fi
 else: sort alphabetically or whatever
 """
 class GroupedStats(Stats):
-	_allowed_group_values = ("time", "amount")
+	_allowed_group_values = ("time", "time_average", "amount")
 	_allowed_sorting_methods = ("alphabetically", "by_value")
 
 	def __init__(self, data, selected_time="All times", group_value="time", sort="by_value"):
@@ -208,6 +208,8 @@ class GroupedStats(Stats):
 			return self.values_dict[header]["amount_of_time"]
 		elif self.group_value == "amount":
 			return self.values_dict[header]["amount_of_items"]
+		elif self.group_value == "time_average":
+			return self.values_dict[header]["item_average"]
 		else:
 			raise ValueError
 
@@ -473,40 +475,25 @@ class GroupedStats_Group(GroupedStats):
 		return GroupFilter(header).get_filtered_data(self.data)
 
 
-"""
-TODO:
-add "total_amount" to _allowed_group_values
-and add it to _get_value_of_header & _set_value_of_header
-
-both to GroupGroupedStats and ExtraDetailsGroupedStats
-
-maybe merge them with some 3rd party class?
-"""
-class GroupGroupedStats(GroupedStats):
-	# _allowed_group_values = ("time", "amount", "total_amount")
-
+class FilteredGroupedStats(GroupedStats):
 	STRIPPING_REGEX = [
 		# brackets
-		# "\\(.*",
 		" ?\\(.*?\\)",
-		# with friends
-		# "with .*",
+		# friends
 		" ?with %s" % PATTERN_NAMES_LIST,
+		" ?for %s"  % PATTERN_NAMES_LIST,
+		" ?to %s"   % PATTERN_NAMES_LIST,
 		# at location
 		PATTERN_LOCATION,
 
 		# specific patterns
 		" ?to friends"
 	]
-	"""
-	requires:
-		self._category_name
-	"""
-	def __init__(self, data, category_name=None, **kwargs):
-		super().__init__(data, **kwargs)
-		self._category_name = getattr(self, "_category_name", category_name)
 
-		self._filter_obj = GroupFilter(self._category_name)
+	def __init__(self, data, filter_obj, **kwargs):
+		super().__init__(data, **kwargs)
+
+		self._filter_obj = filter_obj
 
 		self._initialize_data()
 
@@ -534,26 +521,23 @@ class GroupGroupedStats(GroupedStats):
 		return self._headers
 
 	def _get_filtered_data_per_header(self, header):
-		header_re = re_escape(header)
-
-		# add \\b before & after the string
-		# unless there is a regex character
-		header_pattern = ""
-		# before
-		if header_re[0] != '\\':
-			header_pattern += "\\b"
-		# the header
-		header_pattern += re_escape(header)
-		# after
-		if len(header) > 2 and header[-2] != '\\':
-			header_pattern += "\\b"
-		elif len(header) <= 2:
-			header_pattern += "\\b"
-
 		return list(filter(
-			lambda i: bool(re.findall(header_pattern, self._strip(i.description))),
+			lambda i: header == self._strip(i.description),
 			self.data
 		))
+
+class GroupGroupedStats(GroupedStats):
+	"""
+	requires:
+		self._category_name
+	"""
+	def __init__(self, data, category_name=None, **kwargs):
+		self._category_name = getattr(self, "_category_name", category_name)
+
+		filter_obj = GroupFilter(self._category_name)
+
+		super().__init__(data, filter_obj, **kwargs)
+
 
 class GroupedStats_Games(GroupGroupedStats):
 	_category_name = "Gaming"
@@ -576,7 +560,7 @@ class ExtraDetailsGroupedStats(GroupedStats):
 		self._extra_details_name
 
 		and requires a call to self._initialize_data in __init__
-			since it reuiqures self._filter_obj
+			since it requires self._filter_obj
 	"""
 	def _initialize_data(self):
 		self._original_data = self.data
