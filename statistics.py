@@ -412,18 +412,18 @@ class GroupedStats(Stats):
 		"""
 
 		# calculate statistics for the whole time period
-		amount_of_transactions = len(self.data)
-		amount_of_money = sum(map(float, self.data))
+		amount_of_items = len(self.data)
+		amount_of_time = sum(map(int, self.data))
 
-		if amount_of_transactions == 0:
-			transactions_per_day = 0
+		if amount_of_time == 0:
+			events_per_day = 0
 		else:
 			amount_of_days = (self.data[-1].date - self.data[0].date).days + 1
-			transactions_per_day = amount_of_transactions / amount_of_days
+			events_per_day = amount_of_items / amount_of_days
 
-		s = header(transactions_per_day)
+		s = header(events_per_day)
 
-		if not amount_of_transactions:
+		if not amount_of_items:
 			s += "\n    No items found :("
 			return s
 
@@ -431,10 +431,10 @@ class GroupedStats(Stats):
 		header_format = "%%-%ds" % (max(map(len, self.headers), default=1) + 1)
 		for h in self.headers:
 			s += "\n"
-			s += statistics_per_header(h, header_format, amount_of_money)
+			s += statistics_per_header(h, header_format, amount_of_time)
 
 		s += "\n"
-		s += footer(header_format, amount_of_transactions, amount_of_money)
+		s += footer(header_format, amount_of_items, amount_of_time)
 
 		return s
 
