@@ -366,6 +366,19 @@ class GroupedStats(Stats):
 			stats["time_percentage"],
 			seconds_to_str(stats["item_average"]),
 		)
+	def _generate_to_telegram_statistics_per_header(self, header, header_format, amount_of_time):
+		self._get_value_of_header(header)
+		stats = self.values_dict[header]
+
+		stats["time_percentage"] = 100.0 * stats["amount_of_time"] / amount_of_time
+
+		return "    %-14s\n      (%4d) : %s (%5.2f%%)\n      average %s" % (
+			(header_format % header),
+			stats["amount_of_items"],
+			seconds_to_str(stats["amount_of_time"]),
+			stats["time_percentage"],
+			seconds_to_str(stats["item_average"]),
+		)
 
 	def _generate_to_text_footer(self, header_format, amount_of_items, amount_of_time):
 		s  = "    " + '-'*57
@@ -386,7 +399,9 @@ class GroupedStats(Stats):
 
 		return s
 
-	def to_text(self):
+
+
+	def _generate_text(self, header, statistics_per_header, footer):
 		"""
 		TODO
 		and create a wrapper
@@ -397,18 +412,18 @@ class GroupedStats(Stats):
 		"""
 
 		# calculate statistics for the whole time period
-		amount_of_items = len(self.data)
-		amount_of_time = sum(map(int, self.data))
+		amount_of_transactions = len(self.data)
+		amount_of_money = sum(map(float, self.data))
 
-		if amount_of_time == 0:
-			events_per_day = 0
+		if amount_of_transactions == 0:
+			transactions_per_day = 0
 		else:
 			amount_of_days = (self.data[-1].date - self.data[0].date).days + 1
-			events_per_day = amount_of_items / amount_of_days
+			transactions_per_day = amount_of_transactions / amount_of_days
 
-		s = self._generate_to_text_header(events_per_day)
+		s = header(transactions_per_day)
 
-		if not amount_of_items:
+		if not amount_of_transactions:
 			s += "\n    No items found :("
 			return s
 
@@ -416,12 +431,26 @@ class GroupedStats(Stats):
 		header_format = "%%-%ds" % (max(map(len, self.headers), default=1) + 1)
 		for h in self.headers:
 			s += "\n"
-			s += self._generate_to_text_statistics_per_header(h, header_format, amount_of_time)
+			s += statistics_per_header(h, header_format, amount_of_money)
 
 		s += "\n"
-		s += self._generate_to_text_footer(header_format, amount_of_items, amount_of_time)
+		s += footer(header_format, amount_of_transactions, amount_of_money)
 
 		return s
+
+	def to_text(self):
+		return self._generate_text(
+			self._generate_to_text_header,
+			self._generate_to_text_statistics_per_header,
+			self._generate_to_text_footer
+		)
+
+	def to_telegram(self):
+		return self._generate_text(
+			self._generate_to_text_header,
+			self._generate_to_telegram_statistics_per_header,
+			self._generate_to_text_footer
+		)
 
 class GroupedStats_Friend(GroupedStats):
 	def _get_headers(self):
