@@ -104,7 +104,7 @@ class TelegramServer(object):
 			return update['message']['chat']['id']
 		else:
 			return self._chat_id
-	
+
 	def send_text(self, text, update=None):
 		self.updater.bot.sendMessage(
 			self.chat_id(update),
