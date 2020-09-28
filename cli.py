@@ -38,13 +38,15 @@ def parse_args(args_list=None):
 	debugging.add_argument("--telegram", action="store_true")
 
 	special = parser.add_argument_group("special")
-	special.add_argument("--group"              , type=str , default=None, dest="group"   , help="show statistics per group")
-	special.add_argument("--gaming"             , action="store_true"    , dest="gaming"  , help="show gaming statistics")
-	special.add_argument("--friend", "--friends", action="store_true"    , dest="friend"  , help="show friend statistics")
-	special.add_argument("--location"           , action="store_true"    , dest="location", help="show location statistics")
-	special.add_argument("--youtube"            , action="store_true"    , dest="youtube" , help="show youtube statistics")
-	special.add_argument("--lecture"            , action="store_true"    , dest="lecture" , help="show lecture statistics")
-	special.add_argument("--homework"           , action="store_true"    , dest="homework", help="show homework statistics")
+	special.add_argument("--group"              , type=str , default=None, dest="group"       , help="show statistics per group")
+	special.add_argument("--gaming"             , action="store_true"    , dest="gaming"      , help="show gaming statistics")
+	special.add_argument("--friend", "--friends", action="store_true"    , dest="friend"      , help="show friend statistics")
+	special.add_argument("--location"           , action="store_true"    , dest="location"    , help="show location statistics")
+	special.add_argument("--youtube"            , action="store_true"    , dest="youtube"     , help="show youtube statistics")
+	special.add_argument("--lecture"            , action="store_true"    , dest="lecture"     , help="show lecture statistics")
+	special.add_argument("--homework"           , action="store_true"    , dest="homework"    , help="show homework statistics")
+	special.add_argument("--shower"             , action="store_true"    , dest="shower"      , help="show shower statistics")
+	special.add_argument("--prepare-food"       , action="store_true"    , dest="prepare_food", help="show cooking statistics")
 
 	if args_list is None:
 		args = parser.parse_args()
@@ -208,6 +210,18 @@ def get_special_text(data, selected_time, args):
 
 	elif args.homework:
 		g = TimeCsv.statistics.GroupedStats_Homework(
+			data,
+			**groupedstats_params
+		)
+
+	elif args.shower:
+		g = TimeCsv.statistics.GroupedStats_Shower(
+			data,
+			**groupedstats_params
+		)
+
+	elif args.prepare_food:
+		g = TimeCsv.statistics.GroupedStats_PrepareFood(
 			data,
 			**groupedstats_params
 		)

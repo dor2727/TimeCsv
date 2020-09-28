@@ -138,6 +138,25 @@ class TelegramCommands(object):
 				getattr(self, command_name)
 			))
 
+	def parse_args(self, context, *expected_types):
+		result = []
+		if context and context.args:
+			try:
+				for i in range(len(context.args)):
+					result.append(expected_types[i](context.args[i]))
+			except Exception as e:
+				self.send_text(
+					f"command_month error: {e} ; args = {context.args}",
+					# send it to me, not to the user (avoiding information disclosure)
+					self.chat_id()
+				)
+
+		# fill default values, if needed
+		for i in range(len(result), len(expected_types)):
+			result.append(expected_types[i]())
+
+		return result
+
 
 	@whitelisted_command
 	@log_command
@@ -174,27 +193,13 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_month(self, update=None, context=None):
-		if context and context.args:
-			try:
-				month = int(context.args[0])
-			except Exception as e:
-				self.send_text(f"command_month error: {e}", update)
-		else:
-			month = 0 # the default value
-
-		self.filtered_time_command(TimeFilter_Month(month), update)
+		month, year = self.parse_args(context, int, int)
+		self.filtered_time_command(TimeFilter_Month(month, year), update)
 
 	@whitelisted_command
 	@log_command
 	def command_year(self, update=None, context=None):
-		if context and context.args:
-			try:
-				year = int(context.args[0])
-			except Exception as e:
-				self.send_text(f"command_year error: {e}", update)
-		else:
-			year = 0 # the default value
-
+		year, = self.parse_args(context, int)
 		self.filtered_time_command(TimeFilter_Year(year), update)
 
 	@whitelisted_command
@@ -319,15 +324,8 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_productive_pie_month(self, update=None, context=None):
-		if context and context.args:
-			try:
-				month = int(context.args[0])
-			except Exception as e:
-				self.send_text(f"command_month error: {e}", update)
-		else:
-			month = 0 # the default value
-
-		f = TimeFilter_Month(month)
+		month, year = self.parse_args(context, int, int)
+		f = TimeFilter_Month(month, year)
 
 		pie_file = get_productivity_pie(
 			data=f % self.datafolder.data,
@@ -340,14 +338,7 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_productive_pie_year(self, update=None, context=None):
-		if context and context.args:
-			try:
-				year = int(context.args[0])
-			except Exception as e:
-				self.send_text(f"command_year error: {e}", update)
-		else:
-			year = 0 # the default value
-
+		year, = self.parse_args(context, int)
 		f = TimeFilter_Year(year)
 
 		pie_file = get_productivity_pie(
