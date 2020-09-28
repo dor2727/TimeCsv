@@ -555,7 +555,7 @@ class FilteredGroupedStats(GroupedStats):
 			self.data
 		))
 
-class GroupGroupedStats(GroupedStats):
+class GroupGroupedStats(FilteredGroupedStats):
 	"""
 	requires:
 		self._category_name
@@ -643,6 +643,34 @@ class GroupedStats_Homework(ExtraDetailsGroupedStats):
 			HasExtraDetailsFilter()
 			 &
 			GroupFilter("University")
+		)
+
+		self._initialize_data()
+
+class GroupedStats_Shower(ExtraDetailsGroupedStats):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+		self._extra_details_name = "shower"
+
+		self._filter_obj = (
+			DescriptionFilter("shower")
+			 &
+			HasExtraDetailsFilter()
+		)
+
+		self._initialize_data()
+
+class GroupedStats_PrepareFood(ExtraDetailsGroupedStats):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+		self._extra_details_name = "prepare_food"
+
+		self._filter_obj = (
+			DescriptionFilter("prepare_food")
+			 &
+			HasExtraDetailsFilter()
 		)
 
 		self._initialize_data()
