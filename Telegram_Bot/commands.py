@@ -278,12 +278,14 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_productive_pie_today(self, update=None, context=None):
+		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
 		f = TimeFilter_Days(1)
 
 		pie_file = get_productivity_pie(
 			data=f % self.datafolder.data,
 			selected_time=f._selected_time,
-			save=True
+			save=True,
+			focused=bool(focused)
 		)
 
 		self.send_image(pie_file, update)
@@ -291,6 +293,8 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_productive_pie_yesterday(self, update=None, context=None):
+		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
+
 		stop_time  = get_midnight( datetime.datetime.now() )
 		start_time = get_midnight(
 			stop_time
@@ -303,7 +307,8 @@ class TelegramCommands(object):
 		pie_file = get_productivity_pie(
 			data=f % self.datafolder.data,
 			selected_time=f._selected_time,
-			save=True
+			save=True,
+			focused=bool(focused)
 		)
 
 		self.send_image(pie_file, update)
@@ -311,12 +316,15 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_productive_pie_week(self, update=None, context=None):
+		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
+
 		f = TimeFilter_Days(7)
 
 		pie_file = get_productivity_pie(
 			data=f % self.datafolder.data,
 			selected_time=f._selected_time,
-			save=True
+			save=True,
+			focused=bool(focused)
 		)
 
 		self.send_image(pie_file, update)
@@ -324,13 +332,14 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_productive_pie_month(self, update=None, context=None):
-		month, year = self.parse_args(context, int, int)
+		month, year, focused = self.parse_args(context, int, int, int)
 		f = TimeFilter_Month(month, year)
 
 		pie_file = get_productivity_pie(
 			data=f % self.datafolder.data,
 			selected_time=f._selected_time,
-			save=True
+			save=True,
+			focused=bool(focused)
 		)
 
 		self.send_image(pie_file, update)
@@ -338,13 +347,14 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_productive_pie_year(self, update=None, context=None):
-		year, = self.parse_args(context, int)
+		year, focused = self.parse_args(context, int, int)
 		f = TimeFilter_Year(year)
 
 		pie_file = get_productivity_pie(
 			data=f % self.datafolder.data,
 			selected_time=f._selected_time,
-			save=True
+			save=True,
+			focused=bool(focused)
 		)
 
 		self.send_image(pie_file, update)
@@ -352,9 +362,12 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_productive_pie_all(self, update=None, context=None):
+		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
+
 		pie_file = get_productivity_pie(
 			data=self.datafolder.data,
-			save=True
+			save=True,
+			focused=bool(focused)
 		)
 
 		self.send_image(pie_file, update)
