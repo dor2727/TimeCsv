@@ -414,8 +414,11 @@ class TelegramCommands(object):
 			f = open(DAILY_WGET_LOG_PATH)
 			s = f.read()
 			f.close()
-			self.send_text("wget - done", update)
-			self.send_text(s, update)
+			self.send_text(f"wget - done\n{s}", update)
+
+		wget_only, = self.parse_args(context, int)
+		if not bool(wget_only):
+			self.command_reload(update, context)
 
 	def full_reload(self):
 		self.command_wget()
