@@ -384,20 +384,12 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_wget(self, update=None, context=None):
-		log("update")
-		log(str(update))
-		log("context")
-		log(str(context))
-		os.system(DAILY_WGET_PATH)
-		log(f"    [w] wget : {time.asctime()}")
+		wget(log, update, context)
 
 		# if update is None - we are called from the scheduler
 		# only answer the user if the user asks the reload
 		if update is not None:
-			f = open(DAILY_WGET_LOG_PATH)
-			s = f.read()
-			f.close()
-			self.send_text(f"wget - done\n{s}", update)
+			self.send_text(f"wget - done\n{get_wget_log()}", update)
 
 		wget_only, = self.parse_args(context, int)
 		if not bool(wget_only):
