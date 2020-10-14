@@ -379,15 +379,15 @@ class DataFile(object):
 			raise OSError("file not found (%s)" % path_without_extension)
 
 	def _load_data(self, path):
-		r = csv.reader(
-			open(
-				os.path.expandvars(
-					os.path.expanduser(
-						path
-					)
+		handle = open(
+			os.path.expandvars(
+				os.path.expanduser(
+					path
 				)
 			)
 		)
+		r = csv.reader(handle)
+
 		self.headers = next(r)
 		self.data = list(filter(
 			# filter out comment lines
@@ -398,6 +398,7 @@ class DataFile(object):
 				r
 			)
 		))
+		handle.close()
 
 	def _reevaluate_data(self):
 		# ignoring first and last, which doesnt have 'prev' and 'next' respectivly
