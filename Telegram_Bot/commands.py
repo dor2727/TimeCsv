@@ -12,28 +12,11 @@ from TimeCsv.parsing import DataFolder, ParseError
 from TimeCsv.consts import *
 from TimeCsv.filters import *
 from TimeCsv.statistics import *
+from TimeCsv.time_utils import read_telegram_file, log, wget
 from TimeCsv.functions.productivity import get_productivity_pie
 
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
-
-LOG_FILE = open(os.path.join(TELEGRAM_DATA_DIRECTORY, "log.log"), "a")
-
-# utils
-def read_file(filename):
-	handle = open(os.path.join(
-		TELEGRAM_DATA_DIRECTORY,
-		filename
-	))
-	data = handle.read().strip()
-	handle.close()
-	return data
-
-def log(s):
-	print(s)
-	LOG_FILE.write(s)
-	LOG_FILE.write('\n')
-	LOG_FILE.flush()
 
 # wrappers
 def log_command(func):
@@ -90,8 +73,8 @@ def whitelisted_command(func):
 class TelegramServer(object):
 	def __init__(self):
 		# server initialization
-		self._key = read_file("key")
-		self._chat_id = int(read_file("chat_id"))
+		self._key = read_telegram_file("key")
+		self._chat_id = int(read_telegram_file("chat_id"))
 
 		self.updater = Updater(self._key, use_context=True)
 		self.dp = self.updater.dispatcher
