@@ -359,7 +359,7 @@ class GroupedStats(Stats):
 
 		stats["time_percentage"] = 100.0 * stats["amount_of_time"] / amount_of_time
 
-		return "    %-14s (%4d) : %s (%5.2f%%) ; item average %s" % (
+		return "    %s (%4d) : %s (%5.2f%%) ; item average %s" % (
 			(header_format % header),
 			stats["amount_of_items"],
 			seconds_to_str(stats["amount_of_time"]),
@@ -372,7 +372,7 @@ class GroupedStats(Stats):
 
 		stats["time_percentage"] = 100.0 * stats["amount_of_time"] / amount_of_time
 
-		return "    %-14s\n      (%4d) : %s (%5.2f%%)\n      average %s" % (
+		return "    %s\n        (%4d) : %s (%5.2f%%)\n          avg %s" % (
 			(header_format % header),
 			stats["amount_of_items"],
 			seconds_to_str(stats["amount_of_time"]),
@@ -383,7 +383,7 @@ class GroupedStats(Stats):
 	def _generate_to_text_footer(self, header_format, amount_of_items, amount_of_time):
 		s  = "    " + '-'*57
 		s += "\n"
-		s += "    %-14s (%4d) : %2d days %2d hours %2d minutes" % (
+		s += "    %s (%4d) : %2d days %2d hours %2d minutes" % (
 			(header_format % "Total"),
 			amount_of_items,
 			amount_of_time // (60*60*24),
