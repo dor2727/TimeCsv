@@ -12,28 +12,11 @@ from TimeCsv.parsing import DataFolder, ParseError
 from TimeCsv.consts import *
 from TimeCsv.filters import *
 from TimeCsv.statistics import *
+from TimeCsv.time_utils import read_telegram_file, log, wget
 from TimeCsv.functions.productivity import get_productivity_pie
 
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
-
-LOG_FILE = open(os.path.join(TELEGRAM_DATA_DIRECTORY, "log.log"), "a")
-
-# utils
-def read_file(filename):
-	handle = open(os.path.join(
-		TELEGRAM_DATA_DIRECTORY,
-		filename
-	))
-	data = handle.read().strip()
-	handle.close()
-	return data
-
-def log(s):
-	print(s)
-	LOG_FILE.write(s)
-	LOG_FILE.write('\n')
-	LOG_FILE.flush()
 
 # wrappers
 def log_command(func):
@@ -90,8 +73,8 @@ def whitelisted_command(func):
 class TelegramServer(object):
 	def __init__(self):
 		# server initialization
-		self._key = read_file("key")
-		self._chat_id = int(read_file("chat_id"))
+		self._key = read_telegram_file("key")
+		self._chat_id = int(read_telegram_file("chat_id"))
 
 		self.updater = Updater(self._key, use_context=True)
 		self.dp = self.updater.dispatcher
@@ -401,21 +384,16 @@ class TelegramCommands(object):
 	@whitelisted_command
 	@log_command
 	def command_wget(self, update=None, context=None):
-		log("update")
-		log(str(update))
-		log("context")
-		log(str(context))
-		os.system(DAILY_WGET_PATH)
-		log(f"    [w] wget : {time.asctime()}")
+		wget(log, update, context)
 
 		# if update is None - we are called from the scheduler
 		# only answer the user if the user asks the reload
 		if update is not None:
-			f = open(DAILY_WGET_LOG_PATH)
-			s = f.read()
-			f.close()
-			self.send_text("wget - done", update)
-			self.send_text(s, update)
+			self.send_text(f"wget - done\n{get_wget_log()}", update)
+
+		wget_only, = self.parse_args(context, int)
+		if not bool(wget_only):
+			self.command_reload(update, context)
 
 	def full_reload(self):
 		self.command_wget()
