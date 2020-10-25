@@ -6,7 +6,7 @@ import argparse
 import datetime
 
 import TimeCsv.statistics
-from TimeCsv.parsing import DataFolder
+from TimeCsv.parsing import DataFolder, ParseError
 from TimeCsv.time_utils import newest
 from TimeCsv.filters import *
 
@@ -268,7 +268,17 @@ def main(datafolder, args_list=None):
 def test(debug=False):
 	print("[*] test")
 
-	b = DataFolder()
+	try:
+		b = DataFolder()
+	except ParseError as pe:
+		print("ParseError")
+		import pdb; pdb.set_trace()
+		print("ParseError")
+	except Exception as exc:
+		print("Exception")
+		import pdb; pdb.set_trace()
+		print("Exception")
+
 	if debug:
 		print(f"DataFolder: {b}")
 

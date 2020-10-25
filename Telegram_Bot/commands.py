@@ -12,28 +12,11 @@ from TimeCsv.parsing import DataFolder, ParseError
 from TimeCsv.consts import *
 from TimeCsv.filters import *
 from TimeCsv.statistics import *
+from TimeCsv.time_utils import read_telegram_file, log
 from TimeCsv.functions.productivity import get_productivity_pie
 
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler
 
-
-LOG_FILE = open(os.path.join(TELEGRAM_DATA_DIRECTORY, "log.log"), "a")
-
-# utils
-def read_file(filename):
-	handle = open(os.path.join(
-		TELEGRAM_DATA_DIRECTORY,
-		filename
-	))
-	data = handle.read().strip()
-	handle.close()
-	return data
-
-def log(s):
-	print(s)
-	LOG_FILE.write(s)
-	LOG_FILE.write('\n')
-	LOG_FILE.flush()
 
 # wrappers
 def log_command(func):
@@ -90,8 +73,8 @@ def whitelisted_command(func):
 class TelegramServer(object):
 	def __init__(self):
 		# server initialization
-		self._key = read_file("key")
-		self._chat_id = int(read_file("chat_id"))
+		self._key = read_telegram_file("key")
+		self._chat_id = int(read_telegram_file("chat_id"))
 
 		self.updater = Updater(self._key, use_context=True)
 		self.dp = self.updater.dispatcher
@@ -468,6 +451,10 @@ class TelegramAPI(TelegramServer, TelegramCommands, TelegramScheduledCommands):
 		self.schedule_commands()
 
 def main():
+	log(f"----------------")
+	now = datetime.datetime.now().strftime("%Y/%m/%d_%H:%M")
+	log(f"[*] Starting: {now}")
+
 	while True:
 		try:
 			# an exception can either happen in __init__, when self.datafolder is created
@@ -476,11 +463,11 @@ def main():
 			t.loop()
 
 		except ParseError as pe:
-			log(f"[*] Caught ParseError. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+			log(f"[*] Caught ParseError in main. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
 			time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
 
 		except Exception as exc:
-			log(f"[!] Caught general error - quitting")
+			log(f"[!] Caught general error in main - quitting")
 			raise exc
 	LOG_FILE.close()
 
