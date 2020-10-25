@@ -15,7 +15,15 @@ from TimeCsv.statistics import *
 from TimeCsv.time_utils import read_telegram_file, log, wget
 from TimeCsv.functions.productivity import get_productivity_pie
 
-from telegram.ext import Updater, InlineQueryHandler, CommandHandler
+from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
+
+def get_message(update):
+	if update["message"] is not None:
+		return update['message']
+	else:
+		return update['callback_query']['message']
 
 
 # wrappers
@@ -31,7 +39,11 @@ def log_command(func):
 		else:
 			# args[1] is update
 			if len(args) > 1 and args[1]:
-				command_text = args[1]['message']['text']
+				update = args[1]
+				if update["message"] is not None:
+					command_text = update['message']['text']
+				else:
+					command_text = update['callback_query']['data']
 			else:
 				command_text = "None"
 			log(f"    [*] got command - {command_text}\tcalling {command_name}\t{time.asctime()}")
@@ -53,7 +65,9 @@ def whitelisted_command(func):
 		self = args[0]
 		if len(args) > 1 and args[1]:
 			update = args[1]
-			chat_id = update['message']['chat']['id']
+
+			chat_id = get_message(update)['chat']['id']
+
 			if chat_id == self._chat_id:
 				log(f"[+] whitelist - success - {chat_id}")
 			else:
@@ -84,7 +98,7 @@ class TelegramServer(object):
 
 	def chat_id(self, update=None):
 		if update:
-			return update['message']['chat']['id']
+			return get_message(update)['chat']['id']
 		else:
 			return self._chat_id
 
@@ -110,6 +124,7 @@ class TelegramCommands(object):
 		return c[8:]
 
 	def add_all_handlers(self):
+		# register commands
 		commands = filter(
 			lambda s: s.startswith("command_"),
 			dir(self)
@@ -119,6 +134,18 @@ class TelegramCommands(object):
 			self.dp.add_handler(CommandHandler(
 				self._command_name(command_name),
 				getattr(self, command_name)
+			))
+
+		# register menus
+		menus = filter(
+			lambda s: s.startswith("menu_"),
+			dir(self)
+		)
+
+		for menu_name in menus:
+			self.dp.add_handler(CallbackQueryHandler(
+				getattr(self, menu_name),
+				pattern=f"^{menu_name}\\b",
 			))
 
 	def parse_args(self, context, *expected_types):
@@ -151,6 +178,8 @@ class TelegramCommands(object):
 		)
 
 	#
+	# text report
+	#
 	def filtered_time_command(self, f, update=None):
 		g = GroupedStats_Group(
 			f % self.datafolder.data,
@@ -165,60 +194,45 @@ class TelegramCommands(object):
 
 	@whitelisted_command
 	@log_command
-	def command_today(self, update=None, context=None):
-		self.filtered_time_command(TimeFilter_Days(1), update)
+	def command_text_report(self, update, context):
+		def kbd(name):
+			return InlineKeyboardButton(name, callback_data=f"menu_text_report {name}")
+
+		keyboard = [
+			[kbd("today"), kbd("yesterday"), kbd("week"), kbd("last_week")],
+			[kbd("month"), kbd("year"), kbd("all")],
+		]
+		update.message.reply_text(
+			"Select date:",
+			reply_markup=InlineKeyboardMarkup(keyboard)
+		)
 
 	@whitelisted_command
 	@log_command
-	def command_week(self, update=None, context=None):
-		self.filtered_time_command(TimeFilter_Days(7), update)
+	def menu_text_report(self, update, context):
+		data = update.callback_query.data
+		callback_name, filter_name = data.split()
+
+		self.filtered_time_command(
+			get_named_filter(filter_name),
+			update
+		)
+
 
 	@whitelisted_command
 	@log_command
-	def command_month(self, update=None, context=None):
+	def command_text_report_month(self, update=None, context=None):
 		month, year = self.parse_args(context, int, int)
 		self.filtered_time_command(TimeFilter_Month(month, year), update)
 
 	@whitelisted_command
 	@log_command
-	def command_year(self, update=None, context=None):
+	def command_text_report_year(self, update=None, context=None):
 		year, = self.parse_args(context, int)
 		self.filtered_time_command(TimeFilter_Year(year), update)
 
-	@whitelisted_command
-	@log_command
-	def command_yesterday(self, update=None, context=None):
-		stop_time  = get_midnight( datetime.datetime.now() )
-		start_time = get_midnight(
-			stop_time
-			 -
-			datetime.timedelta(days=1)
-		)
-
-		self.filtered_time_command(
-			TimeFilter_DateRange( start_time, stop_time ),
-			update
-		)
-
-	@whitelisted_command
-	@log_command
-	def command_last_week(self, update=None, context=None):
-		today = datetime.datetime.now()
-
-		if WEEK_STARTS_AT_SUNDAY:
-			weekday = today.weekday() + WEEK_STARTS_AT_SUNDAY
-			if weekday == 7:
-				weekday = 0
-		else:
-			weekday = today.weekday()
-		this_sunday = get_midnight(today - datetime.timedelta(days=weekday))
-		prev_sunday = this_sunday - datetime.timedelta(days=7)
-
-		self.filtered_time_command(
-			TimeFilter_DateRange( prev_sunday, this_sunday ),
-			update
-		)
-
+	#
+	# pie reports
 	#
 	def pie_command(self, g_cls, f, update=None):
 		g = g_cls(
@@ -236,81 +250,77 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
-	@whitelisted_command
-	@log_command
-	def command_homework_pie(self, update=None, context=None):
-		self.pie_command(GroupedStats_Homework, TimeFilter_Days(7), update)
+	MENU_PIE_SUBJECTS = {
+		"homework" : GroupedStats_Homework,
+		"lecture"  : GroupedStats_Lecture,
+		"gaming"   : GroupedStats_Games,
+		"youtube"  : GroupedStats_Youtube,
+	}
 
 	@whitelisted_command
 	@log_command
-	def command_lecture_pie(self, update=None, context=None):
-		self.pie_command(GroupedStats_Lecture, TimeFilter_Days(7), update)
+	def command_pie(self, update, context):
+		def kbd(name):
+			return InlineKeyboardButton(name, callback_data=f"menu_pie {name}")
+
+		keyboard = [
+			[kbd(i) for i in self.MENU_PIE_SUBJECTS.keys()],
+		]
+		update.message.reply_text(
+			"Select subject:",
+			reply_markup=InlineKeyboardMarkup(keyboard)
+		)
 
 	@whitelisted_command
 	@log_command
-	def command_gaming_pie(self, update=None, context=None):
-		self.pie_command(GroupedStats_Games, TimeFilter_Days(7), update)
+	def menu_pie(self, update, context):
+		data = update.callback_query.data
+		callback_name, subject_name = data.split()
 
-	@whitelisted_command
-	@log_command
-	def command_youtube_pie(self, update=None, context=None):
-		self.pie_command(GroupedStats_Youtube, TimeFilter_Days(7), update)
+		self.pie_command(
+			self.MENU_PIE_SUBJECTS[subject_name],
+			TimeFilter_Days(7),
+			update
+		)
 
-
+	#
+	# productive pie
 	#
 	@whitelisted_command
 	@log_command
-	def command_productive_pie_today(self, update=None, context=None):
+	def command_productive_pie(self, update, context):
 		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
-		f = TimeFilter_Days(1)
 
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
-			selected_time=f._selected_time,
-			save=True,
-			focused=bool(focused)
+		def kbd(name):
+			return InlineKeyboardButton(name, callback_data=f"menu_productive_pie {name} {focused}")
+
+		keyboard = [
+			[kbd("today"), kbd("yesterday"), kbd("week"), kbd("last_week")],
+			[kbd("month"), kbd("year"), kbd("all")],
+		]
+		update.message.reply_text(
+			"Select date:",
+			reply_markup=InlineKeyboardMarkup(keyboard)
 		)
-
-		self.send_image(pie_file, update)
 
 	@whitelisted_command
 	@log_command
-	def command_productive_pie_yesterday(self, update=None, context=None):
-		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
+	def menu_productive_pie(self, update, context):
+		data = update.callback_query.data
+		callback_name, filter_name, focused = data.split()
 
-		stop_time  = get_midnight( datetime.datetime.now() )
-		start_time = get_midnight(
-			stop_time
-			 -
-			datetime.timedelta(days=1)
-		)
-
-		f = TimeFilter_DateRange( start_time, stop_time )
+		f = get_named_filter(filter_name)
+		focused = bool(int(focused))
 
 		pie_file = get_productivity_pie(
 			data=f % self.datafolder.data,
-			selected_time=f._selected_time,
+			selected_time=filter_name,
 			save=True,
-			focused=bool(focused)
+			focused=focused
 		)
 
 		self.send_image(pie_file, update)
 
-	@whitelisted_command
-	@log_command
-	def command_productive_pie_week(self, update=None, context=None):
-		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
-
-		f = TimeFilter_Days(7)
-
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
-			selected_time=f._selected_time,
-			save=True,
-			focused=bool(focused)
-		)
-
-		self.send_image(pie_file, update)
 
 	@whitelisted_command
 	@log_command
@@ -342,20 +352,8 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
-	@whitelisted_command
-	@log_command
-	def command_productive_pie_all(self, update=None, context=None):
-		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
-
-		pie_file = get_productivity_pie(
-			data=self.datafolder.data,
-			save=True,
-			focused=bool(focused)
-		)
-
-		self.send_image(pie_file, update)
-
-
+	#
+	# others
 	#
 	@whitelisted_command
 	@log_command
@@ -416,43 +414,59 @@ class TelegramCommands(object):
 
 class TelegramScheduledCommands(object):
 	def schedule_commands(self):
+		#
 		# daily log
+		#
+		# yesterday text report
 		schedule.every().day.at("08:00").do(
-			self.command_yesterday,
-			scheduled=True
+			self.filtered_time_command,
+			get_named_filter("yesterday"),
 		)
+		# yesterday productive pie
 		schedule.every().day.at("08:00").do(
-			self.command_productive_pie_yesterday,
-			scheduled=True
+			self.send_image,
+			get_productivity_pie(
+				data=get_named_filter("yesterday") % self.datafolder.data,
+				selected_time="yesterday",
+				save=True,
+				focused=False
+			)
 		)
 
 		# weekly log
+		#
+		# last week text report
 		schedule.every().sunday.at("08:00").do(
-			self.command_last_week,
-			scheduled=True
+			self.filtered_time_command,
+			get_named_filter("last_week"),
 		)
+		# weekly productive pie
 		schedule.every().sunday.at("08:00").do(
-			self.command_productive_pie_week,
-			scheduled=True
+			self.send_image,
+			get_productivity_pie(
+				data=get_named_filter("last_week") % self.datafolder.data,
+				selected_time="last_week",
+				save=True,
+				focused=False
+			)
+		)
+		# homework pie
+		schedule.every().sunday.at("08:00").do(
+			self.pie_command,
+			GroupedStats_Homework,
+			TimeFilter_Days(7),
+		)
+		# gaming pie
+		schedule.every().sunday.at("08:00").do(
+			self.pie_command,
+			GroupedStats_Games,
+			TimeFilter_Days(7),
 		)
 
-		# weekly pies
-		# schedule.every().sunday.at("08:00").do(
-		# 	self.command_homework_pie,
-		# 	scheduled=True
-		# )
-
-		schedule.every().sunday.at("08:00").do(
-			self.command_gaming_pie,
-			scheduled=True
-		)
-
-		# schedule.every().hour.at(":57").do(
-		# 	self.command_reload,
-		# 	scheduled=True
-		# )
+		# reload
 		schedule.every().day.at("06:00").do(
 			self.full_reload,
+			scheduled=True
 		)
 
 
@@ -463,10 +477,13 @@ class TelegramScheduledCommands(object):
 					time.sleep(60*60*0.5)
 
 				except ParseError as pe:
+					# log error to screen + log file
 					log(f"[*] Caught ParseError in run_scheduler. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+					# send error to the main user
 					self.send_text(f"Caught ParseError:\n{str(pe)}")
+					# re-sync with dropbox
 					time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
-					os.system(DAILY_WGET_PATH)
+					self.command_reload(scheduled=True)
 
 				except Exception as exc:
 					log(f"[!] Caught general error in run_scheduler - quitting")
@@ -505,26 +522,17 @@ def main():
 
 """
 # all commands:
-today - today
-yesterday - yesterday
-week - week
-last_week - last_week
-month - month
-year - year
+text_report - text_report
+pie - pie
+productive_pie - productive_pie
 
 reload - reload
 
-productive_pie_today - productive_pie_today
-productive_pie_yesterday - productive_pie_yesterday
-productive_pie_week - productive_pie_week
+month - month
+year - year
+
 productive_pie_month - productive_pie_month
 productive_pie_year - productive_pie_year
-productive_pie_all - productive_pie_all
-
-gaming_pie - gaming_pie
-homework_pie - homework_pie
-lecture_pie - lecture_pie
-youtube_pie - youtube_pie
 
 list_commands - list_commands
 cli - cli
