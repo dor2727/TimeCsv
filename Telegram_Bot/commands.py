@@ -438,8 +438,19 @@ class TelegramScheduledCommands(object):
 
 		def run_scheduler():
 			while True:
-				schedule.run_pending()
-				time.sleep(60*60*0.5)
+				try:
+					schedule.run_pending()
+					time.sleep(60*60*0.5)
+
+				except ParseError as pe:
+					log(f"[*] Caught ParseError in run_scheduler. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+					self.send_text(f"Caught ParseError:\n{str(pe)}")
+					time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
+					os.system(DAILY_WGET_PATH)
+
+				except Exception as exc:
+					log(f"[!] Caught general error in run_scheduler - quitting")
+					raise exc
 
 		threading.Thread(target=run_scheduler).start()
 
