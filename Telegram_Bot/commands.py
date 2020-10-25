@@ -505,26 +505,17 @@ def main():
 
 """
 # all commands:
-today - today
-yesterday - yesterday
-week - week
-last_week - last_week
-month - month
-year - year
+text_report - text_report
+pie - pie
+productive_pie - productive_pie
 
 reload - reload
 
-productive_pie_today - productive_pie_today
-productive_pie_yesterday - productive_pie_yesterday
-productive_pie_week - productive_pie_week
+month - month
+year - year
+
 productive_pie_month - productive_pie_month
 productive_pie_year - productive_pie_year
-productive_pie_all - productive_pie_all
-
-gaming_pie - gaming_pie
-homework_pie - homework_pie
-lecture_pie - lecture_pie
-youtube_pie - youtube_pie
 
 list_commands - list_commands
 cli - cli
