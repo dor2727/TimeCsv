@@ -465,8 +465,7 @@ class TelegramScheduledCommands(object):
 
 		# reload
 		schedule.every().day.at("06:00").do(
-			self.full_reload,
-			scheduled=True
+			self.full_reload
 		)
 
 
