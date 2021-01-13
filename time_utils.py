@@ -1,5 +1,7 @@
 import os
+import sys
 import time
+import traceback
 
 from collections import OrderedDict, Counter
 
@@ -110,6 +112,11 @@ def print_items(l, ret=False):
 		return '\n'.join(i.__repr__() for i in l)
 	else:
 		print('\n'.join(i.__repr__() for i in l))
+
+def exception_message():
+	exc_type, exc_value, exc_traceback = sys.exc_info()
+	lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+	return ''.join('!! ' + line for line in lines)
 
 #
 # wget utils
