@@ -507,6 +507,7 @@ def main():
 			log(f"[*] Caught ParseError in main. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
 			log(f"Caught ParseError:\n{str(pe)}")
 			time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
+			os.system(DAILY_WGET_PATH)
 
 		except Exception as exc:
 			log(f"[!] Caught general error in main - quitting")
