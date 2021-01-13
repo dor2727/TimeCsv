@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import os
 import pdb
+import sys
 import time
 import shlex
 import schedule
 import threading
+import traceback
 
 import TimeCsv.cli
 from TimeCsv.parsing import DataFolder, ParseError
@@ -471,6 +473,12 @@ class TelegramScheduledCommands(object):
 
 				except Exception as exc:
 					log(f"[!] Caught general error in run_scheduler - quitting")
+
+					exc_type, exc_value, exc_traceback = sys.exc_info()
+					lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+					exception_message = ''.join('!! ' + line for line in lines)  # Log it or whatever here
+					log(exception_message)
+
 					raise exc
 
 		threading.Thread(target=run_scheduler).start()
@@ -500,6 +508,12 @@ def main():
 
 		except Exception as exc:
 			log(f"[!] Caught general error in main - quitting")
+
+			exc_type, exc_value, exc_traceback = sys.exc_info()
+			lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+			exception_message = ''.join('!! ' + line for line in lines)  # Log it or whatever here
+			log(exception_message)
+
 			raise exc
 	LOG_FILE.close()
 
