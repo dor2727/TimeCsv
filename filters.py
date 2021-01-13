@@ -76,7 +76,13 @@ class Filter(object):
 		# verify input
 		if type(other) is not list:
 			raise ValueError("modulo not defined for filter and non-list object")
-		# Should check all the items
+
+		# before the following check, verigy that the list is not empty:
+		if len(other) == 0:
+			# return the same thing, rather than an empty list, since `other` may be a tuple or something
+			return other
+
+		# Should check all the items, but there is currently no such case of a list with mixed types
 		if other[0].__class__.__name__ != "DataItem":
 			raise ValueError("modulo is only defined for filter and a list of DataItem elements")
 

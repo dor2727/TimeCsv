@@ -6,7 +6,7 @@ import argparse
 import datetime
 
 import TimeCsv.statistics
-from TimeCsv.parsing import DataFolder, ParseError
+from TimeCsv.parsing import DataFolder, DataFile, ParseError
 from TimeCsv.time_utils import newest
 from TimeCsv.filters import *
 
@@ -15,6 +15,7 @@ from TimeCsv.filters import *
 # may pass arguments as a list (used in the telegram bot)
 def parse_args(args_list=None):
 	parser = argparse.ArgumentParser()
+	parser.add_argument("--file", "--folder", "-f", type=str, default=DEFAULT_DATA_DIRECTORY, dest="file", help="which file/folder to read")
 
 	search = parser.add_argument_group("search")
 	search.add_argument("search_string"     , type=str, default=''        , nargs=argparse.REMAINDER)
@@ -109,9 +110,15 @@ def initialize_time_filter(args):
 
 	time_filter   = build_time_filter(args)
 
+	# if nothing is set, use default value
 	if time_filter is None:
-		args.months_back = 2
-		time_filter = build_time_filter(args)
+		# if the default location is used, set the filter to 2 months
+		if args.file == DEFAULT_DATA_DIRECTORY:
+			args.months_back = 2
+			time_filter = build_time_filter(args)
+		# else, treat it as `all_time`
+		else:
+			return None
 
 	return time_filter
 
@@ -131,8 +138,8 @@ def initialize_search_filter(args):
 
 	return f
 
-# use the filters & the DataFolder to filter out the relevant data
-def get_data(datafolder, args):
+# use the filters & the data_object to filter out the relevant data
+def get_data(data_object, args):
 	# initialize filters
 	time_filter   = initialize_time_filter(args)
 	search_filter = initialize_search_filter(args)
@@ -140,10 +147,10 @@ def get_data(datafolder, args):
 	
 	# filter data by time
 	if time_filter is None:
-		data = datafolder.data
+		data = data_object.data
 		selected_time = "All time"
 	else:
-		data = time_filter % datafolder.data
+		data = time_filter % data_object.data
 		selected_time = time_filter.get_selected_time()
 
 	return data, selected_time, search_filter
@@ -251,14 +258,49 @@ def get_search_filter_text(data, selected_time, search_filter, args):
 
 	return result
 
-def main(datafolder, args_list=None):
+def open_data_file(data_object, file_path):
+	# this will mostly happen when called from the telegram bot,
+	# 	which already uses a DataFolder
+	if data_object:
+		return data_object
+
+	if not file_path:
+		raise ValueError(f"file/folder not found: {file_path}")
+
+	file_path = os.path.expanduser(file_path)
+
+	if os.path.exists(file_path):
+		if os.path.isfile(file_path):
+			return DataFile(file_path)
+		if os.path.isdir(file_path):
+			return DataFolder(file_path)
+
+	# try relative path:
+	elif os.path.exists(os.path.join(os.getcwd(), file_path)):
+		file_path = os.path.join(os.getcwd(), file_path)
+		if os.path.isfile(file_path):
+			return DataFile(file_path)
+		if os.path.isdir(file_path):
+			return DataFolder(file_path)
+
+	# try a path relative to the default directory:
+	elif os.path.exists(os.path.join(DEFAULT_DATA_DIRECTORY, file_path)):
+		file_path = os.path.join(DEFAULT_DATA_DIRECTORY, file_path)
+		if os.path.isfile(file_path):
+			return DataFile(file_path)
+
+	raise ValueError(f"file/folder not found: {file_path}")
+
+def main(data_object=None, args_list=None):
 	args = parse_args(args_list=args_list)
 
 	if args.test:
 		test(debug=args.debug)
 		return
 
-	data, selected_time, search_filter = get_data(datafolder, args)
+	data_object = open_data_file(data_object, args.file)
+
+	data, selected_time, search_filter = get_data(data_object, args)
 
 	if search_filter is None:
 		return get_special_text(data, selected_time, args)
