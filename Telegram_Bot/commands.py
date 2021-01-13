@@ -480,6 +480,7 @@ class TelegramScheduledCommands(object):
 				except ParseError as pe:
 					# log error to screen + log file
 					log(f"[*] Caught ParseError in run_scheduler. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+					log(f"Caught ParseError:\n{str(pe)}")
 					# send error to the main user
 					self.send_text(f"Caught ParseError:\n{str(pe)}")
 					# re-sync with dropbox
@@ -519,6 +520,7 @@ def main():
 
 		except ParseError as pe:
 			log(f"[*] Caught ParseError in main. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+			log(f"Caught ParseError:\n{str(pe)}")
 			time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
 			os.system(DAILY_WGET_PATH)
 
