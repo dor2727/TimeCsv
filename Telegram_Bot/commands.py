@@ -467,8 +467,11 @@ class TelegramScheduledCommands(object):
 					# send error to the main user
 					self.send_text(f"Caught ParseError:\n{str(pe)}")
 					# re-sync with dropbox
+					log(f"    [*] starting sleep")
 					time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
+					log(f"    [*] sleep ended ; calling {DAILY_WGET_PATH}")
 					os.system(DAILY_WGET_PATH)
+					log(f"    [*] DAILY_WGET ended")
 
 				except Exception as exc:
 					log(f"[!] Caught general error in run_scheduler - quitting")
