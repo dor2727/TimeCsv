@@ -62,7 +62,25 @@ def parse_args(args_list=None):
 	if args.debug:
 		print(f"[*] args: {args}")
 
+	expand_args(args)
+
 	return args
+
+def expand_args(args):
+	if args.sorting_method == "abc":
+		args.sorting_method = "alphabetically"
+	if args.sorting_method == "value":
+		args.sorting_method = "by_value"
+
+	if args.grouping_method == "avg":
+		args.grouping_method = "time_average"
+
+	if args.gaming:
+		args.group = "Gaming"
+	elif args.youtube:
+		args.group = "Youtube"
+
+
 
 #
 # time filters
