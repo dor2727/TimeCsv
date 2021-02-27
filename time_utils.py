@@ -37,6 +37,7 @@ def newest(path=DEFAULT_DATA_DIRECTORY):
 	paths = [os.path.join(path, basename) for basename in files]
 	return max(paths, key=os.path.getctime)
 
+
 #
 # parsing utils
 #
@@ -94,7 +95,7 @@ def get_midnight(d):
 	return datetime.datetime(*get_ymd_tuple(d))
 
 def seconds_to_str(n):
-	return ("%2d days %2d hours %2d minutes" % (
+	return ("%3d days %2d hours %2d minutes" % (
 		n // (60*60*24),
 		n // (60*60) % (24),
 		n // (60) % (60*24) % 60,

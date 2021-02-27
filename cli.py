@@ -161,6 +161,11 @@ def initialize_search_filter(args):
 
 	return f
 
+
+#
+# data retrival
+#
+
 # use the filters & the data_object to filter out the relevant data
 def get_data(data_object, args):
 	# initialize filters
@@ -173,95 +178,66 @@ def get_data(data_object, args):
 		data = data_object.data
 		selected_time = "All time"
 	else:
-		data = time_filter % data_object.data
+		data          = time_filter % data_object.data
 		selected_time = time_filter.get_selected_time()
 
 	return data, selected_time, search_filter
 
+
 # telegram helper
 def get_text(g, args):
 	if args.telegram:
-		return g.to_telegram()
+		if args.pie:
+			return g.to_pie(save=True)
+		elif args.bar:
+			return g.to_bar(save=True)
+		else:
+			return g.to_telegram()
+
 	else:
-		return g.to_text()
+		if args.pie:
+			g.to_pie(save=False)
+			return ''
+		elif args.bar:
+			g.to_bar(save=False)
+			return ''
+		else:
+			return g.to_text()
+
 
 # handles the 'special' category of the args, or the default
 def get_special_text(data, selected_time, args):
-	if args.sorting_method == "abc":
-		args.sorting_method = "alphabetically"
-	if args.sorting_method == "value":
-		args.sorting_method = "by_value"
-
-	if args.grouping_method == "avg":
-		args.grouping_method = "time_average"
-
 	groupedstats_params = {
 		"selected_time" : selected_time,
 		"group_value"   : args.grouping_method,
 		"sort"          : args.sorting_method,
 	}
 	# big switch-case for different GroupedStats classes
-	if args.gaming:
-		g = TimeCsv.statistics.GroupedStats_Games(
-			data,
-			**groupedstats_params
-		)
-
+	kwargs = {}
+	if args.location:
+		cls = TimeCsv.statistics.GroupedStats_Location
 	elif args.friend:
-		g = TimeCsv.statistics.GroupedStats_Friend(
-			data,
-			**groupedstats_params
-		)
-
-	elif args.location:
-		g = TimeCsv.statistics.GroupedStats_Location(
-			data,
-			**groupedstats_params
-		)
-
-	elif args.youtube:
-		g = TimeCsv.statistics.GroupedStats_Youtube(
-			data,
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupedStats_Friend
 	elif args.group:
-		g = TimeCsv.statistics.GroupGroupedStats(
-			data,
-			category_name=args.group.capitalize(),
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupGroupedStats
+		kwargs = {"category_name": args.group.capitalize()}
 	elif args.lecture:
-		g = TimeCsv.statistics.GroupedStats_Lecture(
-			data,
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupedStats_Lecture
 	elif args.homework:
-		g = TimeCsv.statistics.GroupedStats_Homework(
-			data,
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupedStats_Homework
 	elif args.shower:
-		g = TimeCsv.statistics.GroupedStats_Shower(
-			data,
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupedStats_Shower
 	elif args.prepare_food:
-		g = TimeCsv.statistics.GroupedStats_PrepareFood(
-			data,
-			**groupedstats_params
-		)
-
-
+		cls = TimeCsv.statistics.GroupedStats_PrepareFood
 	else: # default statistics
-		g = TimeCsv.statistics.GroupedStats_Group(
-			data,
-			**groupedstats_params
-		)
+		cls = TimeCsv.statistics.GroupedStats_Group
+
+
+	g = cls(
+		data,
+		**kwargs,
+		**groupedstats_params
+	)
 
 	return get_text(g, args)
 
@@ -281,7 +257,11 @@ def get_search_filter_text(data, selected_time, search_filter, args):
 
 	return result
 
-def open_data_file(data_object, file_path):
+
+#
+# file utils
+#
+def open_data_file(data_object=None, file_path=None):
 	# this will mostly happen when called from the telegram bot,
 	# 	which already uses a DataFolder
 	if data_object:
@@ -313,6 +293,7 @@ def open_data_file(data_object, file_path):
 			return DataFile(file_path)
 
 	raise ValueError(f"file/folder not found: {file_path}")
+
 
 def main(data_object=None, args_list=None):
 	args = parse_args(args_list=args_list)
