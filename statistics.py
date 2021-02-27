@@ -674,10 +674,12 @@ class GroupedStats_PrepareFood(ExtraDetailsGroupedStats):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		self._extra_details_name = "prepare_food"
+		self._extra_details_name = "prepare"
 
 		self._filter_obj = (
-			DescriptionFilter("prepare_food")
+			DescriptionFilter("prepare")
+			 &
+			GroupFilter("Food")
 			 &
 			HasExtraDetailsFilter()
 		)
