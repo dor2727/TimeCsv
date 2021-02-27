@@ -172,10 +172,15 @@ class TelegramCommands(object):
 	@log_command
 	def command_cli(self, update, context):
 		args_list = ["--telegram"] + shlex.split(' '.join(context.args))
-		self.send_text(
-			TimeCsv.cli.main(self.datafolder, args_list),
-			update
-		)
+
+		result = TimeCsv.cli.main(self.datafolder, args_list)
+
+		if type(result) is str:
+			self.send_text( result, update)
+		elif isinstance(result, io.TextIOBase): # is it a file
+			self.send_image(result, update)
+		else:
+			raise ValueError(f"invalid result from command_cli {type(result)}")
 
 	#
 	# text report

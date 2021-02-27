@@ -36,7 +36,6 @@ def parse_args(args_list=None):
 	debugging = parser.add_argument_group("debugging")
 	debugging.add_argument("--debug"   , action="store_true")
 	debugging.add_argument("--test"    , action="store_true")
-	debugging.add_argument("--telegram", action="store_true")
 
 	special = parser.add_argument_group("special")
 	special.add_argument("--group"              , type=str , default=None, dest="group"       , help="show statistics per group")
@@ -48,6 +47,12 @@ def parse_args(args_list=None):
 	special.add_argument("--homework"           , action="store_true"    , dest="homework"    , help="show homework statistics")
 	special.add_argument("--shower"             , action="store_true"    , dest="shower"      , help="show shower statistics")
 	special.add_argument("--prepare-food"       , action="store_true"    , dest="prepare_food", help="show cooking statistics")
+
+	output = parser.add_argument_group("output")
+	output.add_argument("--telegram", action="store_true")
+	output.add_argument("--pie"     , action="store_true")
+	output.add_argument("--bar"     , action="store_true")
+
 
 	if args_list is None:
 		args = parser.parse_args()
