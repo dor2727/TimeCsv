@@ -297,10 +297,10 @@ class HasExtraDetailsFilter(Filter):
 
 class DurationFilter(Filter):
 	def __init__(self, string):
-		if   type(string) is string and string[0] == '<':
+		if   type(string) is str and string[0] == '<':
 			self._action = "maximum"
 			self.seconds = self._int(string[1:])
-		elif type(string) is string and string[0] == '>':
+		elif type(string) is str and string[0] == '>':
 			self._action = "minumum"
 			self.seconds = self._int(string[1:])
 		else: # default
