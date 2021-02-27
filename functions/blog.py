@@ -26,7 +26,7 @@ class ExtraDetailsBlogStats(TimeCsv.statistics.GroupedStats):
 		if not obj.extra_details:
 			return "<no extra details>"
 		e = obj.extra_details.get(self._extra_details_name, "<no extra details>")
-		return e.split(EXTRA_DETAILS_SEPERATOR)[0]
+		return e[0]
 
 	def _get_headers(self):
 		# get all headers
@@ -67,6 +67,4 @@ def get_blog_statistics(datafolder=None):
 		print("==============")
 		print(g.group())
 		print(g.to_pie(save=False))
-		print("==============")
-		# pdb to pause python and allow matplotlib to display the image
-		import pdb; pdb.set_trace()
+		print()

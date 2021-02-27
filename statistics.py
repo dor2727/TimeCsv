@@ -612,7 +612,7 @@ class ExtraDetailsGroupedStats(GroupedStats):
 			h = i.extra_details[self._extra_details_name]
 			if not h:
 				print("empty description for: %s" % i)
-			headers.add(h)
+			headers.update(h)
 
 		# return a list, sorted alphabetically
 		self._headers = sorted(headers)
@@ -620,9 +620,44 @@ class ExtraDetailsGroupedStats(GroupedStats):
 
 	def _get_filtered_data_per_header(self, header):
 		return list(filter(
-			lambda i: i.extra_details[self._extra_details_name] == header,
+			lambda i: header in i.extra_details[self._extra_details_name],
 			self.data
 		))
+
+class GroupedStats_ExtraDetailGeneric(ExtraDetailsGroupedStats):
+	def __init__(self, search_filter, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+		self._filter_obj = (
+			search_filter
+			 &
+			HasExtraDetailsFilter()
+			 &
+			~DescriptionFilter('&') # TODO: remove me. This is a patch since '&' is not parsed yet
+		)
+
+		self._initialize_data()
+
+		self._get_extra_delails_name()
+
+	def _get_extra_delails_name(self):
+		names = sum(
+			(list(i.extra_details.keys()) for i in self.data),
+			[]
+		)
+		names = list(set(names))
+
+		if len(names) == 1:
+			self._extra_details_name = names[0]
+		elif len(names) == 0:
+			print(self._filter_obj)
+			raise ValueError("No possible extra_details_name found")
+		else:
+			# TODO: maybe use the most frequent name?
+			print(names)
+			raise ValueError(f"Too many ({len(names)}) possible extra_details_name found")
+
+		return self._extra_details_name
 
 class GroupedStats_Lecture(ExtraDetailsGroupedStats):
 	def __init__(self, *args, **kwargs):
