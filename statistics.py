@@ -264,9 +264,14 @@ class GroupedStats(Stats):
 		"""
 
 		# initializing values
+		# todo: this can be written in a more compact way
 		if headers is None:
+			if not hasattr(self, "headers_sorted"):
+				self.group()
 			headers = self.headers_sorted
 		if values is None:
+			if not hasattr(self, "values_sorted"):
+				self.group()
 			values = self.values_sorted
 		if title is None:
 			title = self.title
@@ -301,7 +306,7 @@ class GroupedStats(Stats):
 			return open(path, "rb")
 		# plotting - interactive
 		else:
-			fig.show()
+			plt.show()
 			return None
 
 	def to_bar(self, headers=None, values=None, title=None, save=True):
@@ -316,8 +321,12 @@ class GroupedStats(Stats):
 
 		# initializing values
 		if headers is None:
+			if not hasattr(self, "headers_sorted"):
+				self.group()
 			headers = self.headers_sorted
 		if values is None:
+			if not hasattr(self, "values_sorted"):
+				self.group()
 			values = self.values_sorted
 		if title is None:
 			title = self.title
@@ -349,7 +358,7 @@ class GroupedStats(Stats):
 
 			return open(path, "rb")
 		else:
-			fig.show()
+			plt.show()
 			return None
 
 	#
