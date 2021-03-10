@@ -1,7 +1,7 @@
 #!/bin/bash
 PROJECT=TimeCsv
 FOLDER=~/Projects/$PROJECT
-FILENAME="2021_year_3_semester_1.tcsv"
+FILENAME="2021_year_3_semester_2.tcsv"
 LOG=$FOLDER/daily_wget.log
 LOG_NEW=$FOLDER/daily_wget.log.new
 TEMP_LOCATION=$FOLDER/data/_latest
