@@ -116,7 +116,7 @@ class TelegramServer(object):
 
 	def loop(self):
 		log("[*] entering loop")
-		self.updater.start_polling()
+		self.updater.start_polling(timeout=123)
 		self.updater.idle()
 
 class TelegramCommands(object):
