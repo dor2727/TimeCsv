@@ -297,10 +297,10 @@ class HasExtraDetailsFilter(Filter):
 
 class DurationFilter(Filter):
 	def __init__(self, string):
-		if   type(string) is string and string[0] == '<':
+		if   type(string) is str and string[0] == '<':
 			self._action = "maximum"
 			self.seconds = self._int(string[1:])
-		elif type(string) is string and string[0] == '>':
+		elif type(string) is str and string[0] == '>':
 			self._action = "minumum"
 			self.seconds = self._int(string[1:])
 		else: # default
@@ -355,12 +355,16 @@ class StrFilter(Filter):
 class AutoFilter(Filter):
 	not_filter_prefix = ('~', '!')
 
-	def __init__(self, string, case_sensitive=None):
+	def __init__(self, string, case_sensitive=None, force_regex=False):
 		# check for regex
-		regex = '\\' in string
+		regex = ('\\' in string) or force_regex
 
 		# check whether this will be a NotFilter
 		if not regex and string[0] in self.not_filter_prefix:
+			exclude = True
+			string = string[1:]
+		elif   regex and string[0] == '~':
+			# '!' is a special char for regex, '~' is not, thus, only '~' is allowed for regex exclude
 			exclude = True
 			string = string[1:]
 		else:

@@ -215,7 +215,11 @@ class DataItem(object):
 			# TODO: maybe make it an empy dict instead of None
 			self.extra_details = None
 		else:
-			self.extra_details = dict(extra_details)
+			# self.extra_details = dict(extra_details)
+			self.extra_details = {
+				k: v.split(EXTRA_DETAILS_SEPERATOR)
+				for k,v in extra_details
+			}
 
 		return s
 

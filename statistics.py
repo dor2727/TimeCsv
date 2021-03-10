@@ -264,9 +264,14 @@ class GroupedStats(Stats):
 		"""
 
 		# initializing values
+		# todo: this can be written in a more compact way
 		if headers is None:
+			if not hasattr(self, "headers_sorted"):
+				self.group()
 			headers = self.headers_sorted
 		if values is None:
+			if not hasattr(self, "values_sorted"):
+				self.group()
 			values = self.values_sorted
 		if title is None:
 			title = self.title
@@ -301,7 +306,7 @@ class GroupedStats(Stats):
 			return open(path, "rb")
 		# plotting - interactive
 		else:
-			fig.show()
+			plt.show()
 			return None
 
 	def to_bar(self, headers=None, values=None, title=None, save=True):
@@ -316,8 +321,12 @@ class GroupedStats(Stats):
 
 		# initializing values
 		if headers is None:
+			if not hasattr(self, "headers_sorted"):
+				self.group()
 			headers = self.headers_sorted
 		if values is None:
+			if not hasattr(self, "values_sorted"):
+				self.group()
 			values = self.values_sorted
 		if title is None:
 			title = self.title
@@ -349,7 +358,7 @@ class GroupedStats(Stats):
 
 			return open(path, "rb")
 		else:
-			fig.show()
+			plt.show()
 			return None
 
 	#
@@ -603,7 +612,7 @@ class ExtraDetailsGroupedStats(GroupedStats):
 			h = i.extra_details[self._extra_details_name]
 			if not h:
 				print("empty description for: %s" % i)
-			headers.add(h)
+			headers.update(h)
 
 		# return a list, sorted alphabetically
 		self._headers = sorted(headers)
@@ -611,9 +620,42 @@ class ExtraDetailsGroupedStats(GroupedStats):
 
 	def _get_filtered_data_per_header(self, header):
 		return list(filter(
-			lambda i: i.extra_details[self._extra_details_name] == header,
+			lambda i: header in i.extra_details[self._extra_details_name],
 			self.data
 		))
+
+class GroupedStats_ExtraDetailGeneric(ExtraDetailsGroupedStats):
+	def __init__(self, search_filter, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+		self._filter_obj = (
+			search_filter
+			 &
+			HasExtraDetailsFilter()
+			 &
+			~DescriptionFilter('&') # TODO: remove me. This is a patch since '&' is not parsed yet
+		)
+
+		self._initialize_data()
+
+		self._get_extra_details_name()
+
+	def _get_extra_details_name(self):
+		names = sum(
+			(list(i.extra_details.keys()) for i in self.data),
+			[]
+		)
+		names = list(set(names))
+
+		if len(names) == 1:
+			self._extra_details_name = names[0]
+		elif len(names) == 0:
+			raise ValueError("No possible extra_details_name found")
+		else:
+			# TODO: maybe use the most frequent name?
+			raise ValueError(f"Too many ({len(names)}) possible extra_details_name found")
+
+		return self._extra_details_name
 
 class GroupedStats_Lecture(ExtraDetailsGroupedStats):
 	def __init__(self, *args, **kwargs):
@@ -665,10 +707,12 @@ class GroupedStats_PrepareFood(ExtraDetailsGroupedStats):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		self._extra_details_name = "prepare_food"
+		self._extra_details_name = "prepare"
 
 		self._filter_obj = (
-			DescriptionFilter("prepare_food")
+			DescriptionFilter("prepare")
+			 &
+			GroupFilter("Food")
 			 &
 			HasExtraDetailsFilter()
 		)

@@ -18,11 +18,12 @@ def parse_args(args_list=None):
 	parser.add_argument("--file", "--folder", "-f", type=str, default=DEFAULT_DATA_DIRECTORY, dest="file", help="which file/folder to read")
 
 	search = parser.add_argument_group("search")
-	search.add_argument("search_string"     , type=str, default=''        , nargs=argparse.REMAINDER)
-	search.add_argument("--group-by"        , type=str, default="time"    , dest="grouping_method", help="grouping method (time or time_average/avg or amount)")
-	search.add_argument("--sort"            , type=str, default="by_value", dest="sorting_method" , help="sorting method (by_value/value or alphabetically/abc)")
-	search.add_argument("--search-use-or"   , action="store_true"         , dest="search_use_or"  , help="whether to use AND or OR when adding the filters")
-	search.add_argument("--show-items", "-s", action="store_true"         , dest="show_items"     , help="whether to print all the items")
+	search.add_argument("search_string"        , type=str, default=''        , nargs=argparse.REMAINDER)
+	search.add_argument("--group-by"           , type=str, default="time"    , dest="grouping_method", help="grouping method (time or time_average/avg or amount)")
+	search.add_argument("--sort"               , type=str, default="by_value", dest="sorting_method" , help="sorting method (by_value/value or alphabetically/abc)")
+	search.add_argument("--search-use-or"      , action="store_true"         , dest="search_use_or"  , help="whether to use AND or OR when adding the filters")
+	search.add_argument("--show-items", "-s"   , action="store_true"         , dest="show_items"     , help="whether to print all the items")
+	search.add_argument("--force-regex", "--re", action="store_true"         , dest="force_regex"    , help="whether to use regex in all search terms")
 
 	time = parser.add_argument_group("time")
 	time.add_argument("--days-back", "-d", type=int , default=None, dest="days_back"   , help="how many days back to query")
@@ -36,18 +37,27 @@ def parse_args(args_list=None):
 	debugging = parser.add_argument_group("debugging")
 	debugging.add_argument("--debug"   , action="store_true")
 	debugging.add_argument("--test"    , action="store_true")
-	debugging.add_argument("--telegram", action="store_true")
 
-	special = parser.add_argument_group("special")
-	special.add_argument("--group"              , type=str , default=None, dest="group"       , help="show statistics per group")
-	special.add_argument("--gaming"             , action="store_true"    , dest="gaming"      , help="show gaming statistics")
-	special.add_argument("--friend", "--friends", action="store_true"    , dest="friend"      , help="show friend statistics")
-	special.add_argument("--location"           , action="store_true"    , dest="location"    , help="show location statistics")
-	special.add_argument("--youtube"            , action="store_true"    , dest="youtube"     , help="show youtube statistics")
-	special.add_argument("--lecture"            , action="store_true"    , dest="lecture"     , help="show lecture statistics")
-	special.add_argument("--homework"           , action="store_true"    , dest="homework"    , help="show homework statistics")
-	special.add_argument("--shower"             , action="store_true"    , dest="shower"      , help="show shower statistics")
-	special.add_argument("--prepare-food"       , action="store_true"    , dest="prepare_food", help="show cooking statistics")
+	grouping = parser.add_argument_group("grouping")
+	grouping.add_argument("--group"              , type=str , default=None, dest="group"       , help="show statistics per group")
+	grouping.add_argument("--friend", "--friends", action="store_true"    , dest="friend"      , help="show friend statistics")
+	grouping.add_argument("--location"           , action="store_true"    , dest="location"    , help="show location statistics")
+	#
+	grouping.add_argument("--youtube"            , action="store_true"    , dest="youtube"     , help="show youtube statistics")
+	grouping.add_argument("--gaming"             , action="store_true"    , dest="gaming"      , help="show gaming statistics")
+
+	details = parser.add_argument_group("details")
+	details.add_argument("--extra-details", "--extra", action="store_true", dest="extra_details", help="extra details within the search filter")
+	details.add_argument("--lecture"                 , action="store_true", dest="lecture"      , help="show lecture statistics")
+	details.add_argument("--homework"                , action="store_true", dest="homework"     , help="show homework statistics")
+	details.add_argument("--shower"                  , action="store_true", dest="shower"       , help="show shower statistics")
+	details.add_argument("--prepare-food"            , action="store_true", dest="prepare_food" , help="show cooking statistics")
+
+	output = parser.add_argument_group("output")
+	output.add_argument("--telegram", action="store_true")
+	output.add_argument("--pie"     , action="store_true")
+	output.add_argument("--bar"     , action="store_true")
+
 
 	if args_list is None:
 		args = parser.parse_args()
@@ -57,7 +67,28 @@ def parse_args(args_list=None):
 	if args.debug:
 		print(f"[*] args: {args}")
 
+	expand_args(args)
+
 	return args
+
+def expand_args(args):
+	if args.sorting_method == "abc":
+		args.sorting_method = "alphabetically"
+	if args.sorting_method == "value":
+		args.sorting_method = "by_value"
+
+	if args.grouping_method == "avg":
+		args.grouping_method = "time_average"
+
+	if args.gaming:
+		args.group = "Gaming"
+	elif args.youtube:
+		args.group = "Youtube"
+
+	if args.extra_details:
+		args.force_regex = True
+
+
 
 #
 # time filters
@@ -126,7 +157,7 @@ def initialize_search_filter(args):
 	filters = []
 
 	for s in args.search_string:
-		filters.append(AutoFilter(s))
+		filters.append(AutoFilter(s, force_regex=args.force_regex))
 
 	if args.search_use_or:
 		f = join_filters_with_or(filters)
@@ -137,6 +168,11 @@ def initialize_search_filter(args):
 		print(f"[*] search filter: {f}")
 
 	return f
+
+
+#
+# data retrival
+#
 
 # use the filters & the data_object to filter out the relevant data
 def get_data(data_object, args):
@@ -150,97 +186,91 @@ def get_data(data_object, args):
 		data = data_object.data
 		selected_time = "All time"
 	else:
-		data = time_filter % data_object.data
+		data          = time_filter % data_object.data
 		selected_time = time_filter.get_selected_time()
 
 	return data, selected_time, search_filter
 
+
 # telegram helper
 def get_text(g, args):
 	if args.telegram:
-		return g.to_telegram()
+		if args.pie:
+			return g.to_pie(save=True)
+		elif args.bar:
+			return g.to_bar(save=True)
+		else:
+			return g.to_telegram()
+
 	else:
-		return g.to_text()
+		if args.pie:
+			g.to_pie(save=False)
+			return ''
+		elif args.bar:
+			g.to_bar(save=False)
+			return ''
+		else:
+			return g.to_text()
+
 
 # handles the 'special' category of the args, or the default
 def get_special_text(data, selected_time, args):
-	if args.sorting_method == "abc":
-		args.sorting_method = "alphabetically"
-	if args.sorting_method == "value":
-		args.sorting_method = "by_value"
-
-	if args.grouping_method == "avg":
-		args.grouping_method = "time_average"
-
 	groupedstats_params = {
 		"selected_time" : selected_time,
 		"group_value"   : args.grouping_method,
 		"sort"          : args.sorting_method,
 	}
 	# big switch-case for different GroupedStats classes
-	if args.gaming:
-		g = TimeCsv.statistics.GroupedStats_Games(
-			data,
-			**groupedstats_params
-		)
-
+	kwargs = {}
+	if args.location:
+		cls = TimeCsv.statistics.GroupedStats_Location
 	elif args.friend:
-		g = TimeCsv.statistics.GroupedStats_Friend(
-			data,
-			**groupedstats_params
-		)
-
-	elif args.location:
-		g = TimeCsv.statistics.GroupedStats_Location(
-			data,
-			**groupedstats_params
-		)
-
-	elif args.youtube:
-		g = TimeCsv.statistics.GroupedStats_Youtube(
-			data,
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupedStats_Friend
 	elif args.group:
-		g = TimeCsv.statistics.GroupGroupedStats(
-			data,
-			category_name=args.group.capitalize(),
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupGroupedStats
+		kwargs = {"category_name": args.group.capitalize()}
 	elif args.lecture:
-		g = TimeCsv.statistics.GroupedStats_Lecture(
-			data,
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupedStats_Lecture
 	elif args.homework:
-		g = TimeCsv.statistics.GroupedStats_Homework(
-			data,
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupedStats_Homework
 	elif args.shower:
-		g = TimeCsv.statistics.GroupedStats_Shower(
-			data,
-			**groupedstats_params
-		)
-
+		cls = TimeCsv.statistics.GroupedStats_Shower
 	elif args.prepare_food:
-		g = TimeCsv.statistics.GroupedStats_PrepareFood(
-			data,
-			**groupedstats_params
-		)
-
-
+		cls = TimeCsv.statistics.GroupedStats_PrepareFood
 	else: # default statistics
-		g = TimeCsv.statistics.GroupedStats_Group(
-			data,
-			**groupedstats_params
-		)
+		cls = TimeCsv.statistics.GroupedStats_Group
+
+
+	g = cls(
+		data,
+		**kwargs,
+		**groupedstats_params
+	)
 
 	return get_text(g, args)
+
+# handles the 'extra-details' flag
+def get_extra_details_text(data, selected_time, search_filter, args):
+	groupedstats_params = {
+		"selected_time" : selected_time,
+		"group_value"   : args.grouping_method,
+		"sort"          : args.sorting_method,
+	}
+
+	g = TimeCsv.statistics.GroupedStats_ExtraDetailGeneric(
+		search_filter,
+		data,
+		**groupedstats_params,
+	)
+
+	result = get_text(g, args)
+
+	if args.show_items:
+		result += "\n------\n"
+		result += print_items(g.data, ret=True)
+
+	return result
+
 
 # handles search_filter
 def get_search_filter_text(data, selected_time, search_filter, args):
@@ -258,7 +288,11 @@ def get_search_filter_text(data, selected_time, search_filter, args):
 
 	return result
 
-def open_data_file(data_object, file_path):
+
+#
+# file utils
+#
+def open_data_file(data_object=None, file_path=None):
 	# this will mostly happen when called from the telegram bot,
 	# 	which already uses a DataFolder
 	if data_object:
@@ -291,6 +325,7 @@ def open_data_file(data_object, file_path):
 
 	raise ValueError(f"file/folder not found: {file_path}")
 
+
 def main(data_object=None, args_list=None):
 	args = parse_args(args_list=args_list)
 
@@ -304,6 +339,8 @@ def main(data_object=None, args_list=None):
 
 	if search_filter is None:
 		return get_special_text(data, selected_time, args)
+	elif search_filter is not None and args.extra_details:
+		return get_extra_details_text(data, selected_time, search_filter, args)
 	else:
 		return get_search_filter_text(data, selected_time, search_filter, args)
 
