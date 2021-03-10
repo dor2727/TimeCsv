@@ -638,9 +638,9 @@ class GroupedStats_ExtraDetailGeneric(ExtraDetailsGroupedStats):
 
 		self._initialize_data()
 
-		self._get_extra_delails_name()
+		self._get_extra_details_name()
 
-	def _get_extra_delails_name(self):
+	def _get_extra_details_name(self):
 		names = sum(
 			(list(i.extra_details.keys()) for i in self.data),
 			[]
@@ -650,11 +650,9 @@ class GroupedStats_ExtraDetailGeneric(ExtraDetailsGroupedStats):
 		if len(names) == 1:
 			self._extra_details_name = names[0]
 		elif len(names) == 0:
-			print(self._filter_obj)
 			raise ValueError("No possible extra_details_name found")
 		else:
 			# TODO: maybe use the most frequent name?
-			print(names)
 			raise ValueError(f"Too many ({len(names)}) possible extra_details_name found")
 
 		return self._extra_details_name
