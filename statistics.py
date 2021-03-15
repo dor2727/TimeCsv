@@ -253,16 +253,7 @@ class GroupedStats(Stats):
 	def title(self):
 		return f"{self.__class__.__name__}({self.group_value}) - {self.selected_time}"
 
-	def to_pie(self, headers=None, values=None, title=None, save=True):
-		"""
-		if bool(save) is False: interactively show the pie chard
-		if save is str: save the image to that path
-		if save is True: save to the default location
-
-		if save:
-			return open handle to the file with the image
-		"""
-
+	def _plot_prepare_data(self, headers=None, values=None, title=None):
 		# initializing values
 		# todo: this can be written in a more compact way
 		if headers is None:
@@ -273,27 +264,9 @@ class GroupedStats(Stats):
 			if not hasattr(self, "values_sorted"):
 				self.group()
 			values = self.values_sorted
-		if title is None:
-			title = self.title
+		return headers, values
 
-		# plotting initialization
-		fig, ax = plt.subplots()
-
-		total_seconds = sum(values)
-		def pct(value):
-			# value is given as a percentage - a float between 0 to 100
-			hours_str = seconds_to_hours_str(value * total_seconds / 100)
-			return f"{value:.1f}%\n{hours_str}h"
-
-		# making the pie chart
-		ax.pie(values, labels=headers, autopct=pct)
-		ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-		# titles & labels
-		ax.set_title(title)
-		fig.canvas.set_window_title(title)
-
-		# plotting - save to file
+	def _plot_save(self, fig, save):
 		if save:
 			if save is True:
 				path = DEFAULT_PIE_PATH
@@ -309,6 +282,57 @@ class GroupedStats(Stats):
 			plt.show()
 			return None
 
+	def _plot_set_title(self, fig, ax, title=None):
+		if title is None:
+			title = self.title
+
+		ax.set_title(title)
+		fig.canvas.set_window_title(title)
+
+	def _plot_make_pie(self, ax, values, headers):
+		total_seconds = sum(values)
+		def pct(value):
+			# value is given as a percentage - a float between 0 to 100
+			hours_str = seconds_to_hours_str(value * total_seconds / 100)
+			return f"{value:.1f}%\n{hours_str}h"
+
+		# making the pie chart
+		patches, _, _ = ax.pie(values, labels=headers, autopct=pct)
+		ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+		return patches
+
+	def to_pie(self, headers=None, values=None, title=None, save=True):
+		"""
+		if bool(save) is False: interactively show the pie chard
+		if save is str: save the image to that path
+		if save is True: save to the default location
+
+		if save:
+			return open handle to the file with the image
+		"""
+		headers, values = self._plot_prepare_data(headers, values)
+
+		# plotting initialization
+		fig, ax = plt.subplots()
+
+		self._plot_make_pie(ax, values, headers)
+
+		self._plot_set_title(fig, ax, title)
+
+		return self._plot_save(fig, save)
+
+	def _plot_make_bar(self, values, headers):
+		# making the bar graph
+		x = np.arange(len(headers))  # the label locations
+		width = 0.35  # the width of the bars
+		rects = ax.bar(x, values, width)
+
+		# titles & labels
+		ax.set_ylabel(self.group_value)
+		ax.set_xticks(x)
+		ax.set_xticklabels(headers)
+
 	def to_bar(self, headers=None, values=None, title=None, save=True):
 		"""
 		if bool(save) is False: interactively show the pie chard
@@ -318,48 +342,16 @@ class GroupedStats(Stats):
 		if save:
 			return open handle to the file with the image
 		"""
-
-		# initializing values
-		if headers is None:
-			if not hasattr(self, "headers_sorted"):
-				self.group()
-			headers = self.headers_sorted
-		if values is None:
-			if not hasattr(self, "values_sorted"):
-				self.group()
-			values = self.values_sorted
-		if title is None:
-			title = self.title
+		headers, values = self._plot_prepare_data(headers, values)
 
 		# plotting initialization
 		fig, ax = plt.subplots()
 
-		# making the bar graph
-		x = np.arange(len(headers))  # the label locations
-		width = 0.35  # the width of the bars
-		rects = ax.bar(x, values, width)
+		self._plot_make_bar(values, headers)
 
-		# titles & labels
-		fig.canvas.set_window_title(title)
-		ax.set_title(title)
-		ax.set_ylabel(self.group_value)
-		ax.set_xticks(x)
-		ax.set_xticklabels(headers)
+		self._plot_set_title(fig, ax, title)
 
-		# plotting
-		if save:
-			if save is True:
-				path = DEFAULT_BAR_PATH
-			else:
-				path = save
-
-			fig.savefig(path)
-			plt.close(fig)
-
-			return open(path, "rb")
-		else:
-			plt.show()
-			return None
+		return self._plot_save(fig, save)
 
 	#
 	def _generate_to_text_statistics_per_header(self, header, header_format, amount_of_time):
@@ -511,6 +503,52 @@ class GroupedStats_Group(GroupedStats):
 
 	def _get_filtered_data_per_header(self, header):
 		return GroupFilter(header).get_filtered_data(self.data)
+
+	def _plot_make_clickable_pie(self, fig, patches):
+		def onclick(event):
+			patch = event.artist
+			label = patch.get_label()
+
+			print(f"=== {label} ===")
+
+			g = GroupGroupedStats(
+				self.data,
+				category_name=label.capitalize(),
+
+				selected_time=f"{self.selected_time} - {label}",
+
+				group_value=self.group_value,
+				sort=self._sorting_method,
+			)
+			print(g.to_text())
+			g.to_pie(save=False)
+
+		for patch in patches:
+			patch.set_picker(True)
+
+		fig.canvas.mpl_connect('pick_event', onclick)
+
+	def to_pie(self, headers=None, values=None, title=None, save=True):
+		"""
+		if bool(save) is False: interactively show the pie chard
+		if save is str: save the image to that path
+		if save is True: save to the default location
+
+		if save:
+			return open handle to the file with the image
+		"""
+		headers, values = self._plot_prepare_data(headers, values)
+
+		# plotting initialization
+		fig, ax = plt.subplots()
+
+		patches = self._plot_make_pie(ax, values, headers)
+
+		self._plot_set_title(fig, ax, title)
+
+		self._plot_make_clickable_pie(fig, patches)
+
+		return self._plot_save(fig, save)
 
 
 class FilteredGroupedStats(GroupedStats):
