@@ -4,5 +4,5 @@ from TimeCsv.functions.productivity import get_productivity_pie
 
 if __name__ == '__main__':
 	# get_sleep_statistics()
-	get_blog_statistics()
-	# get_productivity_pie(save=False)
+	# get_blog_statistics()
+	get_productivity_pie(save=False)
