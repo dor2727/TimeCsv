@@ -19,7 +19,7 @@ from TimeCsv.Telegram_Bot.wrappers  import get_message, whitelisted_command, log
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-
+ 
 class TelegramServer(object):
 	def __init__(self):
 		# server initialization
