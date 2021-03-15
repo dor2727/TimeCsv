@@ -421,10 +421,7 @@ class TelegramScheduledCommands(object):
 					log(f"    [*] starting sleep")
 					time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDS)
 
-					# TODO: call self.full_reload
-					log(f"    [*] sleep ended ; calling {DAILY_WGET_PATH}")
-					os.system(DAILY_WGET_PATH)
-					log(f"    [*] DAILY_WGET ended")
+					log(f"    [*] sleep ended")
 
 				except Exception as exc:
 					log(f"[!] Caught general error in run_scheduler - quitting")
