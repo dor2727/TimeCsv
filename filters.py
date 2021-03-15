@@ -662,9 +662,14 @@ def join_filters_with_and(l):
 
 	return f
 
-def get_named_filter(name):
+def get_named_filter(name, args=None):
 	if name == "today":
-		return TimeFilter_Days(1)
+		if args is None:
+			return TimeFilter_Days(1)
+		elif type(args) is int:
+			return TimeFilter_Days(args)
+		else:
+			return TimeFilter_Days(*args)
 
 	elif name == "yesterday":
 		stop_time  = get_midnight( datetime.datetime.now() )
@@ -694,10 +699,20 @@ def get_named_filter(name):
 		return TimeFilter_DateRange( prev_sunday, this_sunday )
 
 	elif name == "month":
-		return TimeFilter_Month()
+		if args is None:
+			return TimeFilter_Month()
+		elif type(args) is int:
+			return TimeFilter_Month(args)
+		else:
+			return TimeFilter_Month(*args)
 
 	elif name == "year":
-		return TimeFilter_Year()
+		if args is None:
+			return TimeFilter_Year()
+		elif type(args) is int:
+			return TimeFilter_Year(args)
+		else:
+			return TimeFilter_Year(*args)
 
 	elif name == "all":
 		return TrueFilter()

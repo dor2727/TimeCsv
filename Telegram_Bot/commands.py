@@ -12,76 +12,12 @@ from TimeCsv.parsing import DataFolder, ParseError
 from TimeCsv.consts import *
 from TimeCsv.filters import *
 from TimeCsv.statistics import *
-from TimeCsv.time_utils import read_telegram_file, log, wget
+from TimeCsv.time_utils             import read_telegram_file, log, wget
 from TimeCsv.functions.productivity import get_productivity_pie
+from TimeCsv.Telegram_Bot.wrappers  import get_message, whitelisted_command, log_command
 
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-
-def get_message(update):
-	if update["message"] is not None:
-		return update['message']
-	else:
-		return update['callback_query']['message']
-
-
-# wrappers
-def log_command(func):
-	def func_wrapper(*args, **kwargs):
-		# each function is named "command_something"
-		command_name = func.__name__[8:]
-
-		if "scheduled" in kwargs:
-			if kwargs["scheduled"]:
-				log(f"    [*] scheduled command - {command_name}\t{time.asctime()}")
-			kwargs.pop("scheduled")
-		else:
-			# args[1] is update
-			if len(args) > 1 and args[1]:
-				update = args[1]
-				if update["message"] is not None:
-					command_text = update['message']['text']
-				else:
-					command_text = update['callback_query']['data']
-			else:
-				command_text = "None"
-			log(f"    [*] got command - {command_text}\tcalling {command_name}\t{time.asctime()}")
-
-		return func(*args, **kwargs)
-
-	return func_wrapper
-
-def void(*args, **kwargs):
-	return None
-
-"""
-requires:
-	1) self.user_chat_ids - a list of ints
-	2) self.user_names    - a list of strings, in the same length as self.user_chat_ids
-"""
-def whitelisted_command(func):
-	def func_wrapper(*args, **kwargs):
-		self = args[0]
-		if len(args) > 1 and args[1]:
-			update = args[1]
-
-			chat_id = get_message(update)['chat']['id']
-
-			if chat_id == self._chat_id:
-				log(f"[+] whitelist - success - {chat_id}")
-			else:
-				log(f"[-] whitelist - error - {chat_id}")
-				log(str(update))
-				log('\n')
-				return void
-		else:
-			# scheduled command
-			log(f"[*] whitelist - ignored (scheduled)")
-
-		return func(*args, **kwargs)
-
-	return func_wrapper
 
 
 class TelegramServer(object):
@@ -291,6 +227,15 @@ class TelegramCommands(object):
 	#
 	# productive pie
 	#
+	def send_productive_pie(self, f, update=None, **kwargs):
+		pie_file = get_productivity_pie(
+			data=f % self.datafolder.data,
+			save=True,
+			**kwargs
+		)
+
+		self.send_image(pie_file, update)
+
 	@whitelisted_command
 	@log_command
 	def command_productive_pie(self, update, context):
@@ -314,18 +259,12 @@ class TelegramCommands(object):
 		data = update.callback_query.data
 		callback_name, filter_name, focused = data.split()
 
-		f = get_named_filter(filter_name)
-		focused = bool(int(focused))
-
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
+		self.send_productive_pie(
+			get_named_filter(filter_name),
+			focused=bool(int(focused)),
 			selected_time=filter_name,
-			save=True,
-			focused=focused
+			update=update,
 		)
-
-		self.send_image(pie_file, update)
-
 
 	@whitelisted_command
 	@log_command
@@ -333,14 +272,12 @@ class TelegramCommands(object):
 		month, year, focused = self.parse_args(context, int, int, int)
 		f = TimeFilter_Month(month, year)
 
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
+		self.send_productive_pie(
+			f,
+			focused=bool(focused),
 			selected_time=f._selected_time,
-			save=True,
-			focused=bool(focused)
+			update=update,
 		)
-
-		self.send_image(pie_file, update)
 
 	@whitelisted_command
 	@log_command
@@ -348,14 +285,12 @@ class TelegramCommands(object):
 		year, focused = self.parse_args(context, int, int)
 		f = TimeFilter_Year(year)
 
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
+		self.send_productive_pie(
+			f,
+			focused=bool(focused),
 			selected_time=f._selected_time,
-			save=True,
-			focused=bool(focused)
+			update=update,
 		)
-
-		self.send_image(pie_file, update)
 
 	#
 	# others
@@ -364,7 +299,7 @@ class TelegramCommands(object):
 	@log_command
 	def command_test(self, update=None, context=None):
 		s = "test"
-		if context.args:
+		if context is not None and context.args:
 			s += ": " + str(context.args)
 		self.send_text(s, update)
 
@@ -419,9 +354,23 @@ class TelegramCommands(object):
 
 class TelegramScheduledCommands(object):
 	def schedule_commands(self):
+		self.schedule_daily()
+		self.schedule_weekly()
+
+		# reload
+		schedule.every().hour.at(":57").do(
+			self.command_reload,
+			scheduled=True
+		)
+
+		self.scheduler_start()
+
+
+	def schedule_daily(self):
 		#
 		# daily log
 		#
+		log("Daily filter - yesterday - " + str(get_named_filter("yesterday")))
 		# yesterday text report
 		schedule.every().day.at("08:00").do(
 			self.filtered_time_command,
@@ -438,6 +387,12 @@ class TelegramScheduledCommands(object):
 			)
 		)
 
+		# reload
+		schedule.every().day.at("06:00").do(
+			self.full_reload
+		)
+
+	def schedule_weekly(self):
 		# weekly log
 		#
 		# last week text report
@@ -468,12 +423,7 @@ class TelegramScheduledCommands(object):
 			TimeFilter_Days(7),
 		)
 
-		# reload
-		schedule.every().day.at("06:00").do(
-			self.full_reload
-		)
-
-
+	def scheduler_start(self):
 		def run_scheduler():
 			while True:
 				try:
@@ -484,14 +434,17 @@ class TelegramScheduledCommands(object):
 					# log error to screen + log file
 					log(f"[*] Caught ParseError in run_scheduler. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
 					log(f"Caught ParseError:\n{str(pe)}")
+
 					# send error to the main user
 					self.send_text(f"Caught ParseError:\n{str(pe)}")
+
 					# re-sync with dropbox
 					log(f"    [*] starting sleep")
-					time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
+					time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDS)
+
 					log(f"    [*] sleep ended ; calling full_reload")
 					self.full_reload()
-					log(f"    [*] DAILY_WGET ended")
+					log(f"    [*] full_reload ended")
 
 				except Exception as exc:
 					log(f"[!] Caught general error in run_scheduler - quitting")
@@ -499,6 +452,7 @@ class TelegramScheduledCommands(object):
 					raise exc
 
 		threading.Thread(target=run_scheduler).start()
+
 
 
 class TelegramAPI(TelegramServer, TelegramCommands, TelegramScheduledCommands):
@@ -513,44 +467,49 @@ def main():
 	log(f"[*] Starting: {now}")
 
 	while True:
+		# an exception can either happen in __init__, when self.datafolder is created
+		# or in loop, where the `reload` method is called
+
 		try:
-			# an exception can either happen in __init__, when self.datafolder is created
 			t = TelegramAPI()
-			# or in loop, where the `reload` method is called
-			t.loop()
 
 		except ParseError as pe:
-			log(f"[*] Caught ParseError in main. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+			log(f"[*] Caught ParseError in main (__init__). retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
 			log(f"Caught ParseError:\n{str(pe)}")
-			time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
+			time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDSE)
 			os.system(DAILY_WGET_PATH)
 
 		except Exception as exc:
-			log(f"[!] Caught general error in main - quitting")
+			log(f"[!] Caught general error in main (__init__) - quitting")
+			log(exception_message())
+			raise exc
+
+
+		try:
+			t.loop()
+
+		except ParseError as pe:
+			log(f"[*] Caught ParseError in main (loop). retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+			log(f"Caught ParseError:\n{str(pe)}")
+			time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDSE)
+			os.system(DAILY_WGET_PATH)
+
+		# socket.gaierror: [Errno -3] Temporary failure in name resolution
+		except socket.gaierror as exc:
+			if exc.errno == -3:
+				log(f"[*] Caught socket.gaierror (-3) in run_scheduler. continue.")
+				continue
+			else:
+				log(f"[*] Caught socket.gaierror ({exc.errno}) in run_scheduler. continue.")
+				log(str(exc))
+				continue
+
+		except Exception as exc:
+			log(f"[!] Caught general error in main (loop) - quitting")
 			log(exception_message())
 			raise exc
 
 	LOG_FILE.close()
-
-"""
-# all commands:
-text_report - text_report
-pie - pie
-productive_pie - productive_pie
-
-reload - reload
-
-month - month
-year - year
-
-productive_pie_month - productive_pie_month
-productive_pie_year - productive_pie_year
-
-list_commands - list_commands
-cli - cli
-test - test
-pdb - pdb
-"""
 
 if __name__ == '__main__':
 	main()
