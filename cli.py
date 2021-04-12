@@ -13,7 +13,6 @@ from TimeCsv.functions.productivity import get_productivity_pie
 
 
 
-
 # may pass arguments as a list (used in the telegram bot)
 def parse_args(args_list=None):
 	parser = argparse.ArgumentParser()
