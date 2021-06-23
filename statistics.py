@@ -458,10 +458,8 @@ class GroupedStats_Friend(GroupedStats):
 		# get all headers
 		headers = set()
 		for i in self.data:
-			h = i.friends
-			if not h:
-				print("empty description for: %s" % i)
-			headers.add(h)
+			if i.friends:
+				headers.update(i.friends)
 
 		# return a list, sorted alphabetically
 		self._headers = sorted(headers)
@@ -494,7 +492,7 @@ class GroupedStats_Group(GroupedStats):
 		for i in self.data:
 			h = i.group
 			if not h:
-				print("empty description for: %s" % i)
+				print("empty group for: %s" % i)
 			headers.add(h)
 
 		# return a list, sorted alphabetically
@@ -648,9 +646,8 @@ class ExtraDetailsGroupedStats(GroupedStats):
 
 		for i in self.data:
 			h = i.extra_details[self._extra_details_name]
-			if not h:
-				print("empty description for: %s" % i)
-			headers.update(h)
+			if h:
+				headers.update(h)
 
 		# return a list, sorted alphabetically
 		self._headers = sorted(headers)
