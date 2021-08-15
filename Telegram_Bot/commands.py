@@ -476,7 +476,7 @@ def main():
 		except ParseError as pe:
 			log(f"[*] Caught ParseError in main (__init__). retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
 			log(f"Caught ParseError:\n{str(pe)}")
-			time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDSE)
+			time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDS)
 			os.system(DAILY_WGET_PATH)
 
 		except Exception as exc:
@@ -491,7 +491,7 @@ def main():
 		except ParseError as pe:
 			log(f"[*] Caught ParseError in main (loop). retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
 			log(f"Caught ParseError:\n{str(pe)}")
-			time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDSE)
+			time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDS)
 			os.system(DAILY_WGET_PATH)
 
 		# socket.gaierror: [Errno -3] Temporary failure in name resolution
