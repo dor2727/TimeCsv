@@ -157,7 +157,8 @@ class DataItem(object):
 	# stop_time can either indicate when the event ended
 	_STOP_INITIALS     = ('s', 'e')
 	# or how long it lasted
-	_DURATION_INITIALS = ('d')
+	_BREAK_INITIALS = ('b',)
+	_DURATION_INITIALS = ('d', 't') + _BREAK_INITIALS
 	def _parser_stop_time(self, s):
 		"""
 		after this initial parsing, the following cases are possible:
@@ -174,6 +175,8 @@ class DataItem(object):
 			  self.stop_time is a timedelta object
 				if stop_time tells the duration
 		"""
+		self.is_break = False
+
 		if s == COPY_LAST_STOP_TIME:
 			self.stop_time_type = "copy"
 			self.stop_time = COPY_LAST_STOP_TIME
@@ -202,6 +205,9 @@ class DataItem(object):
 					hours=duration.hour,
 					minutes=duration.minute,
 				)
+
+				if s[0] in self._BREAK_INITIALS:
+					self.is_break = True
 		return self.stop_time
 	def _parser_group(self, s):
 		self.group = s

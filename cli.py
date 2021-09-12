@@ -9,6 +9,8 @@ import TimeCsv.statistics
 from TimeCsv.parsing import DataFolder, DataFile, ParseError
 from TimeCsv.time_utils import newest
 from TimeCsv.filters import *
+from TimeCsv.functions.productivity import get_productivity_pie
+
 
 
 
@@ -57,6 +59,9 @@ def parse_args(args_list=None):
 	output.add_argument("--telegram", action="store_true")
 	output.add_argument("--pie"     , action="store_true")
 	output.add_argument("--bar"     , action="store_true")
+
+	details.add_argument("--productive-pie"        , action="store_true", dest="productive_pie"        , help="whether to show a productive_pie")
+	details.add_argument("--productive-pie-focused", action="store_true", dest="productive_pie_focused", help="whether to focus the productive_pie")
 
 
 	if args_list is None:
@@ -337,7 +342,9 @@ def main(data_object=None, args_list=None):
 
 	data, selected_time, search_filter = get_data(data_object, args)
 
-	if search_filter is None:
+	if args.productive_pie:
+		return get_productivity_pie(data, selected_time, save=False, focused=args.productive_pie_focused)
+	elif search_filter is None:
 		return get_special_text(data, selected_time, args)
 	elif search_filter is not None and args.extra_details:
 		return get_extra_details_text(data, selected_time, search_filter, args)

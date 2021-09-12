@@ -53,7 +53,8 @@ def find_friends_in_str(s, search_at_beginning=False):
 	# join all results into a big string
 	found = ' '.join(i[0] for i in found)
 	# remove 'and', and convert back into a list
-	found = found.replace("and", "").split()
+	found = re.sub("\\band\\b", '', found)
+	found = found.split()
 	# unique
 	return list(OrderedDict.fromkeys(found))
 
