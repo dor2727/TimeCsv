@@ -18,6 +18,7 @@ declare -a FileNameArray=(
 	"2021_year_3_semester_1.tcsv"
 	"2021_year_3_semester_2.tcsv"
 	"2021_year_3_small_holiday.tcsv"
+	"2021_year_3_big_holiday.tcsv"
 )
 
 date > $LOG_NEW 2>&1
