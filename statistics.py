@@ -688,6 +688,7 @@ class GroupedStats_ExtraDetailGeneric(ExtraDetailsGroupedStats):
 			raise ValueError("No possible extra_details_name found")
 		else:
 			# TODO: maybe use the most frequent name?
+			print(names)
 			raise ValueError(f"Too many ({len(names)}) possible extra_details_name found")
 
 		return self._extra_details_name
