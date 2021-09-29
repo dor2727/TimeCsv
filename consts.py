@@ -35,11 +35,21 @@ FRIEND_PATTERN = [PATTERN_WITH, PATTERN_FOR, PATTERN_TO]
 PATTERN_LOCATION = " ?@ ?(.*?) ?@"
 PATTERN_LOCATION_THEIR_PLACE = "@@"
 
+VEHICLES = ["bicycle", "car", "foot"]
 
-COPY_LAST_DATE = "----/--/--"
-ADD_LAST_DATE = "----/--/+1"
-COPY_LAST_START_TIME = "--:--"
-COPY_LAST_STOP_TIME = "---:--"
+# Date parsing
+COPY_LAST_DATE             = "----/--/--"
+ADD_LAST_DATE              = "----/--/+1"
+SPECIAL_DATE_FORMATS       = [COPY_LAST_DATE, ADD_LAST_DATE]
+# start time parsing
+COPY_LAST_START_TIME       = "--:--"
+SPECIAL_START_TIME_FORMATS = [COPY_LAST_START_TIME]
+# stop time parsing
+COPY_LAST_STOP_TIME        = "---:--"
+SPECIAL_STOP_TIME_FORMATS  = [COPY_LAST_STOP_TIME]
+STOP_TIME_INITIALS_STOP     = ('s', 'e') # stop_time can either indicate when the event ended
+STOP_TIME_INITIALS_BREAK    = ('b',)     # or how long it lasted
+STOP_TIME_INITIALS_DURATION = ('d', 't') + STOP_TIME_INITIALS_BREAK
 
 
 DEFAULT_PIE_PATH = "/tmp/pie.png"

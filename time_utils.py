@@ -70,6 +70,12 @@ def find_location_in_str(s):
 	else:
 		return l
 
+def find_vehicle_in_str(s):
+	for vehicle in VEHICLES:
+		if f"by {vehicle}" in s:
+			return vehicle
+	return None
+
 def counter(data):
     return list(Counter(data).items())
 

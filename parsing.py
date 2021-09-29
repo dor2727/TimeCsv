@@ -12,7 +12,7 @@ class ParseError(ValueError):
 	pass
 
 
-class DataItem(object):
+class DataItemParser(object):
 	"""
 	comment lines are either empty lines or lines starting with '#'
 
@@ -29,24 +29,12 @@ class DataItem(object):
 			with its 2 neighbors
 		this way, place holders such as "My date is the same as the previous object date"
 			(which is written as "----/--/--") will be evaluated
-
-	exported functions:
-		__int__:
-			return the duration in seconds
-		__getitem__:
-			return the items in the csv order
-		friends:
-			return a list of friends which were in the activity
-		location:
-			return a string of the location of the activity
-		reevaluate:
-			used for calling 2nd parsing functions
-		is_fully_parsed:
-			checks whether this object has finished parsing, and is in a valid state
-		is_in_date_range:
-			checks whether this object is contained within a date range
 	"""
-	def __init__(self, items):
+	def __init__(self, items, file_name="Unknown", line="??"):
+		# debug information
+		self._file_name = file_name
+		self._line = line
+
 		if self._check_if_comment(items):
 			return
 
@@ -55,9 +43,6 @@ class DataItem(object):
 			self._items.append(
 				self.PARSERS[i](items[i])
 			)
-
-	def __getitem__(self, n):
-		return self._items[n]
 
 	def __repr__(self):
 		return "%s : %s : %s : %-14s : %s" % (
@@ -68,25 +53,6 @@ class DataItem(object):
 			self._format_description(),
 		)
 
-	# return total event time in seconds
-	def __int__(self):
-		return (self.stop_time - self.start_time).seconds
-
-	# when __add__ is called (usually by calling `sum` on a list of DataItems), cast to int
-	def __add__(self, other):
-		if type(other) is DataItem:
-			return int(self) + int(other)
-		elif type(other) is int:
-			return int(self) + other
-		else:
-			return NotImplemented
-	def __radd__(self, other):
-		if type(other) is DataItem:
-			return int(self) + int(other)
-		elif type(other) is int:
-			return int(self) + other
-		else:
-			return NotImplemented
 
 	def _check_if_comment(self, items):
 		"""
@@ -102,13 +68,10 @@ class DataItem(object):
 
 		return self.is_comment
 
-	@property
-	def friends(self):
-		return find_friends_in_str(self.description, self.group == "Friends")
+	def _format_error(self, text):
+		return f"[!] {text} in file \"{self._file_name}\" : {self._line} : < {self} >"
 
-	@property
-	def location(self):
-		return find_location_in_str(self.description)
+
 
 	#
 	# first parse iteration
@@ -119,12 +82,11 @@ class DataItem(object):
 			- str, if it was a special placeholder in the csv
 			- datetime object, if it was a regular date value
 		"""
-		if s == COPY_LAST_DATE:
-			self.date = COPY_LAST_DATE
-		elif s == ADD_LAST_DATE:
-			self.date = ADD_LAST_DATE
+		if s in SPECIAL_DATE_FORMATS:
+			self.date = s
 		else:
 			self.date = datetime.datetime.strptime(s, "%Y/%m/%d")
+
 		return self.date
 	def _parser_start_time(self, s):
 		"""
@@ -135,8 +97,8 @@ class DataItem(object):
 			- timedelta object, if it was a regular start_time value
 				and self.date is str
 		"""
-		if s == COPY_LAST_START_TIME:
-			self.start_time = COPY_LAST_START_TIME
+		if s in SPECIAL_START_TIME_FORMATS:
+			self.start_time = s
 		else:
 			start_time = datetime.datetime.strptime(s, "%H:%M")
 			if type(self.date) is str:
@@ -152,13 +114,8 @@ class DataItem(object):
 					hour   = start_time.hour,
 					minute = start_time.minute,
 				)
-		return self.start_time
 
-	# stop_time can either indicate when the event ended
-	_STOP_INITIALS     = ('s', 'e')
-	# or how long it lasted
-	_BREAK_INITIALS = ('b',)
-	_DURATION_INITIALS = ('d', 't') + _BREAK_INITIALS
+		return self.start_time
 	def _parser_stop_time(self, s):
 		"""
 		after this initial parsing, the following cases are possible:
@@ -181,7 +138,7 @@ class DataItem(object):
 			self.stop_time_type = "copy"
 			self.stop_time = COPY_LAST_STOP_TIME
 		else:
-			if s[0] in self._STOP_INITIALS:
+			if s[0] in STOP_TIME_INITIALS_STOP:
 				self.stop_time_type = "stop"
 				stop_time = datetime.datetime.strptime(s[1:], "%H:%M")
 				if type(self.date) is str:
@@ -197,7 +154,7 @@ class DataItem(object):
 						hour  =stop_time.hour,
 						minute=stop_time.minute,
 					)
-			elif s[0] in self._DURATION_INITIALS:
+			elif s[0] in STOP_TIME_INITIALS_DURATION:
 				self.stop_time_type = "duration"
 				duration = datetime.datetime.strptime(s[1:], "%H:%M")
 				# it will be added to self.start_time at self._reevaluate_start_time
@@ -206,8 +163,13 @@ class DataItem(object):
 					minutes=duration.minute,
 				)
 
-				if s[0] in self._BREAK_INITIALS:
+				if s[0] in STOP_TIME_INITIALS_BREAK:
 					self.is_break = True
+			else:
+				# setting the stop_time for the debug message
+				self.stop_time = s
+				raise ParseError(self._format_error(f"Invalid stop_initial encountered: \'{s[0]}\'"))
+
 		return self.stop_time
 	def _parser_group(self, s):
 		self.group = s
@@ -243,11 +205,17 @@ class DataItem(object):
 		]
 
 	def _format_date(self):
+		if not hasattr(self, "date"):
+			return "????/??/??"
+
 		if type(self.date) is str:
 			return self.date
 		else:
 			return self.date.strftime("%Y/%m/%d")
 	def _format_start_time(self):
+		if not hasattr(self, "start_time"):
+			return "??:??"
+
 		if type(self.start_time) is str:
 			return self.start_time
 		elif type(self.start_time) is datetime.timedelta:
@@ -255,6 +223,9 @@ class DataItem(object):
 		else:
 			return self.start_time.strftime("%H:%M")
 	def _format_stop_time(self):
+		if not hasattr(self, "stop_time"):
+			return "??:??     "
+
 		days = "    "
 
 		if type(self.stop_time) is str:
@@ -266,12 +237,12 @@ class DataItem(object):
 			# check if a day has passed
 			if get_ymd_tuple(self.start_time) != get_ymd_tuple(self.stop_time):
 				days = "(+%d)" % ((self.stop_time - self.start_time).days + 1)
-		return hour + ' ' + days
 
+		return hour + ' ' + days
 	def _format_group(self):
-		return self.group
+		return getattr(self, "group", "???")
 	def _format_description(self):
-		return self.description
+		return getattr(self, "description", "???")
 
 	#
 	# second parse iteration
@@ -287,18 +258,18 @@ class DataItem(object):
 			try:
 				self.start_time = self.date + self.start_time
 			except Exception as exc:
-				raise ParseError(f"Error setting start_time in `_reevaluate_date` for < {self} >") from exc
+				raise ParseError(self._format_error(f"Error setting start_time in `_reevaluate_date`")) from exc
 
 		if type(self.stop_time) is datetime.timedelta and self.stop_time_type == "stop":
 			try:
 				self.stop_time = self.date + self.stop_time
 			except Exception as exc:
-				raise ParseError(f"Error setting stop_time in `_reevaluate_date` for < {self} >") from exc
-
+				raise ParseError(self._format_error(f"Error setting stop_time in `_reevaluate_date`")) from exc
 	def _reevaluate_start_time(self, prev, next=None):
 		if type(self.start_time) is str:
 			if self.start_time == COPY_LAST_START_TIME:
 				self.start_time = prev.stop_time
+
 		elif type(self.start_time) is datetime.timedelta:
 			self.start_time = self.date + self.start_time
 
@@ -328,20 +299,85 @@ class DataItem(object):
 		self._reevaluate_stop_time(p, n)
 
 		if get_ymd_tuple(self.start_time) != get_ymd_tuple(self.date):
-			raise ParseError(f"[!] date & start_time mismatch for < {self} >")
+			raise ParseError(self._format_error(f"date & start_time mismatch"))
 
 	def is_fully_parsed(self):
 		"""
 		checks whether every object has the type it is supposed to have
 		"""
 		return all([
-			type(self.date) is datetime.datetime,
-			type(self.start_time) is datetime.datetime,
-			type(self.stop_time) is datetime.datetime,
-			type(self.group) is str,
+			type(self.date       ) is datetime.datetime,
+			type(self.start_time ) is datetime.datetime,
+			type(self.stop_time  ) is datetime.datetime,
+			type(self.group      ) is str,
 			type(self.description) is str,
 			self.stop_time > self.start_time,
 		])
+
+
+class DataItem(DataItemParser):
+	"""
+	exported functions:
+		__int__:
+			return the duration in seconds
+		__add__:
+			casting to int, and addind the durations
+		__getitem__:
+			return the items in the csv order
+		__repr__
+
+		friends:
+			return a list of friends which were in the activity
+		location:
+			return a string of the location of the activity
+		vehicle:
+			return a string of the vehicle used
+
+		reevaluate:
+			used for calling 2nd parsing functions
+		is_fully_parsed:
+			checks whether this object has finished parsing, and is in a valid state
+		is_in_date_range:
+			checks whether this object is contained within a date range
+	"""
+
+	def __getitem__(self, n):
+		return self._items[n]
+
+
+	# return total event time in seconds
+	def __int__(self):
+		return (self.stop_time - self.start_time).seconds
+
+	# when __add__ is called (usually by calling `sum` on a list of DataItems), cast to int
+	def __add__(self, other):
+		if type(other) is DataItem:
+			return int(self) + int(other)
+		elif type(other) is int:
+			return int(self) + other
+		else:
+			return NotImplemented
+	def __radd__(self, other):
+		if type(other) is DataItem:
+			return int(self) + int(other)
+		elif type(other) is int:
+			return int(self) + other
+		else:
+			return NotImplemented
+
+
+	@property
+	def friends(self):
+		return find_friends_in_str(self.description, self.group == "Friends")
+
+	@property
+	def location(self):
+		return find_location_in_str(self.description)
+
+	@property
+	def vehicle(self):
+		return find_vehicle_in_str(self.description)
+
 
 	def is_in_date_range(self, start_date, end_date,
 		include_by_start=True, include_by_stop=False):
@@ -452,7 +488,7 @@ class DataFile(object):
 
 
 class DataFolder(object):
-	def __init__(self, folder=DEFAULT_DATA_DIRECTORY, recursive=False):
+	def __init__(self, folder=DEFAULT_DATA_DIRECTORY, recursive=True):
 		self._path = folder
 		self._recursive = recursive
 
@@ -482,8 +518,8 @@ class DataFolder(object):
 					)
 				)
 
-				if not self._recursive:
-					break
+			if not self._recursive:
+				break
 
 		# sort the data files by date
 		self.data_files = sorted(
