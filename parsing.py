@@ -452,10 +452,12 @@ class DataFile(object):
 
 
 class DataFolder(object):
-	def __init__(self, folder=DEFAULT_DATA_DIRECTORY):
+	def __init__(self, folder=DEFAULT_DATA_DIRECTORY, recursive=False):
 		self._path = folder
+		self._recursive = recursive
 
 		self._load_data_files()
+		self._load_data()
 
 	def __repr__(self):
 		return "%s : %s : %d files : %d items" % (
@@ -465,56 +467,57 @@ class DataFolder(object):
 			len(self.data)
 		)
 
-	def _load_data_files(self):
-		files = next(os.walk(self._path))[2]
+	def _get_all_data_files(self):
+		self.data_files = []
 
-		# remove files starting with either '.' or '_':
-		files = filter(
-			lambda f: not (f[0] == '.' or f[0] == '_'),
-			files
-		)
+		for folder_path, folders, files in os.walk(self._path):
+			for file_name in files:
+				# remove files starting with either '.' or '_':
+				if file_name[0] == '.' or file_name[0] == '_':
+					continue
 
-		# each data file, in its constructor, loads its content
-		self.data_files = [
-			DataFile(os.path.join(self._path, i))
-			for i in files
-		]
+				self.data_files.append(
+					DataFile(
+						os.path.join(folder_path, file_name)
+					)
+				)
+
+				if not self._recursive:
+					break
+
 		# sort the data files by date
 		self.data_files = sorted(
 			self.data_files,
 			key=lambda df: df._data_range[1]
 		)
 
-		self.data = sum([i.data for i in self.data_files], [])
+
+	def _load_data_files(self):
+		self._get_all_data_files()
 
 		self.data_file_latest = self.data_files[-1]
 		self.data_latest = self.data_file_latest.data
 
-		self.friends   = list(set(sum([i.friends for i in self.data_files], [])))
+	def _load_data(self):
+		self.data      =          sum([i.data      for i in self.data_files], [])
+		self.friends   = list(set(sum([i.friends   for i in self.data_files], [])))
 		self.locations = list(set(sum([i.locations for i in self.data_files], [])))
 
-	"""
-	TODO - make multiple reload functions (or only one of them)
-	quick_reload - only reload self.data_file_latest
-	normal_reload - current implementatin
-	full_reload - call _load_data_files
-	"""
 	def reload(self):
 		for i in self.data_files:
 			i.reload()
 
-		self.data      = sum([i.data for i in self.data_files], [])
-		self.friends   = list(set(sum([i.friends for i in self.data_files], [])))
-		self.locations = list(set(sum([i.locations for i in self.data_files], [])))
+		self._load_data()
 
 	def _validate_data(self):
 		invalid_items = []
 		res = True
+
 		for i in self.data_files:
 			temp = i._validate_data()
 			if type(temp) is list:
 				invalid_items += temp
 			else:
 				res &= temp
-		return invalid_items or res
 
+		return invalid_items or res
