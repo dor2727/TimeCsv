@@ -2,15 +2,19 @@ import os
 import re
 import datetime
 
-DEFAULT_DATA_DIRECTORY = os.path.expanduser("~/Dropbox/Projects/TimeCsv/data")
+DEFAULT_DATA_DIRECTORY  = os.path.expanduser("~/Dropbox/Projects/TimeCsv/data")
 TELEGRAM_DATA_DIRECTORY = os.path.expanduser("~/Dropbox/Projects/TimeCsv/Telegram_Bot/data")
+LOGS_DIRECTORY          = os.path.expanduser("~/Dropbox/Projects/TimeCsv/Logs")
+LOG_PATH                = os.path.join(LOGS_DIRECTORY, "log.log")
 POSSIBLE_FILE_EXTENSIONS = [".tcsv", ".csv", ".txt", ""]
 
 
 # 01/01/01 is Monday
 DAYS = [datetime.datetime(1,1,i).strftime("%a") for i in range(1,7+1)]
+
 # headers to look for in every csv
 BASE_HEADERS = ["Date", "Start", "Stop", "Group", "Description"]
+
 # how to format [from_day - to_day]
 DATE_REPRESENTATION_PATTERN = "%04d/%02d/%02d - %04d/%02d/%02d"
 
@@ -36,6 +40,7 @@ PATTERN_LOCATION = " ?@ ?(.*?) ?@"
 PATTERN_LOCATION_THEIR_PLACE = "@@"
 
 VEHICLES = ["bicycle", "car", "foot"]
+
 
 # Date parsing
 COPY_LAST_DATE             = "----/--/--"

@@ -8,7 +8,7 @@ from collections import OrderedDict, Counter
 from TimeCsv.consts import *
 
 
-LOG_FILE = open(os.path.join(TELEGRAM_DATA_DIRECTORY, "log.log"), "a")
+LOG_FILE = open(LOG_PATH, "a")
 
 # utils
 def log(s):

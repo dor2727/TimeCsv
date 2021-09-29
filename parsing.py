@@ -72,7 +72,6 @@ class DataItemParser(object):
 		return f"[!] {text} in file \"{self._file_name}\" : {self._line} : < {self} >"
 
 
-
 	#
 	# first parse iteration
 	#
