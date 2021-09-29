@@ -76,7 +76,13 @@ class Filter(object):
 		# verify input
 		if type(other) is not list:
 			raise ValueError("modulo not defined for filter and non-list object")
-		# Should check all the items
+
+		# before the following check, verigy that the list is not empty:
+		if len(other) == 0:
+			# return the same thing, rather than an empty list, since `other` may be a tuple or something
+			return other
+
+		# Should check all the items, but there is currently no such case of a list with mixed types
 		if other[0].__class__.__name__ != "DataItem":
 			raise ValueError("modulo is only defined for filter and a list of DataItem elements")
 
@@ -291,10 +297,10 @@ class HasExtraDetailsFilter(Filter):
 
 class DurationFilter(Filter):
 	def __init__(self, string):
-		if   type(string) is string and string[0] == '<':
+		if   type(string) is str and string[0] == '<':
 			self._action = "maximum"
 			self.seconds = self._int(string[1:])
-		elif type(string) is string and string[0] == '>':
+		elif type(string) is str and string[0] == '>':
 			self._action = "minumum"
 			self.seconds = self._int(string[1:])
 		else: # default
@@ -349,12 +355,16 @@ class StrFilter(Filter):
 class AutoFilter(Filter):
 	not_filter_prefix = ('~', '!')
 
-	def __init__(self, string, case_sensitive=None):
+	def __init__(self, string, case_sensitive=None, force_regex=False):
 		# check for regex
-		regex = '\\' in string
+		regex = ('\\' in string) or force_regex
 
 		# check whether this will be a NotFilter
 		if not regex and string[0] in self.not_filter_prefix:
+			exclude = True
+			string = string[1:]
+		elif   regex and string[0] == '~':
+			# '!' is a special char for regex, '~' is not, thus, only '~' is allowed for regex exclude
 			exclude = True
 			string = string[1:]
 		else:
@@ -651,3 +661,62 @@ def join_filters_with_and(l):
 		f &= i
 
 	return f
+
+def get_named_filter(name, args=None):
+	if name == "today":
+		if args is None:
+			return TimeFilter_Days(1)
+		elif type(args) is int:
+			return TimeFilter_Days(args)
+		else:
+			return TimeFilter_Days(*args)
+
+	elif name == "yesterday":
+		stop_time  = get_midnight( datetime.datetime.now() )
+		start_time = get_midnight(
+			stop_time
+			 -
+			datetime.timedelta(days=1)
+		)
+
+		return TimeFilter_DateRange( start_time, stop_time )
+
+	elif name == "week":
+		return TimeFilter_Days(7)
+
+	elif name == "last_week":
+		today = datetime.datetime.now()
+
+		if WEEK_STARTS_AT_SUNDAY:
+			weekday = today.weekday() + WEEK_STARTS_AT_SUNDAY
+			if weekday == 7:
+				weekday = 0
+		else:
+			weekday = today.weekday()
+		this_sunday = get_midnight(today - datetime.timedelta(days=weekday))
+		prev_sunday = this_sunday - datetime.timedelta(days=7)
+
+		return TimeFilter_DateRange( prev_sunday, this_sunday )
+
+	elif name == "month":
+		if args is None:
+			return TimeFilter_Month()
+		elif type(args) is int:
+			return TimeFilter_Month(args)
+		else:
+			return TimeFilter_Month(*args)
+
+	elif name == "year":
+		if args is None:
+			return TimeFilter_Year()
+		elif type(args) is int:
+			return TimeFilter_Year(args)
+		else:
+			return TimeFilter_Year(*args)
+
+	elif name == "all":
+		return TrueFilter()
+
+	else:
+		return None
+	

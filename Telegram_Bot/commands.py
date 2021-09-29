@@ -12,62 +12,12 @@ from TimeCsv.parsing import DataFolder, ParseError
 from TimeCsv.consts import *
 from TimeCsv.filters import *
 from TimeCsv.statistics import *
-from TimeCsv.time_utils import read_telegram_file, log
+from TimeCsv.time_utils             import read_telegram_file, log
 from TimeCsv.functions.productivity import get_productivity_pie
+from TimeCsv.Telegram_Bot.wrappers  import get_message, whitelisted_command, log_command
 
-from telegram.ext import Updater, InlineQueryHandler, CommandHandler
-
-
-# wrappers
-def log_command(func):
-	def func_wrapper(*args, **kwargs):
-		# each function is named "command_something"
-		command_name = func.__name__[8:]
-
-		if "scheduled" in kwargs:
-			if kwargs["scheduled"]:
-				log(f"    [*] scheduled command - {command_name}\t{time.asctime()}")
-			kwargs.pop("scheduled")
-		else:
-			# args[1] is update
-			if len(args) > 1 and args[1]:
-				command_text = args[1]['message']['text']
-			else:
-				command_text = "None"
-			log(f"    [*] got command - {command_text}\tcalling {command_name}\t{time.asctime()}")
-
-		return func(*args, **kwargs)
-
-	return func_wrapper
-
-def void(*args, **kwargs):
-	return None
-
-"""
-requires:
-	1) self.user_chat_ids - a list of ints
-	2) self.user_names    - a list of strings, in the same length as self.user_chat_ids
-"""
-def whitelisted_command(func):
-	def func_wrapper(*args, **kwargs):
-		self = args[0]
-		if len(args) > 1 and args[1]:
-			update = args[1]
-			chat_id = update['message']['chat']['id']
-			if chat_id == self._chat_id:
-				log(f"[+] whitelist - success - {chat_id}")
-			else:
-				log(f"[-] whitelist - error - {chat_id}")
-				log(str(update))
-				log('\n')
-				return void
-		else:
-			# scheduled command
-			log(f"[*] whitelist - ignored (scheduled)")
-
-		return func(*args, **kwargs)
-
-	return func_wrapper
+from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 class TelegramServer(object):
@@ -84,7 +34,7 @@ class TelegramServer(object):
 
 	def chat_id(self, update=None):
 		if update:
-			return update['message']['chat']['id']
+			return get_message(update)['chat']['id']
 		else:
 			return self._chat_id
 
@@ -102,7 +52,7 @@ class TelegramServer(object):
 
 	def loop(self):
 		log("[*] entering loop")
-		self.updater.start_polling()
+		self.updater.start_polling(timeout=123)
 		self.updater.idle()
 
 class TelegramCommands(object):
@@ -110,6 +60,7 @@ class TelegramCommands(object):
 		return c[8:]
 
 	def add_all_handlers(self):
+		# register commands
 		commands = filter(
 			lambda s: s.startswith("command_"),
 			dir(self)
@@ -119,6 +70,18 @@ class TelegramCommands(object):
 			self.dp.add_handler(CommandHandler(
 				self._command_name(command_name),
 				getattr(self, command_name)
+			))
+
+		# register menus
+		menus = filter(
+			lambda s: s.startswith("menu_"),
+			dir(self)
+		)
+
+		for menu_name in menus:
+			self.dp.add_handler(CallbackQueryHandler(
+				getattr(self, menu_name),
+				pattern=f"^{menu_name}\\b",
 			))
 
 	def parse_args(self, context, *expected_types):
@@ -145,11 +108,18 @@ class TelegramCommands(object):
 	@log_command
 	def command_cli(self, update, context):
 		args_list = ["--telegram"] + shlex.split(' '.join(context.args))
-		self.send_text(
-			TimeCsv.cli.main(self.datafolder, args_list),
-			update
-		)
 
+		result = TimeCsv.cli.main(self.datafolder, args_list)
+
+		if type(result) is str:
+			self.send_text( result, update)
+		elif isinstance(result, io.TextIOBase): # is it a file
+			self.send_image(result, update)
+		else:
+			raise ValueError(f"invalid result from command_cli {type(result)}")
+
+	#
+	# text report
 	#
 	def filtered_time_command(self, f, update=None):
 		g = GroupedStats_Group(
@@ -165,60 +135,45 @@ class TelegramCommands(object):
 
 	@whitelisted_command
 	@log_command
-	def command_today(self, update=None, context=None):
-		self.filtered_time_command(TimeFilter_Days(1), update)
+	def command_text_report(self, update, context):
+		def kbd(name):
+			return InlineKeyboardButton(name, callback_data=f"menu_text_report {name}")
+
+		keyboard = [
+			[kbd("today"), kbd("yesterday"), kbd("week"), kbd("last_week")],
+			[kbd("month"), kbd("year"), kbd("all")],
+		]
+		update.message.reply_text(
+			"Select date:",
+			reply_markup=InlineKeyboardMarkup(keyboard)
+		)
 
 	@whitelisted_command
 	@log_command
-	def command_week(self, update=None, context=None):
-		self.filtered_time_command(TimeFilter_Days(7), update)
+	def menu_text_report(self, update, context):
+		data = update.callback_query.data
+		callback_name, filter_name = data.split()
+
+		self.filtered_time_command(
+			get_named_filter(filter_name),
+			update
+		)
+
 
 	@whitelisted_command
 	@log_command
-	def command_month(self, update=None, context=None):
+	def command_text_report_month(self, update=None, context=None):
 		month, year = self.parse_args(context, int, int)
 		self.filtered_time_command(TimeFilter_Month(month, year), update)
 
 	@whitelisted_command
 	@log_command
-	def command_year(self, update=None, context=None):
+	def command_text_report_year(self, update=None, context=None):
 		year, = self.parse_args(context, int)
 		self.filtered_time_command(TimeFilter_Year(year), update)
 
-	@whitelisted_command
-	@log_command
-	def command_yesterday(self, update=None, context=None):
-		stop_time  = get_midnight( datetime.datetime.now() )
-		start_time = get_midnight(
-			stop_time
-			 -
-			datetime.timedelta(days=1)
-		)
-
-		self.filtered_time_command(
-			TimeFilter_DateRange( start_time, stop_time ),
-			update
-		)
-
-	@whitelisted_command
-	@log_command
-	def command_last_week(self, update=None, context=None):
-		today = datetime.datetime.now()
-
-		if WEEK_STARTS_AT_SUNDAY:
-			weekday = today.weekday() + WEEK_STARTS_AT_SUNDAY
-			if weekday == 7:
-				weekday = 0
-		else:
-			weekday = today.weekday()
-		this_sunday = get_midnight(today - datetime.timedelta(days=weekday))
-		prev_sunday = this_sunday - datetime.timedelta(days=7)
-
-		self.filtered_time_command(
-			TimeFilter_DateRange( prev_sunday, this_sunday ),
-			update
-		)
-
+	#
+	# pie reports
 	#
 	def pie_command(self, g_cls, f, update=None):
 		g = g_cls(
@@ -236,81 +191,80 @@ class TelegramCommands(object):
 
 		self.send_image(pie_file, update)
 
-	@whitelisted_command
-	@log_command
-	def command_homework_pie(self, update=None, context=None):
-		self.pie_command(GroupedStats_Homework, TimeFilter_Days(7), update)
+	MENU_PIE_SUBJECTS = {
+		"homework" : GroupedStats_Homework,
+		"lecture"  : GroupedStats_Lecture,
+		"gaming"   : GroupedStats_Games,
+		"youtube"  : GroupedStats_Youtube,
+	}
 
 	@whitelisted_command
 	@log_command
-	def command_lecture_pie(self, update=None, context=None):
-		self.pie_command(GroupedStats_Lecture, TimeFilter_Days(7), update)
+	def command_pie(self, update, context):
+		def kbd(name):
+			return InlineKeyboardButton(name, callback_data=f"menu_pie {name}")
+
+		keyboard = [
+			[kbd(i) for i in self.MENU_PIE_SUBJECTS.keys()],
+		]
+		update.message.reply_text(
+			"Select subject:",
+			reply_markup=InlineKeyboardMarkup(keyboard)
+		)
 
 	@whitelisted_command
 	@log_command
-	def command_gaming_pie(self, update=None, context=None):
-		self.pie_command(GroupedStats_Games, TimeFilter_Days(7), update)
+	def menu_pie(self, update, context):
+		data = update.callback_query.data
+		callback_name, subject_name = data.split()
 
-	@whitelisted_command
-	@log_command
-	def command_youtube_pie(self, update=None, context=None):
-		self.pie_command(GroupedStats_Youtube, TimeFilter_Days(7), update)
-
+		self.pie_command(
+			self.MENU_PIE_SUBJECTS[subject_name],
+			TimeFilter_Days(7),
+			update
+		)
 
 	#
-	@whitelisted_command
-	@log_command
-	def command_productive_pie_today(self, update=None, context=None):
-		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
-		f = TimeFilter_Days(1)
-
+	# productive pie
+	#
+	def send_productive_pie(self, f, update=None, **kwargs):
 		pie_file = get_productivity_pie(
 			data=f % self.datafolder.data,
-			selected_time=f._selected_time,
 			save=True,
-			focused=bool(focused)
+			**kwargs
 		)
 
 		self.send_image(pie_file, update)
 
 	@whitelisted_command
 	@log_command
-	def command_productive_pie_yesterday(self, update=None, context=None):
+	def command_productive_pie(self, update, context):
 		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
 
-		stop_time  = get_midnight( datetime.datetime.now() )
-		start_time = get_midnight(
-			stop_time
-			 -
-			datetime.timedelta(days=1)
+		def kbd(name):
+			return InlineKeyboardButton(name, callback_data=f"menu_productive_pie {name} {focused}")
+
+		keyboard = [
+			[kbd("today"), kbd("yesterday"), kbd("week"), kbd("last_week")],
+			[kbd("month"), kbd("year"), kbd("all")],
+		]
+		update.message.reply_text(
+			"Select date:",
+			reply_markup=InlineKeyboardMarkup(keyboard)
 		)
-
-		f = TimeFilter_DateRange( start_time, stop_time )
-
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
-			selected_time=f._selected_time,
-			save=True,
-			focused=bool(focused)
-		)
-
-		self.send_image(pie_file, update)
 
 	@whitelisted_command
 	@log_command
-	def command_productive_pie_week(self, update=None, context=None):
-		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
+	def menu_productive_pie(self, update, context):
+		data = update.callback_query.data
+		callback_name, filter_name, focused = data.split()
 
-		f = TimeFilter_Days(7)
-
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
-			selected_time=f._selected_time,
-			save=True,
-			focused=bool(focused)
+		self.send_productive_pie(
+			get_named_filter(filter_name),
+			focused=bool(int(focused)),
+			selected_time=filter_name,
+			update=update,
 		)
-
-		self.send_image(pie_file, update)
 
 	@whitelisted_command
 	@log_command
@@ -318,14 +272,12 @@ class TelegramCommands(object):
 		month, year, focused = self.parse_args(context, int, int, int)
 		f = TimeFilter_Month(month, year)
 
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
+		self.send_productive_pie(
+			f,
+			focused=bool(focused),
 			selected_time=f._selected_time,
-			save=True,
-			focused=bool(focused)
+			update=update,
 		)
-
-		self.send_image(pie_file, update)
 
 	@whitelisted_command
 	@log_command
@@ -333,35 +285,21 @@ class TelegramCommands(object):
 		year, focused = self.parse_args(context, int, int)
 		f = TimeFilter_Year(year)
 
-		pie_file = get_productivity_pie(
-			data=f % self.datafolder.data,
+		self.send_productive_pie(
+			f,
+			focused=bool(focused),
 			selected_time=f._selected_time,
-			save=True,
-			focused=bool(focused)
+			update=update,
 		)
 
-		self.send_image(pie_file, update)
-
-	@whitelisted_command
-	@log_command
-	def command_productive_pie_all(self, update=None, context=None):
-		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
-
-		pie_file = get_productivity_pie(
-			data=self.datafolder.data,
-			save=True,
-			focused=bool(focused)
-		)
-
-		self.send_image(pie_file, update)
-
-
+	#
+	# others
 	#
 	@whitelisted_command
 	@log_command
 	def command_test(self, update=None, context=None):
 		s = "test"
-		if context.args:
+		if context is not None and context.args:
 			s += ": " + str(context.args)
 		self.send_text(s, update)
 
@@ -399,43 +337,72 @@ class TelegramCommands(object):
 
 class TelegramScheduledCommands(object):
 	def schedule_commands(self):
-		# daily log
-		schedule.every().day.at("08:00").do(
-			self.command_yesterday,
-			scheduled=True
-		)
-		schedule.every().day.at("08:00").do(
-			self.command_productive_pie_yesterday,
-			scheduled=True
-		)
-		
-		# weekly log
-		schedule.every().sunday.at("08:00").do(
-			self.command_last_week,
-			scheduled=True
-		)
-		schedule.every().sunday.at("08:00").do(
-			self.command_productive_pie_week,
-			scheduled=True
-		)
-		
-		# weekly pies
-		# schedule.every().sunday.at("08:00").do(
-		# 	self.command_homework_pie,
-		# 	scheduled=True
-		# )
+		self.schedule_daily()
+		self.schedule_weekly()
 
-		schedule.every().sunday.at("08:00").do(
-			self.command_gaming_pie,
-			scheduled=True
-		)
-
+		# reload
 		schedule.every().hour.at(":57").do(
 			self.command_reload,
 			scheduled=True
 		)
 
+		self.scheduler_start()
 
+
+	def schedule_daily(self):
+		#
+		# daily log
+		#
+		log("Daily filter - yesterday - " + str(get_named_filter("yesterday")))
+		# yesterday text report
+		schedule.every().day.at("08:00").do(
+			self.filtered_time_command,
+			get_named_filter("yesterday"),
+		)
+		# yesterday productive pie
+		schedule.every().day.at("08:00").do(
+			self.send_image,
+			get_productivity_pie(
+				data=get_named_filter("yesterday") % self.datafolder.data,
+				selected_time="yesterday",
+				save=True,
+				focused=False
+			)
+		)
+
+	def schedule_weekly(self):
+		#
+		# weekly log
+		#
+		# last week text report
+		schedule.every().sunday.at("08:00").do(
+			self.filtered_time_command,
+			get_named_filter("last_week"),
+		)
+		# weekly productive pie
+		schedule.every().sunday.at("08:00").do(
+			self.send_image,
+			get_productivity_pie(
+				data=get_named_filter("last_week") % self.datafolder.data,
+				selected_time="last_week",
+				save=True,
+				focused=False
+			)
+		)
+		# homework pie
+		schedule.every().sunday.at("08:00").do(
+			self.pie_command,
+			GroupedStats_Homework,
+			TimeFilter_Days(7),
+		)
+		# gaming pie
+		schedule.every().sunday.at("08:00").do(
+			self.pie_command,
+			GroupedStats_Games,
+			TimeFilter_Days(7),
+		)
+
+	def scheduler_start(self):
 		def run_scheduler():
 			while True:
 				try:
@@ -443,16 +410,26 @@ class TelegramScheduledCommands(object):
 					time.sleep(60*60*0.5)
 
 				except ParseError as pe:
+					# log error to screen + log file
 					log(f"[*] Caught ParseError in run_scheduler. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+					log(f"Caught ParseError:\n{str(pe)}")
+
+					# send error to the main user
 					self.send_text(f"Caught ParseError:\n{str(pe)}")
-					time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
-					os.system(DAILY_WGET_PATH)
+
+					# re-sync with dropbox
+					log(f"    [*] starting sleep")
+					time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDS)
+
+					log(f"    [*] sleep ended")
 
 				except Exception as exc:
 					log(f"[!] Caught general error in run_scheduler - quitting")
+					log(exception_message())
 					raise exc
 
 		threading.Thread(target=run_scheduler).start()
+
 
 
 class TelegramAPI(TelegramServer, TelegramCommands, TelegramScheduledCommands):
@@ -467,49 +444,49 @@ def main():
 	log(f"[*] Starting: {now}")
 
 	while True:
+		# an exception can either happen in __init__, when self.datafolder is created
+		# or in loop, where the `reload` method is called
+
 		try:
-			# an exception can either happen in __init__, when self.datafolder is created
 			t = TelegramAPI()
-			# or in loop, where the `reload` method is called
+
+		except ParseError as pe:
+			log(f"[*] Caught ParseError in main (__init__). retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+			log(f"Caught ParseError:\n{str(pe)}")
+			time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDSE)
+			os.system(DAILY_WGET_PATH)
+
+		except Exception as exc:
+			log(f"[!] Caught general error in main (__init__) - quitting")
+			log(exception_message())
+			raise exc
+
+
+		try:
 			t.loop()
 
 		except ParseError as pe:
-			log(f"[*] Caught ParseError in main. retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
-			time.sleep(RETRY_SLEEP_AMOUNT_IN_HOURS * 60 * 60)
+			log(f"[*] Caught ParseError in main (loop). retrying in {RETRY_SLEEP_AMOUNT_IN_HOURS} hours")
+			log(f"Caught ParseError:\n{str(pe)}")
+			time.sleep(RETRY_SLEEP_AMOUNT_IN_SECONDSE)
+			os.system(DAILY_WGET_PATH)
+
+		# socket.gaierror: [Errno -3] Temporary failure in name resolution
+		except socket.gaierror as exc:
+			if exc.errno == -3:
+				log(f"[*] Caught socket.gaierror (-3) in run_scheduler. continue.")
+				continue
+			else:
+				log(f"[*] Caught socket.gaierror ({exc.errno}) in run_scheduler. continue.")
+				log(str(exc))
+				continue
 
 		except Exception as exc:
-			log(f"[!] Caught general error in main - quitting")
+			log(f"[!] Caught general error in main (loop) - quitting")
+			log(exception_message())
 			raise exc
+
 	LOG_FILE.close()
-
-"""
-# all commands:
-today - today
-yesterday - yesterday
-week - week
-last_week - last_week
-month - month
-year - year
-
-reload - reload
-
-productive_pie_today - productive_pie_today
-productive_pie_yesterday - productive_pie_yesterday
-productive_pie_week - productive_pie_week
-productive_pie_month - productive_pie_month
-productive_pie_year - productive_pie_year
-productive_pie_all - productive_pie_all
-
-gaming_pie - gaming_pie
-homework_pie - homework_pie
-lecture_pie - lecture_pie
-youtube_pie - youtube_pie
-
-list_commands - list_commands
-cli - cli
-test - test
-pdb - pdb
-"""
 
 if __name__ == '__main__':
 	main()
