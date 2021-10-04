@@ -104,6 +104,18 @@ def seconds_to_hours_str(n):
 	h = n / (3600)
 	return f"{h:.2f}"
 
+def shorten_selected_time(selected_time):
+	if len(selected_time) > 33:
+		return "Multiple Time Filters"
+	else:
+		return selected_time
+
+def format_dates(date1, date2):
+	return DATE_REPRESENTATION_PATTERN % (
+		*get_ymd_tuple(date1),
+		*get_ymd_tuple(date2),
+	)
+
 
 #
 # debug utils

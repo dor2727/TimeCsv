@@ -3,43 +3,21 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from TimeCsv.consts import *
-from TimeCsv.utils import *
-from TimeCsv.filters import *
-
+# from TimeCsv.consts import *
+# from TimeCsv.utils import *
+# from TimeCsv.filters import *
+from TimeCsv.utils import shorten_selected_time, format_dates, seconds_to_str
 
 class Stats(object):
-	def __init__(self, data, selected_time="All times"):
+	def __init__(self, data, time_filter=None):
 		self.data = data
-		
-		if len(selected_time) > 33:
-			self.selected_time = "Multiple Time Filters"
-		else:
-			self.selected_time = selected_time
+		self._time_filter = time_filter
 
-	@property
-	def time_representation_str(self):
-		if self.data:
-			date_representation = DATE_REPRESENTATION_PATTERN % (
-				*get_ymd_tuple(self.data[0].date),
-				*get_ymd_tuple(self.data[-1].date),
-			)
-		else:
-			date_representation = "no days found"
 
-		try:
-			amount_of_days = (self.data[-1].date - self.data[0].date).days + 1
-		except:
-			amount_of_days = 0
-
-		return "%s [%s] (found %d days)" % (
-			self.selected_time,
-			date_representation,
-			amount_of_days
-		)
-
+	#
+	# Getting the data
+	#
 	def get_stats_dict(self):
-		"return a dictionary"
 		raise NotImplemented()
 
 	def get_stats_list(self):

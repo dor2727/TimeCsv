@@ -14,10 +14,7 @@ class BaseTimeFilter(Filter):
 		]
 
 	def __str__(self):
-		return DATE_REPRESENTATION_PATTERN % (
-			*get_ymd_tuple(self.start_time),
-			*get_ymd_tuple(self.stop_time),
-		)
+		return format_dates(self.start_time, self.stop_time)
 
 	def __repr__(self):
 		name  = self.__class__.__name__
