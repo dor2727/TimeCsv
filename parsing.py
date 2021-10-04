@@ -430,7 +430,11 @@ class DataFile(object):
 		)
 		r = csv.reader(handle)
 
-		self.headers = next(r)
+		try:
+			self.headers = next(r)
+		except StopIteration:
+			self.empty = True
+
 		self.data = list(filter(
 			# filter out comment lines
 			lambda x: not x.is_comment,
@@ -443,6 +447,10 @@ class DataFile(object):
 		handle.close()
 
 	def _reevaluate_data(self):
+		# Ignoring empty files
+		if len(self.data) < 2:
+			return
+
 		# ignoring first and last, which doesnt have 'prev' and 'next' respectivly
 		for i in range(len(self.data[1:-1])):
 			self.data[i+1].reevaluate(self.data[i], self.data[i+2])
@@ -480,7 +488,10 @@ class DataFile(object):
 
 	@property
 	def _data_range(self):
-		return self.data[0].start_time, self.data[-1].stop_time
+		if self.data:
+			return self.data[0].start_time, self.data[-1].stop_time
+		else:
+			return NULL_DATE, NULL_DATE
 
 
 class DataFolder(object):

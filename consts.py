@@ -56,6 +56,8 @@ STOP_TIME_INITIALS_STOP     = ('s', 'e') # stop_time can either indicate when th
 STOP_TIME_INITIALS_BREAK    = ('b',)     # or how long it lasted
 STOP_TIME_INITIALS_DURATION = ('d', 't') + STOP_TIME_INITIALS_BREAK
 
+DEFAULT_SELECTED_TIME = "All time"
+NULL_DATE = datetime.datetime(1, 1, 1)
 
 DEFAULT_PIE_PATH = "/tmp/pie.png"
 DEFAULT_BAR_PATH = "/tmp/bar.png"
