@@ -115,8 +115,10 @@ class MultiFilter(Filter):
 			self.operator = operator.and_
 		elif operation.lower() == "or":
 			self.operator = operator.or_
+		elif operation.lower() == "xor":
+			self.operator = operator.xor
 		else:
-			raise ValueError("invalid operation! please use either \"and\" or \"or\"")
+			raise ValueError("invalid operation! please use either \"and\", \"or\", or \"xor\"")
 
 	def filter(self, data):
 		return map(
