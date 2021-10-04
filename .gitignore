@@ -4,14 +4,12 @@ __pycache__
 
 # personal data
 data
-data_backup
 Telegram_Bot/data
 Logs
+Other
 
 key
 chat_id
 
-personal
 Documentation/Other
-Dropbox_App
 
