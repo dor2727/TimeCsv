@@ -89,7 +89,7 @@ class AutoFilter(Filter):
 		return self._filter.__repr__()
 
 
-class AutoTimeFilter(TimeFilter):
+class AutoTimeFilter(BaseTimeFilter):
 	"""
 	input type:
 		dict

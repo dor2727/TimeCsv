@@ -3,6 +3,7 @@ import operator
 
 from TimeCsv.filters.base_filters import Filter
 
+# do not use this class directly - it is a meta class
 class BaseContentFilter(Filter):
 	def __init__(self, string_to_find, case_sensitive=False, regex=False):
 		self.case_sensitive = case_sensitive

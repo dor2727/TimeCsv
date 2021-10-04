@@ -5,7 +5,7 @@ from TimeCsv.utils import get_midnight
 from TimeCsv.filters.base_filters import Filter
 
 # do not use this class directly - it is a meta class
-class TimeFilter(Filter):
+class BaseTimeFilter(Filter):
 	def filter(self, data):
 		return [
 			i.is_in_date_range(self.start_time, self.stop_time)
@@ -19,9 +19,9 @@ class TimeFilter(Filter):
 		)
 
 	def __repr__(self):
-		name = self.__class__.__name__
+		name  = self.__class__.__name__
 		start = self.start_time.strftime("%Y/%m/%d")
-		stop = self.stop_time.strftime("%Y/%m/%d")
+		stop  = self.stop_time.strftime("%Y/%m/%d")
 		return f"{name}({start} --> {stop})"
 
 	@property
@@ -29,13 +29,13 @@ class TimeFilter(Filter):
 		raise NotImplemented
 
 
-class TimeFilter_Days(TimeFilter):
+class TimeFilter_Days(BaseTimeFilter):
 	def __init__(self, days: int=7):
 		"""
-		amount of days to take
-		1 means today only
-		2 means today + yesterday
-		8 means a week plus a day. E.g. from sunday to subday, inclusive
+			amount of days to take
+				1 means today only
+				2 means today + yesterday
+				8 means a week plus a day. E.g. from sunday to sunday, inclusive
 		"""
 		self.days = days
 
@@ -48,14 +48,8 @@ class TimeFilter_Days(TimeFilter):
 			datetime.timedelta(days=days-1)
 		)
 
-	def filter(self, data):
-		return [
-			i.is_in_date_range(self.start_time, self.stop_time)
-			for i in data
-		]
-
 	def __repr__(self):
-		return f"{self.__class__.__name__}({self.days or 'today'})"
+		return f"{self.__class__.__name__}({self.days})"
 
 	@property
 	def _selected_time(self):
@@ -71,43 +65,36 @@ class TimeFilter_ThisWeek(TimeFilter_Days):
 		super().__init__(days=7)
 	def __repr__(self):
 		return f"{self.__class__.__name__}"
-
-
-class TimeFilter_Year(TimeFilter):
-	def __init__(self, year: int=0):
-		self.year = year or datetime.datetime.now().year
-
-		self.start_time = datetime.datetime(self.year, 1,  1 )
-		self.stop_time  = datetime.datetime(self.year, 12, 31)
-
-	def filter(self, data):
-		return [
-			i.date.year == self.year
-			for i in data
-		]
-
-	def __str__(self):
-		return DATE_REPRESENTATION_PATTERN % (
-			self.year, 1,  1,
-			self.year, 12, 31
-		)
+class TimeFilter_Weeks(TimeFilter_Days):
+	def __init__(self, weeks: int=7):
+		"""
+			amount of weeks to take
+				1 means the past 7 days, including today
+		"""
+		self.weeks = weeks
+		super().__init__(days=weeks*7)
 
 	def __repr__(self):
-		return f"{self.__class__.__name__}({self.year})"
+		return f"{self.__class__.__name__}({self.weeks})"
 
 	@property
 	def _selected_time(self):
-		return f"year ({self.year})"
+		return f"weeks ({self.weeks})"
 
-class TimeFilter_Month(TimeFilter):
+
+class TimeFilter_Month(BaseTimeFilter):
 	def __init__(self, month: int=0, year: int=0):
 		"""
-		if year==0: get the last occurence of that month
-		else: get that specific month
+			if year==0: get the last occurence of that month
+			else: get that specific month
+
+			if month==0: get current month
 		"""
-		self.month = month or datetime.datetime.now().month
+		now = datetime.datetime.now()
+
+		self.month = month or now.month
+
 		if year == 0:
-			now = datetime.datetime.now()
 			if self.month > now.month:
 				self.year = now.year - 1
 			else:
@@ -134,7 +121,33 @@ class TimeFilter_Month(TimeFilter):
 	def _selected_time(self):
 		return f"month ({self.year}/{self.month})"
 
-class TimeFilter_DateRange(TimeFilter):
+class TimeFilter_Year(BaseTimeFilter):
+	def __init__(self, year: int=0):
+		self.year = year or datetime.datetime.now().year
+
+		self.start_time = datetime.datetime(self.year, 1,  1 )
+		self.stop_time  = datetime.datetime(self.year, 12, 31)
+
+	def filter(self, data):
+		return [
+			i.date.year == self.year
+			for i in data
+		]
+
+	def __str__(self):
+		return DATE_REPRESENTATION_PATTERN % (
+			self.year, 1,  1,
+			self.year, 12, 31
+		)
+
+	def __repr__(self):
+		return f"{self.__class__.__name__}({self.year})"
+
+	@property
+	def _selected_time(self):
+		return f"year ({self.year})"
+
+class TimeFilter_DateRange(BaseTimeFilter):
 	def __init__(self, start_time, stop_time,
 		include_by_start=True, include_by_stop=False):
 		"""
