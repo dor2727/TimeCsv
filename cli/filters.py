@@ -1,5 +1,5 @@
 from TimeCsv.filters import AutoFilter, \
-							TimeFilter_Days, TimeFilter_Month, TimeFilter_Year, \
+							TimeFilter_None, TimeFilter_Days, TimeFilter_Month, TimeFilter_Year, \
 							join_filters_with_or, join_filters_with_and
 
 def initialize_search_filter(args):
@@ -22,7 +22,7 @@ def initialize_search_filter(args):
 
 def initialize_time_filter(args):
 	if args.all_time:
-		return None
+		return TimeFilter_None
 
 	time_filter   = build_time_filter(args)
 
@@ -34,7 +34,7 @@ def initialize_time_filter(args):
 			time_filter = build_time_filter(args)
 		# else, treat it as `all_time`
 		else:
-			return None
+			return TimeFilter_None
 
 	return time_filter
 
@@ -70,7 +70,9 @@ def build_time_filter(args):
 		filters.append(join_filters_with_or(months_back_filters))
 
 
-	if args.time_use_and:
+	if not filters:
+		f = None
+	elif args.time_use_and:
 		f = join_filters_with_and(filters)
 	else:
 		f = join_filters_with_or(filters)

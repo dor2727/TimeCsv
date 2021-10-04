@@ -3,7 +3,7 @@ import datetime
 
 from TimeCsv.utils import get_midnight, get_ymd_tuple
 from TimeCsv.consts import DATE_REPRESENTATION_PATTERN
-from TimeCsv.filters.base_filters import Filter
+from TimeCsv.filters.base_filters import Filter, TrueFilter
 
 # do not use this class directly - it is a meta class
 class BaseTimeFilter(Filter):
@@ -28,6 +28,28 @@ class BaseTimeFilter(Filter):
 	@property
 	def _selected_time(self):
 		raise NotImplemented
+
+	@property
+	def total_time(self):
+		return (self.stop_time - self.start_time).total_seconds()
+
+
+# A dummy class for when no time filter is used
+class TimeFilter_None(TrueFilter):
+	def __str__(self):
+		return "All time"
+
+	def __repr__(self):
+		name  = self.__class__.__name__
+		return f"{name}(All time)"
+
+	@property
+	def _selected_time(self):
+		return "All time"
+
+	@property
+	def total_time(self):
+		return float("inf")
 
 
 class TimeFilter_Days(BaseTimeFilter):

@@ -9,7 +9,8 @@ def main(data_object=None, args_list=None):
 
 	data_object = open_data_file(data_object, args.file)
 
-	data, selected_time, search_filter = get_data(data_object, args)
+	data, time_filter, search_filter = get_data(data_object, args)
+	selected_time = time_filter.get_selected_time()
 
 	if args.productive_pie:
 		return get_productivity_pie(data, selected_time, save=False, focused=args.productive_pie_focused)
@@ -18,4 +19,4 @@ def main(data_object=None, args_list=None):
 	elif search_filter is not None and args.extra_details:
 		return get_extra_details_text(data, selected_time, search_filter, args)
 	else:
-		return get_search_filter_text(data, selected_time, search_filter, args)
+		return get_search_filter_text(data, time_filter, search_filter, args)

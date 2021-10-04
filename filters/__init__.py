@@ -4,7 +4,8 @@ from TimeCsv.filters.content_filters import DescriptionFilter    , \
 											LocationFilter       , \
 											HasExtraDetailsFilter, \
 											DurationFilter
-from TimeCsv.filters.time_filters    import TimeFilter_Days    , \
+from TimeCsv.filters.time_filters    import TimeFilter_None    , \
+											TimeFilter_Days    , \
 											TimeFilter_Today   , \
 											TimeFilter_ThisWeek, \
 											TimeFilter_Year    , \

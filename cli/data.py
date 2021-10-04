@@ -4,6 +4,7 @@ import TimeCsv.statistics
 from TimeCsv.utils import print_items
 from TimeCsv.parsing import DataFolder, DataFile
 from TimeCsv.cli.filters import initialize_time_filter, initialize_search_filter
+from TimeCsv.filters import TimeFilter_None
 
 # Find the relative file path (it may be a relative path)
 def open_data_file(data_object=None, file_path=None):
@@ -46,15 +47,15 @@ def get_data(data_object, args):
 	search_filter = initialize_search_filter(args)
 
 	
+	data = time_filter % data_object.data
 	# filter data by time
 	if time_filter is None:
 		data          = data_object.data
 		selected_time = "All time"
 	else:
-		data          = time_filter % data_object.data
-		selected_time = time_filter.get_selected_time()
+		TimeFilter_None
 
-	return data, selected_time, search_filter
+	return data, time_filter, search_filter
 
 
 # telegram helper - return the data in one of the following formats, according to args:
@@ -139,12 +140,12 @@ def get_extra_details_text(data, selected_time, search_filter, args):
 	return get_text(g, args)
 
 # handles search_filter
-def get_search_filter_text(data, selected_time, search_filter, args):
+def get_search_filter_text(data, time_filter, search_filter, args):
 	found_items = search_filter % data
 
-	g = TimeCsv.statistics.FilteredStats(
+	g = TimeCsv.statistics.BasicStats(
 		found_items,
-		selected_time=selected_time
+		time_filter=time_filter
 	)
 
 	return get_text(g, args)
