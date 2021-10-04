@@ -1,8 +1,0 @@
-<snippet>
-	<content><![CDATA[
-${4:----}/${5:--}/${6:--},${7:--}:${8:--},e${1:07}:${2:00},Chill,return home${3: from university}
-]]></content>
-	<tabTrigger>returnhome</tabTrigger>
-	<scope>source.time</scope>
-	<description>return home</description>
-</snippet>
