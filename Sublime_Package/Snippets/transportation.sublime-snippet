@@ -1,8 +1,0 @@
-<snippet>
-	<content><![CDATA[
-${5:----}/${6:--}/${7:--},${8:--}:${9:--},e${1:09}:${2:00},Transportation,${3} to ${4}
-]]></content>
-	<tabTrigger>transportation</tabTrigger>
-	<scope>source.time</scope>
-	<description>transportation</description>
-</snippet>

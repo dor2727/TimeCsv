@@ -56,8 +56,8 @@ contexts:
       scope: constant.numeric.end_time.control.time
 
     # duration time
-    - match: "(?<=,)[dt][0-9]{2}:[0-9]{2}"
-    # d for Duration, t for Time
+    - match: "(?<=,)[dtb][0-9]{2}:[0-9]{2}"
+    # d for Duration, t for Time, b for break
       scope: constant.numeric.duration_time.control.time
 
     # copy last time

@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:09}:${2:00},Read,on the origin of species
+]]></content>
+	<tabTrigger>readorigin</tabTrigger>
+	<scope>source.time</scope>
+	<description>read on the origin of species</description>
+</snippet>

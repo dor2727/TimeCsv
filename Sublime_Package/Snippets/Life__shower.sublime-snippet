@@ -1,6 +1,6 @@
 <snippet>
 	<content><![CDATA[
-${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:00}:${2:15},Life,shower
+${4:----}/${5:--}/${6:--},${7:--}:${8:--},e${1:00}:${2:15},Life,shower (${3:no }hair)
 ]]></content>
 	<tabTrigger>shower</tabTrigger>
 	<scope>source.time</scope>
