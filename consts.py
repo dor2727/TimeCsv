@@ -7,8 +7,6 @@ import datetime
 #
 DEFAULT_DATA_DIRECTORY  = os.path.expanduser("~/Dropbox/Projects/TimeCsv/data")
 TELEGRAM_DATA_DIRECTORY = os.path.expanduser("~/Dropbox/Projects/TimeCsv/Telegram_Bot/data")
-LOGS_DIRECTORY          = os.path.expanduser("~/Dropbox/Projects/TimeCsv/Logs")
-LOG_PATH                = os.path.join(LOGS_DIRECTORY, "log.log")
 POSSIBLE_FILE_EXTENSIONS = [".tcsv", ".csv", ".txt", ""]
 # temporary files
 DEFAULT_PIE_PATH = "/tmp/pie.png"

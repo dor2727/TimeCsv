@@ -8,16 +8,6 @@ from collections import OrderedDict, Counter
 from TimeCsv.consts import *
 
 
-LOG_FILE = open(LOG_PATH, "a")
-
-# utils
-def log(s):
-	print(s)
-	LOG_FILE.write(s)
-	LOG_FILE.write('\n')
-	LOG_FILE.flush()
-
-
 #
 # file utils
 #
@@ -76,6 +66,7 @@ def find_vehicle_in_str(s):
 			return vehicle
 	return None
 
+
 def counter(data):
     return list(Counter(data).items())
 
@@ -90,6 +81,7 @@ def re_escape(x):
 		)
 		for i in x
 	)
+
 
 #
 # datetime utils
@@ -111,7 +103,8 @@ def seconds_to_str(n):
 def seconds_to_hours_str(n):
 	h = n / (3600)
 	return f"{h:.2f}"
-	
+
+
 #
 # debug utils
 #
@@ -120,8 +113,3 @@ def print_items(l, ret=False):
 		return '\n'.join(i.__repr__() for i in l)
 	else:
 		print('\n'.join(i.__repr__() for i in l))
-
-def exception_message():
-	exc_type, exc_value, exc_traceback = sys.exc_info()
-	lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-	return ''.join('!! ' + line for line in lines)

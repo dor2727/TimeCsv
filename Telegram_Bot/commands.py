@@ -20,6 +20,13 @@ from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackQu
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
+# for debug
+def exception_message():
+	exc_type, exc_value, exc_traceback = sys.exc_info()
+	lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+	return ''.join('!! ' + line for line in lines)
+
+
 class TelegramServer(object):
 	def __init__(self):
 		# server initialization
