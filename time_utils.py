@@ -8,7 +8,7 @@ from collections import OrderedDict, Counter
 from TimeCsv.consts import *
 
 
-LOG_FILE = open(os.path.join(TELEGRAM_DATA_DIRECTORY, "log.log"), "a")
+LOG_FILE = open(LOG_PATH, "a")
 
 # utils
 def log(s):
@@ -69,6 +69,12 @@ def find_location_in_str(s):
 		return l[0]
 	else:
 		return l
+
+def find_vehicle_in_str(s):
+	for vehicle in VEHICLES:
+		if f"by {vehicle}" in s:
+			return vehicle
+	return None
 
 def counter(data):
     return list(Counter(data).items())
