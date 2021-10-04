@@ -125,23 +125,27 @@ class AutoTimeFilter(BaseTimeFilter):
 				self._filter = TimeFilter_Year(*arg)
 
 		elif type(arg) is tuple:
-			# verify input
-			if len(arg) < 2 or len(arg) > 4:
-				raise ValueError("Invalid input type")
-			if type(arg[0]) is not datetime.datetime:
-				raise ValueError("Invalid input type")
-			if type(arg[1]) is not datetime.datetime:
-				raise ValueError("Invalid input type")
-			if len(arg) > 2 and type(arg[2]) is not bool:
-				raise ValueError("Invalid input type")
-			if len(arg) > 3 and type(arg[3]) is not bool:
-				raise ValueError("Invalid input type")
-
+			self._verify_time_range_tuple(arg)
 			self._filter = TimeFilter_DateRange(*arg)
+
 		elif type(arg) is int:
 			self._filter = TimeFilter_Days(abs(int(arg)))
+
 		else:
 			raise ValueError("Unknown input type")
+
+	def _verify_time_range_tuple(self, time_range_tuple):
+		# verify input
+		if len(time_range_tuple) < 2 or len(time_range_tuple) > 4:
+			raise ValueError("Invalid input type")
+		if type(time_range_tuple[0]) is not datetime.datetime:
+			raise ValueError("Invalid input type")
+		if type(time_range_tuple[1]) is not datetime.datetime:
+			raise ValueError("Invalid input type")
+		if len(time_range_tuple) > 2 and type(time_range_tuple[2]) is not bool:
+			raise ValueError("Invalid input type")
+		if len(time_range_tuple) > 3 and type(time_range_tuple[3]) is not bool:
+			raise ValueError("Invalid input type")
 
 	def filter(self, data):
 		return self._filter.filter(data)
