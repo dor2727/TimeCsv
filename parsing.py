@@ -5,9 +5,6 @@ import csv
 from TimeCsv.consts import *
 from TimeCsv.time_utils import *
 
-import warnings
-warnings.filterwarnings("ignore", category=ResourceWarning)
-
 class ParseError(ValueError):
 	pass
 
