@@ -393,8 +393,8 @@ class DataItem(DataItemParser):
 
 
 class DataFile(object):
-	def __init__(self, path=None):
-		self._path = path or self.file_path
+	def __init__(self, path):
+		self._path = path
 		self.reload()
 
 	def __repr__(self):
@@ -410,15 +410,6 @@ class DataFile(object):
 		self._create_titles()
 		self._create_friends_list()
 		self._create_locations_list()
-
-	@property
-	def file_path(self):
-		path_without_extension = os.path.join(DEFAULT_DATA_DIRECTORY, self.__class__.__name__)
-		for e in POSSIBLE_FILE_EXTENSIONS:
-			if os.path.exists(path_without_extension + e):
-				return path_without_extension + e
-		else:
-			raise OSError("file not found (%s)" % path_without_extension)
 
 	def _load_data(self, path):
 		handle = open(
@@ -458,11 +449,6 @@ class DataFile(object):
 		# calling the last item, with its previous item
 		self.data[-1].reevaluate(self.data[-2], None)
 
-	def _validate_data(self):
-		invalid_items = [i for i in self.data if not i.is_fully_parsed()]
-		return invalid_items or True
-		return all(x.is_fully_parsed() for x in self.data)
-
 	def _create_titles(self):
 		# iterate every item in the data, collect its group into a unique list
 		self.titles = list(set(i.group for i in self.data))
@@ -485,6 +471,12 @@ class DataFile(object):
 		self.locations_histogram.sort(key=lambda x:x[1], reverse=True)
 
 		self.locations = [i[0] for i in self.locations_histogram]
+
+
+	def _validate_data(self):
+		invalid_items = [i for i in self.data if not i.is_fully_parsed()]
+		return invalid_items or True
+		return all(x.is_fully_parsed() for x in self.data)
 
 	@property
 	def _data_range(self):
