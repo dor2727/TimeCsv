@@ -8,8 +8,6 @@ data_backup
 Telegram_Bot/data
 Logs
 
-tests.py
-
 key
 chat_id
 

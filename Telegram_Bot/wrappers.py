@@ -1,5 +1,5 @@
 import time
-from TimeCsv.time_utils import log
+from TimeCsv.utils import log
 
 
 """

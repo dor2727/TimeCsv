@@ -1,7 +1,7 @@
 import os
 
 import TimeCsv.statistics
-from TimeCsv.time_utils import print_items
+from TimeCsv.utils import print_items
 from TimeCsv.parsing import DataFolder, DataFile
 from TimeCsv.cli.filters import initialize_time_filter, initialize_search_filter
 

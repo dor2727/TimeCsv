@@ -12,7 +12,7 @@ from TimeCsv.parsing import DataFolder, ParseError
 from TimeCsv.consts import *
 from TimeCsv.filters import *
 from TimeCsv.statistics import *
-from TimeCsv.time_utils             import read_telegram_file, log
+from TimeCsv.utils                  import read_telegram_file, log
 from TimeCsv.functions.productivity import get_productivity_pie
 from TimeCsv.Telegram_Bot.wrappers  import get_message, whitelisted_command, log_command
 

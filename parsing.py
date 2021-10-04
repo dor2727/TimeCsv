@@ -3,7 +3,7 @@ import re
 import csv
 
 from TimeCsv.consts import *
-from TimeCsv.time_utils import *
+from TimeCsv.utils import *
 
 class ParseError(ValueError):
 	pass

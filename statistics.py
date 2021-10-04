@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from TimeCsv.consts import *
-from TimeCsv.time_utils import *
+from TimeCsv.utils import *
 from TimeCsv.filters import *
 
 
