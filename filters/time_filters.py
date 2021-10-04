@@ -154,6 +154,7 @@ class TimeFilter_Year(BaseTimeFilter):
 			for i in data
 		]
 
+	# todo: delete this:
 	def __str__(self):
 		return DATE_REPRESENTATION_PATTERN % (
 			self.year, 1,  1,

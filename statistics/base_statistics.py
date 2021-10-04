@@ -27,6 +27,72 @@ class Stats(object):
 		"""
 		raise NotImplemented()
 
+
+	#
+	# Exposing different properties of the data
+	#
+	@property
+	def amount_of_items(self):
+		return len(self.data)
+
+	@property
+	def amount_of_time(self):
+		return sum(map(int, self.data))
+
+	@property
+	def amount_of_days(self):
+		if self.data:
+			return (self.data[-1].date - self.data[0].date).days + 1
+		else:
+			return 0
+
+	@property
+	def events_per_day(self):
+		if self.amount_of_days == 0:
+			return 0
+
+		return self.amount_of_items / self.amount_of_days
+
+	@property
+	def amount_of_time_on_average(self):
+		if self.amount_of_items == 0:
+			return 0
+
+		return self.amount_of_time / self.amount_of_items
+
+
+	#
+	# Exposing different ways of printing the data
+	#
+	def __repr__(self):
+		return self.__class__.__name__
+
+	@property
+	def selected_time(self):
+		if self._time_filter is None:
+			return "All time"
+
+		return self._time_filter.get_selected_time()
+
+	@property
+	def date_representation(self):
+		if self.data:
+			return format_dates(self.data[0].date, self.data[-1].date)
+		else:
+			return "no days found"
+
+	@property
+	def time_representation_str(self):
+		return "%s [%s] (found %d days)" % (
+			shorten_selected_time(self.selected_time),
+			self.date_representation,
+			self.amount_of_days
+		)
+
+
+	#
+	# Exporing the data
+	#
 	def to_text(self):
 		raise NotImplemented()
 
@@ -62,58 +128,36 @@ class Stats(object):
 		"""
 		raise NotImplemented()
 
-	def __repr__(self):
-		return self.__class__.__name__
 
+class BasicStats(Stats):
+	@property
+	def time_percentage(self):
+		"""
+			The percentage of time taken by self.data out of the total days in which self.data take place
+		"""
+		if self.amount_of_time == 0:
+			return 0
 
-class FilteredStats(Stats):
-	def get_stats_dict(self):
-		amount_of_items = len(self.data)
-		amount_of_time = sum(map(int, self.data))
-
-		if amount_of_time == 0:
-			events_per_day = 0
-			time_percentage = 0
-		else:
-			days = (self.data[-1].date - self.data[0].date).days + 1
-			events_per_day = amount_of_items / days
-
-			# this is 24 hours times the amount of days of this data
-			days_time = days * 24 * 60 * 60
-			time_percentage = amount_of_time / days_time * 100
-
-		if amount_of_items == 0:
-			item_average = 0
-		else:
-			item_average = amount_of_time / amount_of_items
-
-		return {
-			"amount_of_items": amount_of_items,
-			"amount_of_time": amount_of_time,
-			"time_percentage": time_percentage,
-			"item_average": item_average,
-			"events_per_day": events_per_day,
-		}
-
-	def get_stats_list(self):
-		stats = self.get_stats_dict()
-		return tuple(zip(*stats.items()))
+		return self.amount_of_time / self._time_filter.total_time * 100
 
 	def to_text(self):
-		stats = self.get_stats_dict()
-
 		s  = self.time_representation_str
 		s += "\n"
-		s += f"  events per day = {stats['events_per_day']:.2f}"
+		s += f"  events per day = {self.events_per_day:.2f}"
 		s += "\n"
 		s += "    (%3d) : %s (%5.2f%%) ; item average %s" % (
-			stats["amount_of_items"],
-			seconds_to_str(stats["amount_of_time"]),
-			stats["time_percentage"],
-			seconds_to_str(stats["item_average"]),
+			self.amount_of_items,
+			seconds_to_str(self.amount_of_time),
+			self.time_percentage,
+			seconds_to_str(self.amount_of_time_on_average),
 		)
 
 		return s
+
+
+class AGenericStatsWithNoName(Stats):
+	pass
+
 
 """
 TODO
@@ -430,306 +474,4 @@ class GroupedStats(Stats):
 			self._generate_to_telegram_statistics_per_header,
 			self._generate_to_text_footer
 		)
-
-class GroupedStats_Friend(GroupedStats):
-	def _get_headers(self):
-		# get all headers
-		headers = set()
-		for i in self.data:
-			if i.friends:
-				headers.update(i.friends)
-
-		# return a list, sorted alphabetically
-		self._headers = sorted(headers)
-		return self._headers
-
-	def _get_filtered_data_per_header(self, header):
-		return FriendFilter(header).get_filtered_data(self.data)
-
-class GroupedStats_Location(GroupedStats):
-	def _get_headers(self):
-		# get all headers
-		headers = set()
-		for i in self.data:
-			headers.add(i.location)
-
-		if None in headers:
-			headers.remove(None)
-
-		# return a list, sorted alphabetically
-		self._headers = sorted(headers)
-		return self._headers
-
-	def _get_filtered_data_per_header(self, header):
-		return LocationFilter(header).get_filtered_data(self.data)
-
-class GroupedStats_Group(GroupedStats):
-	def _get_headers(self):
-		# get all headers
-		headers = set()
-		for i in self.data:
-			h = i.group
-			if not h:
-				print("empty group for: %s" % i)
-			headers.add(h)
-
-		# return a list, sorted alphabetically
-		self._headers = sorted(headers)
-		return self._headers
-
-	def _get_filtered_data_per_header(self, header):
-		return GroupFilter(header).get_filtered_data(self.data)
-
-	def _plot_make_clickable_pie(self, fig, patches):
-		def onclick(event):
-			patch = event.artist
-			label = patch.get_label()
-
-			print(f"=== {label} ===")
-
-			g = GroupGroupedStats(
-				self.data,
-				category_name=label.capitalize(),
-
-				selected_time=f"{self.selected_time} - {label}",
-
-				group_value=self.group_value,
-				sort=self._sorting_method,
-			)
-			print(g.to_text())
-			g.to_pie(save=False)
-
-		for patch in patches:
-			patch.set_picker(True)
-
-		fig.canvas.mpl_connect('pick_event', onclick)
-
-	def to_pie(self, headers=None, values=None, title=None, save=True):
-		"""
-		if bool(save) is False: interactively show the pie chard
-		if save is str: save the image to that path
-		if save is True: save to the default location
-
-		if save:
-			return open handle to the file with the image
-		"""
-		headers, values = self._plot_prepare_data(headers, values)
-
-		# plotting initialization
-		fig, ax = plt.subplots()
-
-		patches = self._plot_make_pie(ax, values, headers)
-
-		self._plot_set_title(fig, ax, title)
-
-		self._plot_make_clickable_pie(fig, patches)
-
-		return self._plot_save(fig, save)
-
-
-class FilteredGroupedStats(GroupedStats):
-	STRIPPING_REGEX = [
-		# brackets
-		" ?\\(.*?\\)",
-		# friends
-		" ?with %s" % PATTERN_NAMES_LIST,
-		" ?for %s"  % PATTERN_NAMES_LIST,
-		" ?to %s"   % PATTERN_NAMES_LIST,
-		# at location
-		PATTERN_LOCATION,
-
-		# specific patterns
-		" ?to friends"
-	]
-
-	def __init__(self, data, filter_obj, **kwargs):
-		super().__init__(data, **kwargs)
-
-		self._filter_obj = filter_obj
-
-		self._initialize_data()
-
-	def _initialize_data(self):
-		self._original_data = self.data
-		self.data = self._filter_obj % self.data
-
-	def _strip(self, s):
-		for r in self.STRIPPING_REGEX:
-			s = re.sub(r, '', s)
-		return s.strip()
-
-	def _get_headers(self):
-		# get all headers
-		headers = set()
-
-		for i in self.data:
-			h = self._strip(i.description)
-			if not h:
-				print("empty description for: %s" % i)
-			headers.add(h)
-
-		# return a list, sorted alphabetically
-		self._headers = sorted(headers)
-		return self._headers
-
-	def _get_filtered_data_per_header(self, header):
-		return list(filter(
-			lambda i: header == self._strip(i.description),
-			self.data
-		))
-
-class GroupGroupedStats(FilteredGroupedStats):
-	"""
-	requires:
-		self._category_name
-	"""
-	def __init__(self, data, category_name=None, **kwargs):
-		self._category_name = getattr(self, "_category_name", category_name)
-
-		filter_obj = GroupFilter(self._category_name)
-
-		super().__init__(data, filter_obj, **kwargs)
-
-
-class GroupedStats_Games(GroupGroupedStats):
-	_category_name = "Gaming"
-
-class GroupedStats_Youtube(GroupGroupedStats):
-	_category_name = "Youtube"
-
-class GroupedStats_Life(GroupGroupedStats):
-	_category_name = "Life"
-
-class GroupedStats_Read(GroupGroupedStats):
-	_category_name = "Read"
-
-
-class ExtraDetailsGroupedStats(GroupedStats):
-	# _allowed_group_values = ("time", "amount", "total_amount")
-	"""
-	requires:
-		self._filter_obj
-		self._extra_details_name
-
-		and requires a call to self._initialize_data in __init__
-			since it requires self._filter_obj
-	"""
-	def _initialize_data(self):
-		self._original_data = self.data
-		self.data = self._filter_obj % self.data
-
-	def _get_headers(self):
-		# get all headers
-		headers = set()
-
-		for i in self.data:
-			h = i.extra_details[self._extra_details_name]
-			if h:
-				headers.update(h)
-
-		# return a list, sorted alphabetically
-		self._headers = sorted(headers)
-		return self._headers
-
-	def _get_filtered_data_per_header(self, header):
-		return list(filter(
-			lambda i: header in i.extra_details[self._extra_details_name],
-			self.data
-		))
-
-class GroupedStats_ExtraDetailGeneric(ExtraDetailsGroupedStats):
-	def __init__(self, search_filter, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		self._filter_obj = (
-			search_filter
-			 &
-			HasExtraDetailsFilter()
-			 &
-			~DescriptionFilter('&') # TODO: remove me. This is a patch since '&' is not parsed yet
-		)
-
-		self._initialize_data()
-
-		self._get_extra_details_name()
-
-	def _get_extra_details_name(self):
-		names = sum(
-			(list(i.extra_details.keys()) for i in self.data),
-			[]
-		)
-		names = list(set(names))
-
-		if len(names) == 1:
-			self._extra_details_name = names[0]
-		elif len(names) == 0:
-			raise ValueError("No possible extra_details_name found")
-		else:
-			# TODO: maybe use the most frequent name?
-			print(names)
-			raise ValueError(f"Too many ({len(names)}) possible extra_details_name found")
-
-		return self._extra_details_name
-
-class GroupedStats_Lecture(ExtraDetailsGroupedStats):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		self._extra_details_name = "lecture"
-
-		self._filter_obj = (
-			DescriptionFilter("lecture ")
-			 &
-			HasExtraDetailsFilter()
-			 &
-			~GroupFilter("University")
-		)
-
-		self._initialize_data()
-
-class GroupedStats_Homework(ExtraDetailsGroupedStats):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		self._extra_details_name = "homework"
-
-		self._filter_obj = (
-			DescriptionFilter("homework")
-			 &
-			HasExtraDetailsFilter()
-			 &
-			GroupFilter("University")
-		)
-
-		self._initialize_data()
-
-class GroupedStats_Shower(ExtraDetailsGroupedStats):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		self._extra_details_name = "shower"
-
-		self._filter_obj = (
-			DescriptionFilter("shower")
-			 &
-			HasExtraDetailsFilter()
-		)
-
-		self._initialize_data()
-
-class GroupedStats_PrepareFood(ExtraDetailsGroupedStats):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		self._extra_details_name = "prepare"
-
-		self._filter_obj = (
-			DescriptionFilter("prepare")
-			 &
-			GroupFilter("Food")
-			 &
-			HasExtraDetailsFilter()
-		)
-
-		self._initialize_data()
 
