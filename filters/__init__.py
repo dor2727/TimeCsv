@@ -13,4 +13,5 @@ from TimeCsv.filters.time_filters    import TimeFilter_Days    , \
 from TimeCsv.filters.generic_filters import StrFilter , \
 											AutoFilter, \
 											AutoTimeFilter
-from TimeCsv.filters.filter_utils    import *
+from TimeCsv.filters.special_filters import filter_podcast,
+											filter_sleep

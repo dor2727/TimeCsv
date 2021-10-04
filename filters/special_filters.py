@@ -1,4 +1,4 @@
-from TimeCsv.filters import *
+from TimeCsv.filters.content_filters import GroupFilter, DescriptionFilter
 
 # don't know if I should name them as "SomethingFilter", like the regular filter classes
 # or "filter_something", to indicate that it is a specific case and not a general class
