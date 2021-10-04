@@ -70,21 +70,26 @@ class Filter(object):
 		return list(itertools.compress(data, self.filter(data)))
 
 	def get_selected_time(self):
-		return getattr(self, "_selected_time", "All time")
+		return getattr(self, "_selected_time", DEFAULT_SELECTED_TIME)
 
 	def __mod__(self, other):
 		# verify input
-		if type(other) is not list:
-			raise ValueError("modulo not defined for filter and non-list object")
+		if not isinstance(other, Iterable):
+			raise TypeError(f"unsupported operand type(s) for +: '{self.__class__}' and '{type(other)}'")
 
-		# before the following check, verigy that the list is not empty:
+		# before the following check, verify that the list is not empty:
 		if len(other) == 0:
 			# return the same thing, rather than an empty list, since `other` may be a tuple or something
 			return other
 
-		# Should check all the items, but there is currently no such case of a list with mixed types
-		if other[0].__class__.__name__ != "DataItem":
-			raise ValueError("modulo is only defined for filter and a list of DataItem elements")
+		# Validates that the iterable's items are of type DataItem
+		# 	Verify that this object has subscripts (i.e. a list/tuple/etc. Not a generator/filter/map/etc.)
+		if hasattr(other, "__getitem__"):
+			# Should check all the items, but there is currently no such case of a list with mixed types
+			if not isinstance(other[0], DataItem):
+				raise TypeError(f"unsupported operand type(s) for +: '{self.__class__}' and a '{type(other)} of {type(other[0])}'")
+			# can also use this, in case of import-loop, not allowing this file to import DataItem
+			# if other[0].__class__.__name__ != "DataItem":
 
 		return self.get_filtered_data(other)
 
@@ -139,7 +144,7 @@ class MultiFilter(Filter):
 		elif hasattr(self.filter_2, "_selected_time"):
 			return self.filter_2._selected_time
 		else:
-			return 'All time'
+			return DEFAULT_SELECTED_TIME
 
 class NotFilter(Filter):
 	def __init__(self, filter_obj):
