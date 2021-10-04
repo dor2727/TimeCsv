@@ -1,133 +1,83 @@
 import re
+import operator
 
 from TimeCsv.filters.base_filters import Filter
 
-class DescriptionFilter(Filter):
-	def __init__(self, string, case_sensitive=None, regex=False):
-		self.case_sensitive = case_sensitive or False
+class BaseContentFilter(Filter):
+	def __init__(self, string_to_find, case_sensitive=False, regex=False):
+		self.case_sensitive = case_sensitive
 		self.regex = regex
 
 		if self.case_sensitive:
-			self.string = string
+			self.string_to_find = string_to_find
 		else:
-			self.string = string.lower()
+			self.string_to_find = string_to_find.lower()
 
 	def filter(self, data):
+		raise NotImplemented
+
+	def _find_string(self, string_to_search_in):
 		if       self.regex and     self.case_sensitive:
-			return [
-				bool(re.findall(self.string, i.description))
-				for i in data
-			]
+			return bool(re.findall(self.string_to_find, string_to_search_in))
 
 		elif     self.regex and not self.case_sensitive:
-			return [
-				bool(re.findall(self.string, i.description, re.I))
-				for i in data
-			]
+			return bool(re.findall(self.string_to_find, string_to_search_in, re.I))
 
 		elif not self.regex and     self.case_sensitive:
-			return [
-				self.string in i.description
-				for i in data
-			]
+			return self.string_to_find in string_to_search_in
 
 		elif not self.regex and not self.case_sensitive:
-			return [
-				self.string in i.description.lower()
-				for i in data
-			]
+			return self.string_to_find in string_to_search_in.lower()
 
 	def __repr__(self):
-		return f"{self.__class__.__name__}({self.string})"
+		return f"{self.__class__.__name__}({self.string_to_find})"
 
-class GroupFilter(Filter):
-	def __init__(self, string, case_sensitive=None, regex=False):
-		self.case_sensitive = case_sensitive or True
-		self.regex = regex
-
-		if self.case_sensitive:
-			self.string = string
-		else:
-			self.string = string.lower()
-
+class DescriptionFilter(BaseContentFilter):
 	def filter(self, data):
+		return [
+			self._find_string(i.description)
+			for i in data
+		]
+
+class GroupFilter(BaseContentFilter):
+	def filter(self, data):
+		return [
+			self._find_string(i.group)
+			for i in data
+		]
+
+class FriendFilter(BaseContentFilter):
+	def filter(self, data):
+		return [
+			self._find_string(i.friends)
+			for i in data
+		]
+
+	def _find_string(self, list_to_search_in):
 		if       self.regex and     self.case_sensitive:
-			return [
-				bool(re.findall(self.string, i.group))
-				for i in data
-			]
+			return any([
+				re.findall(self.string_to_find, string_to_search_in)
+				for string_to_search_in in list_to_search_in
+			])
 
 		elif     self.regex and not self.case_sensitive:
-			return [
-				bool(re.findall(self.string, i.group, re.I))
-				for i in data
-			]
+			return any([
+				re.findall(self.string_to_find, string_to_search_in, re.I)
+				for string_to_search_in in list_to_search_in
+			])
 
 		elif not self.regex and     self.case_sensitive:
-			return [
-				self.string in i.group
-				for i in data
-			]
+			return self.string_to_find in list_to_search_in
 
 		elif not self.regex and not self.case_sensitive:
-			return [
-				self.string in i.group.lower()
-				for i in data
-			]
+			return self.string_to_find in map(str.lower, list_to_search_in)
 
-	def __repr__(self):
-		return f"{self.__class__.__name__}({self.string})"
-
-class FriendFilter(Filter):
-	def __init__(self, friend, case_sensitive=False):
-		self.case_sensitive = case_sensitive
-
-		if self.case_sensitive:
-			self.friend = friend
-		else:
-			self.friend = friend.lower()
-
+class LocationFilter(BaseContentFilter):
 	def filter(self, data):
-		if self.case_sensitive:
-			return [
-				self.friend in i.friends
-				for i in data
-			]
-
-		else: # not case_sensitive
-			return [
-				self.friend in map(str.lower, i.friends)
-				for i in data
-			]
-
-	def __repr__(self):
-		return f"{self.__class__.__name__}({self.friend})"
-
-class LocationFilter(Filter):
-	def __init__(self, location, case_sensitive=False):
-		self.case_sensitive = case_sensitive
-
-		if self.case_sensitive:
-			self.location = location
-		else:
-			self.location = location.lower()
-
-	def filter(self, data):
-		if self.case_sensitive:
-			return [
-				self.location == i.location
-				for i in data
-			]
-
-		else: # not case_sensitive
-			return [
-				self.location in i.location.lower()
-				for i in data
-				if i.location
-			]
-
-	def __repr__(self):
-		return f"{self.__class__.__name__}({self.location})"
+		return [
+			self._find_string(i.location)
+			for i in data
+		]
 
 class HasExtraDetailsFilter(Filter):
 	def filter(self, data):
@@ -141,30 +91,33 @@ class DurationFilter(Filter):
 		if   type(string) is str and string[0] == '<':
 			self._action = "maximum"
 			self.seconds = self._int(string[1:])
+
 		elif type(string) is str and string[0] == '>':
 			self._action = "minumum"
 			self.seconds = self._int(string[1:])
+
 		else: # default
 			self._action = "maximum"
 			self.seconds = self._int(string)
 
 	def _int(self, string):
 		# the input may be 100.0
-		return int(string.split('.')[0])
+		return int(float(string))
+
+	@property
+	def _operator(self):
+		if self._action == "maximum":
+			return operator.ge
+		elif self._action == "minimum":
+			return operator.le
+		else:
+			raise ValueError(f"Invalid action ({self._action})")
 
 	def filter(self, data):
-		if self._action == "maximum":
-			return [
-				int(i) <= self.seconds
-				for i in data
-			]
-		elif self._action == "minumum":
-			return [
-				int(i) >= self.seconds
-				for i in data
-			]
-		else:
-			raise ValueError("Invalid action")
+		return [
+			self._operator(self.seconds, int(i))
+			for i in data
+		]
 
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self._action} {self.seconds} seconds)"
