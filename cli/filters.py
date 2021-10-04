@@ -8,7 +8,9 @@ def initialize_search_filter(args):
 	for s in args.search_string:
 		filters.append(AutoFilter(s, force_regex=args.force_regex))
 
-	if args.search_use_or:
+	if not filters:
+		f = None
+	elif args.search_use_or:
 		f = join_filters_with_or(filters)
 	else:
 		f = join_filters_with_and(filters)
