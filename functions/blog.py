@@ -1,70 +1,51 @@
-import TimeCsv.statistics
-from TimeCsv.parsing import DataFolder
-from TimeCsv.filters import *
+#!/usr/bin/env python3
+from TimeCsv import DataFolder, \
+					ExtraDetailsFilter, GroupFilter, \
+					DetailedStats_ExtraDetails
 
-class ExtraDetailsBlogStats(TimeCsv.statistics.GroupedStats):
-	_extra_details_name = "sketch"
+# import TimeCsv.statistics
+# from TimeCsv.parsing import DataFolder
+# from TimeCsv.filters import *
 
+
+# requires `self._extra_details_name`
+class DetailedStats_Blog(DetailedStats_ExtraDetails):
+	_extra_details_name = None
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		self._filter_obj = (
-			GroupFilter("Blog")
+			ExtraDetailsFilter(self._extra_details_name)
 			 &
-			DescriptionFilter(self._extra_details_name)
+			GroupFilter("Blog")
 		)
 
 		self._initialize_data()
 
-	def _initialize_data(self):
-		self._original_data = self.data
-		self.data = self._filter_obj % self.data
-
-	def _get_extra_details(self, obj):
-		if not hasattr(obj, "extra_details"):
-			return "<no extra details>"
-		if not obj.extra_details:
-			return "<no extra details>"
-		e = obj.extra_details.get(self._extra_details_name, "<no extra details>")
-		return e[0]
-
-	def _get_headers(self):
-		# get all headers
-		headers = set()
-
-		for i in self.data:
-			headers.add(self._get_extra_details(i))
-
-		# return a list, sorted alphabetically
-		self._headers = sorted(headers)
-		return self._headers
-
-	def _get_filtered_data_per_header(self, header):
-		return list(filter(
-			lambda i: self._get_extra_details(i) == header,
-			self.data
-		))
-
-class ExtraDetailsBlogStats_sketch(ExtraDetailsBlogStats):
+class DetailedStats_Blog_Sketch(DetailedStats_Blog):
 	_extra_details_name = "sketch"
-class ExtraDetailsBlogStats_research(ExtraDetailsBlogStats):
+class DetailedStats_Blog_Research(DetailedStats_Blog):
 	_extra_details_name = "research"
-class ExtraDetailsBlogStats_manim(ExtraDetailsBlogStats):
+class DetailedStats_Blog_Manim(DetailedStats_Blog):
 	_extra_details_name = "manim"
 
 def get_blog_statistics(datafolder=None):
 	datafolder = datafolder or DataFolder()
-	d = datafolder.data
+	data = datafolder.data
 
-	s = [
-		ExtraDetailsBlogStats_sketch(d, group_value="time"),
-		ExtraDetailsBlogStats_research(d, group_value="time"),
-		ExtraDetailsBlogStats_manim(d, group_value="time"),
+	statistics = [
+		DetailedStats_Blog_Sketch  (data, grouping_method="time"),
+		DetailedStats_Blog_Research(data, grouping_method="time"),
+		DetailedStats_Blog_Manim   (data, grouping_method="time"),
 	]
-	for g in s:
+
+	for s in statistics:
 		print("==============")
-		print("sketch")
+		print(s._extra_details_name)
 		print("==============")
-		print(g.group())
-		print(g.to_pie(save=False))
+		print(s.to_text())
+		s.to_pie(save=False)
 		print()
+
+if __name__ == '__main__':
+	get_blog_statistics()
