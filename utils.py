@@ -69,7 +69,9 @@ def find_vehicle_in_str(s):
 
 def counter(data):
     return list(Counter(data).items())
-
+#
+# regex utils
+#
 def re_escape(x):
 	return ''.join(
 		(
@@ -82,6 +84,8 @@ def re_escape(x):
 		for i in x
 	)
 
+def re_exact(x):
+	return f"\\b{x}\\b"
 
 #
 # datetime utils

@@ -95,7 +95,7 @@ class DetailedStats_Lecture(DetailedStats_ExtraDetails):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		extra_details_regex_pattern = f"\\b{self._extra_details_name}\\b"
+		extra_details_regex_pattern = re_exact(self._extra_details_name)
 		self._filter_obj = (
 			DescriptionFilter(extra_details_regex_pattern, regex=True)
 			 &
@@ -111,7 +111,7 @@ class DetailedStats_Homework(DetailedStats_ExtraDetails):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		extra_details_regex_pattern = f"\\b{self._extra_details_name}\\b"
+		extra_details_regex_pattern = re_exact(self._extra_details_name)
 		self._filter_obj = (
 			DescriptionFilter(extra_details_regex_pattern, regex=True)
 			 &
@@ -127,7 +127,7 @@ class DetailedStats_Shower(DetailedStats_ExtraDetails):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		extra_details_regex_pattern = f"\\b{self._extra_details_name}\\b"
+		extra_details_regex_pattern = re_exact(self._extra_details_name)
 		self._filter_obj = (
 			DescriptionFilter(extra_details_regex_pattern, regex=True)
 			 &
@@ -140,7 +140,7 @@ class DetailedStats_PrepareFood(DetailedStats_ExtraDetails):
 	def __init__(self, *args, **kwargs):
 		self._extra_details_name = "prepare"
 
-		extra_details_regex_pattern = f"\\b{self._extra_details_name}\\b"
+		extra_details_regex_pattern = re_exact(self._extra_details_name)
 
 		self._filter_obj = (
 			DescriptionFilter(extra_details_regex_pattern, regex=True)
