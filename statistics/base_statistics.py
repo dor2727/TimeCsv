@@ -334,7 +334,7 @@ class DetailedStats(Stats):
 		# plotting initialization
 		fig, ax = plt.subplots()
 
-		self._plot_make_bar(self.values_sorted, self.titles_sorted)
+		self._plot_make_bar(ax, self.values_sorted, self.titles_sorted)
 
 		self._plot_set_title(fig, ax)
 
