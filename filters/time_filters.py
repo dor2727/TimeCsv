@@ -1,7 +1,7 @@
 import calendar
 import datetime
 
-from TimeCsv.utils import get_midnight, get_ymd_tuple
+from TimeCsv.utils import get_midnight, get_ymd_tuple, format_dates
 from TimeCsv.consts import DATE_REPRESENTATION_PATTERN
 from TimeCsv.filters.base_filters import Filter, TrueFilter
 
@@ -153,13 +153,6 @@ class TimeFilter_Year(BaseTimeFilter):
 			i.date.year == self.year
 			for i in data
 		]
-
-	# todo: delete this:
-	def __str__(self):
-		return DATE_REPRESENTATION_PATTERN % (
-			self.year, 1,  1,
-			self.year, 12, 31
-		)
 
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self.year})"
