@@ -93,10 +93,21 @@ class DescriptionDetailsParser_Location(DescriptionDetailsParser):
 
 	@classmethod
 	def extract_values(self, dataitem):
-		if PATTERN_LOCATION_THEIR_PLACE in dataitem.description:
+		return self.find_location_in_string(dataitem.description)
+
+	@classmethod
+	def strip(self, string):
+		string = re.sub(self.PATTERN_STRIP, '', string)
+		string = re.sub(PATTERN_LOCATION_THEIR_PLACE, '', string)
+		return string.strip()
+
+	# An extracted API for finding a location in a string without a dataitem
+	@classmethod
+	def find_location_in_string(self, string):
+		if PATTERN_LOCATION_THEIR_PLACE in string:
 			return "Their place"
 
-		l = re.findall(self.PATTERN_EXTRACT, dataitem.description)
+		l = re.findall(self.PATTERN_EXTRACT, string)
 		if len(l) == 0:
 			return None
 		elif len(l) == 1:
@@ -105,11 +116,6 @@ class DescriptionDetailsParser_Location(DescriptionDetailsParser):
 			print(f"[!] Multiple locations found: {l}")
 			raise ValueError(f"Too many ({len(names)}) possible locations found")
 
-	@classmethod
-	def strip(self, string):
-		string = re.sub(self.PATTERN_STRIP, '', string)
-		string = re.sub(PATTERN_LOCATION_THEIR_PLACE, '', string)
-		return string.strip()
 
 class DescriptionDetailsParser_Vehicle(DescriptionDetailsParser):
 	PATTERN_STRIP = VEHICLE_PATTERN_STRIP
