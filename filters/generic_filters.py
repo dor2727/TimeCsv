@@ -2,8 +2,9 @@ from TimeCsv.filters.base_filters import Filter
 from TimeCsv.filters.content_filters import *
 from TimeCsv.filters.filter_utils import join_filters_with_or
 from TimeCsv.filters.time_filters import *
-from TimeCsv.parsing import DescriptionDetailsParser_Friends, \
-							DescriptionDetailsParser_Location
+from TimeCsv.parsing import DescriptionDetailsParser_Friends , \
+							DescriptionDetailsParser_Location, \
+							DescriptionDetailsParser_Vehicle
 
 # find str in either group or description
 class StrFilter(Filter):
@@ -32,7 +33,7 @@ class AutoFilter(Filter):
 	_not_filter_prefix = ('~', '!')
 
 	def __init__(self, string, case_sensitive=None, force_regex=False):
-		string, exclude, regex, friends, location = self._preprocess_string(string, force_regex)
+		string, exclude, regex, friends, location, vehicle = self._preprocess_string(string, force_regex)
 
 		if friends:
 			self._filter = join_filters_with_or(
@@ -43,6 +44,9 @@ class AutoFilter(Filter):
 
 		elif location:
 			self._filter = LocationFilter(location, case_sensitive=case_sensitive)
+
+		elif vehicle:
+			self._filter = VehicleFilter(vehicle, case_sensitive=case_sensitive)
 
 		elif string[0] in ('<', '>'):
 			self._filter = DurationFilter(string)
@@ -85,18 +89,24 @@ class AutoFilter(Filter):
 		if regex:
 			friends = False
 		else:
-			friends = DescriptionDetailsParser_Friends.find_friends_in_string(string)
+			friends = DescriptionDetailsParser_Friends.extract_values_from_string(string)
 
-		# extract friends
+		# extract location
 		if regex:
 			location = False
 		else:
-			location = DescriptionDetailsParser_Location.find_location_in_string(string)
+			location = DescriptionDetailsParser_Location.extract_values_from_string(string)
+
+		# extract vehicle
+		if regex:
+			vehicle = False
+		else:
+			vehicle = DescriptionDetailsParser_Vehicle.extract_values_from_string(string)
 
 		if not string:
 			raise ValueError("AutoFilter got empty string")
 
-		return string, exclude, regex, friends, location
+		return string, exclude, regex, friends, location, vehicle
 
 	def filter(self, data):
 		return self._filter.filter(data)

@@ -76,7 +76,7 @@ class DescriptionDetailsParser_Friends(DescriptionDetailsParser):
 
 	# An extracted API for finding friends in a string without a dataitem
 	@classmethod
-	def find_friends_in_string(self, string):
+	def extract_values_from_string(self, string):
 		found = []
 		for pattern in self.PATTERN_EXTRACT:
 			found += re.findall(pattern, string)
@@ -93,7 +93,7 @@ class DescriptionDetailsParser_Location(DescriptionDetailsParser):
 
 	@classmethod
 	def extract_values(self, dataitem):
-		return self.find_location_in_string(dataitem.description)
+		return self.extract_values_from_string(dataitem.description)
 
 	@classmethod
 	def strip(self, string):
@@ -103,7 +103,7 @@ class DescriptionDetailsParser_Location(DescriptionDetailsParser):
 
 	# An extracted API for finding a location in a string without a dataitem
 	@classmethod
-	def find_location_in_string(self, string):
+	def extract_values_from_string(self, string):
 		if PATTERN_LOCATION_THEIR_PLACE in string:
 			return "Their place"
 
@@ -123,10 +123,7 @@ class DescriptionDetailsParser_Vehicle(DescriptionDetailsParser):
 
 	@classmethod
 	def extract_values(self, dataitem):
-		for vehicle in VEHICLES:
-			if f"by {vehicle}" in dataitem.description:
-				return vehicle
-		return None
+		return self.extract_values_from_string(dataitem.description)
 
 	@classmethod
 	def strip(self, string):
@@ -134,6 +131,13 @@ class DescriptionDetailsParser_Vehicle(DescriptionDetailsParser):
 			string = re.sub(pattern, '', string)
 		return string.strip()
 
+	# An extracted API for finding a location in a string without a dataitem
+	@classmethod
+	def extract_values_from_string(self, string):
+		for vehicle in VEHICLES:
+			if f"by {vehicle}" in string:
+				return vehicle
+		return None
 
 DETAIL_PARSERS = {
 	"extra_details": DescriptionDetailsParser_ExtraDetails,
