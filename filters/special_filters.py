@@ -6,4 +6,4 @@ from TimeCsv.filters.content_filters import GroupFilter, DescriptionFilter, Dura
 filter_podcast = GroupFilter("Podcast") | DescriptionFilter("podcast")
 
 # only "sleep" items, no "more sleep", and only items with more than 3 houts
-filter_sleep = DescriptionFilter("sleep") & ~DescriptionFilter("more") & DurationFilter(f">{60*60*3}")
+filter_sleep = GroupFilter("Sleep") & ~DescriptionFilter("more") & DurationFilter(f">{60*60*3}")

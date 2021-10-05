@@ -186,7 +186,7 @@ class DurationFilter(Filter):
 			self.seconds = self._int(string[1:])
 
 		elif type(string) is str and string[0] == '>':
-			self._action = "minumum"
+			self._action = "minimum"
 			self.seconds = self._int(string[1:])
 
 		else: # default
