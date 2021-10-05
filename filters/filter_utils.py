@@ -23,12 +23,10 @@ def join_filters_with_and(l):
 		l
 	)
 
-# todo: look at this
 def get_named_filter(name, args=None):
 	if name == "today":
 		if args is None:
 			return TimeFilter_Days(1)
-		# todo: why is this here?
 		elif type(args) is int:
 			return TimeFilter_Days(args)
 		else:
