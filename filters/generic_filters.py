@@ -1,8 +1,8 @@
 from TimeCsv.filters.base_filters import Filter
-from TimeCsv.filters.time_filters import *
 from TimeCsv.filters.content_filters import *
+from TimeCsv.filters.filter_utils import join_filters_with_or
+from TimeCsv.filters.time_filters import *
 from TimeCsv.parsing import DescriptionDetailsParser_Friends
-
 
 # find str in either group or description
 class StrFilter(Filter):
@@ -28,14 +28,46 @@ class StrFilter(Filter):
 
 # auto classify which filter to use
 class AutoFilter(Filter):
-	not_filter_prefix = ('~', '!')
+	_not_filter_prefix = ('~', '!')
 
 	def __init__(self, string, case_sensitive=None, force_regex=False):
+		string, exclude, regex, friends = self._preprocess_string(string, force_regex)
+
+		if not regex and friends:
+			self._filter = join_filters_with_or(
+				FriendFilter(friend,
+					case_sensitive=case_sensitive
+				) for friend in friends
+			)
+
+		elif string[0] in ('<', '>'):
+			self._filter = DurationFilter(string)
+
+		elif string.islower():
+			self._filter = DescriptionFilter(string,
+				case_sensitive=case_sensitive, regex=regex
+			)
+
+		elif string[0].isupper():
+			self._filter = GroupFilter(string,
+				case_sensitive=case_sensitive, regex=regex
+			)
+
+		else:
+			self._filter = StrFilter(string,
+				case_sensitive=case_sensitive, regex=regex
+			)
+
+
+		if exclude:
+			self._filter = NotFilter(self._filter)
+
+	def _preprocess_string(self, string, force_regex):
 		# check for regex
 		regex = ('\\' in string) or force_regex
 
 		# check whether this will be a NotFilter
-		if not regex and string[0] in self.not_filter_prefix:
+		if not regex and string[0] in self._not_filter_prefix:
 			exclude = True
 			string = string[1:]
 		elif   regex and string[0] == '~':
@@ -54,33 +86,7 @@ class AutoFilter(Filter):
 		if not string:
 			raise ValueError("AutoFilter got empty string")
 
-		elif not regex and friends:
-			self._filter = FriendFilter(friends[0],
-				case_sensitive=case_sensitive
-			)
-
-			for i in friends[1:]:
-				self._filter |= FriendFilter(i,
-					case_sensitive=case_sensitive
-				)
-
-		elif string[0] in ('<', '>'):
-			self._filter = DurationFilter(string)
-		elif string.islower():
-			self._filter = DescriptionFilter(string,
-				case_sensitive=case_sensitive, regex=regex
-			)
-		elif string.istitle():
-			self._filter = GroupFilter(string,
-				case_sensitive=case_sensitive, regex=regex
-			)
-		else:
-			self._filter = StrFilter(string,
-				case_sensitive=case_sensitive, regex=regex
-			)
-
-		if exclude:
-			self._filter = NotFilter(self._filter)
+		return string, exclude, regex, friends
 
 	def filter(self, data):
 		return self._filter.filter(data)

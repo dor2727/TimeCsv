@@ -89,6 +89,19 @@ class MultiFilter(Filter):
 		else:
 			return DEFAULT_SELECTED_TIME
 
+	@property
+	def total_time(self):
+		if hasattr(self.filter_1, "total_time") and hasattr(self.filter_2, "total_time"):
+			return self.filter_1.total_time + self.filter_2.total_time
+		elif hasattr(self.filter_1, "total_time"):
+			return self.filter_1.total_time
+		elif hasattr(self.filter_2, "total_time"):
+			return self.filter_2.total_time
+		else:
+			print("[!] Warning: called `MultiFilter.total_time`, where both filters don't have `total_time`")
+			return 0
+
+
 class NotFilter(Filter):
 	def __init__(self, filter_obj):
 		self.filter_obj = filter_obj
