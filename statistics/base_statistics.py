@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 # from TimeCsv.consts import *
 # from TimeCsv.utils import *
 # from TimeCsv.filters import *
-from TimeCsv.utils import shorten_selected_time, format_dates, seconds_to_str
+from TimeCsv.utils import 	shorten_selected_time, \
+							format_dates         , \
+							seconds_to_str       , \
+							seconds_to_hours_str
 
 class Stats(object):
 	def __init__(self, data, time_filter=None):
@@ -258,7 +261,8 @@ class DetailedStats(Stats):
 
 	def _plot_set_title(self, fig, ax):
 		ax.set_title(self.title)
-		fig.canvas.set_window_title(self.title)
+		fig.canvas.manager.set_window_title(self.title)
+		# fig.canvas.set_window_title(self.title)
 
 	def _plot_make_pie(self, ax, values, titles):
 		def pct(value):
@@ -267,7 +271,7 @@ class DetailedStats(Stats):
 			return f"{value:.1f}%\n{hours_str}h"
 
 		# making the pie chart
-		patches, _, _ = ax.pie(values, labels=headers, autopct=pct)
+		patches, _, _ = ax.pie(values, labels=titles, autopct=pct)
 		ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
 		return patches
