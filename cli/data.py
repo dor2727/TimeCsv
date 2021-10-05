@@ -136,14 +136,22 @@ def get_extra_details_text(data, time_filter, search_filter, args):
 		"time_filter"        : time_filter,
 		"grouping_method"    : args.grouping_method,
 		"sorting_method"     : args.sorting_method,
-		"extra_details_name" : args.extra_details_name,
 	}
 
-	g = DetailedStats_ExtraDetailGeneric(
-		search_filter,
-		data,
-		**detailedstats_params,
-	)
+	if args.extra_details_name is None:
+		g = DetailedStats_ExtraDetailGeneric(
+			search_filter,
+			data,
+			**detailedstats_params,
+		)
+	else:
+		g = DetailedStats_ExtraDetailSpecific(
+			search_filter,
+			args.extra_details_name,
+			data,
+			**detailedstats_params,
+		)
+
 
 	return get_text(g, args)
 

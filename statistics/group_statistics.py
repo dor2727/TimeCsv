@@ -21,7 +21,6 @@ class DetailedStats_Group(DetailedStatsFiltered):
 		if self._group_name is None:
 			raise ValueError("DetailedStats_Group received None as group name")
 
-		print(f"filter_obj_kwargs: {filter_obj_kwargs}")
 		self._filter_obj = GroupFilter(self._group_name, **filter_obj_kwargs)
 		return self._filter_obj
 

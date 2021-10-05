@@ -1,7 +1,7 @@
 from TimeCsv.filters.base_filters import Filter
 from TimeCsv.filters.time_filters import *
 from TimeCsv.filters.content_filters import *
-from TimeCsv.utils import find_friends_in_str
+from TimeCsv.parsing import DescriptionDetailsParser_Friends
 
 
 # find str in either group or description
@@ -49,7 +49,7 @@ class AutoFilter(Filter):
 		if regex:
 			friends = False
 		else:
-			friends = find_friends_in_str(string)
+			friends = DescriptionDetailsParser_Friends.find_friends_in_string(string)
 
 		if not string:
 			raise ValueError("AutoFilter got empty string")
