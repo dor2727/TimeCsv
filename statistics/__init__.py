@@ -1,5 +1,5 @@
 from TimeCsv.statistics.base_statistics          import BasicStats
-from TimeCsv.statistics.extra_info_statistics    import DetailedStats_Group , \
+from TimeCsv.statistics.extra_info_statistics    import DetailedStats_AllGroups , \
 														DetailedStats_Friend, \
 														DetailedStats_Location
 from TimeCsv.statistics.extra_details_statistics import DetailedStats_ExtraDetailGeneric, \

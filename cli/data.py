@@ -112,7 +112,7 @@ def get_special_text(data, time_filter, args):
 	elif args.prepare_food:
 		cls = DetailedStats_PrepareFood
 	else: # default statistics
-		cls = DetailedStats_Group
+		cls = DetailedStats_AllGroups
 
 
 	g = cls(

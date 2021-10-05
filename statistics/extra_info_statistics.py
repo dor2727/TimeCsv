@@ -1,7 +1,7 @@
 from TimeCsv.statistics.base_statistics import DetailedStats
 from TimeCsv.filters import GroupFilter, FriendFilter, LocationFilter
 
-class DetailedStats_Group(DetailedStats):
+class DetailedStats_AllGroups(DetailedStats):
 	def _get_titles(self):
 		titles = set()
 
