@@ -14,10 +14,13 @@ class BaseContentFilter(Filter):
 		else:
 			self.string_to_find = string_to_find.lower()
 
+	def __repr__(self):
+		return f"{self.__class__.__name__}({self.string_to_find})"
+
 	def filter(self, data):
 		raise NotImplemented
 
-	def _find_string(self, string_to_search_in):
+	def _find_string_in_string(self, string_to_search_in):
 		if       self.regex and     self.case_sensitive:
 			return bool(re.findall(self.string_to_find, string_to_search_in))
 
@@ -30,31 +33,7 @@ class BaseContentFilter(Filter):
 		elif not self.regex and not self.case_sensitive:
 			return self.string_to_find in string_to_search_in.lower()
 
-	def __repr__(self):
-		return f"{self.__class__.__name__}({self.string_to_find})"
-
-class DescriptionFilter(BaseContentFilter):
-	def filter(self, data):
-		return [
-			self._find_string(i.description)
-			for i in data
-		]
-
-class GroupFilter(BaseContentFilter):
-	def filter(self, data):
-		return [
-			self._find_string(i.group)
-			for i in data
-		]
-
-class FriendFilter(BaseContentFilter):
-	def filter(self, data):
-		return [
-			self._find_string(i.friends)
-			for i in data
-		]
-
-	def _find_string(self, list_to_search_in):
+	def _find_string_in_list(self, list_to_search_in):
 		if       self.regex and     self.case_sensitive:
 			return any([
 				re.findall(self.string_to_find, string_to_search_in)
@@ -73,10 +52,31 @@ class FriendFilter(BaseContentFilter):
 		elif not self.regex and not self.case_sensitive:
 			return self.string_to_find in map(str.lower, list_to_search_in)
 
+class DescriptionFilter(BaseContentFilter):
+	def filter(self, data):
+		return [
+			self._find_string_in_string(i.description)
+			for i in data
+		]
+
+class GroupFilter(BaseContentFilter):
+	def filter(self, data):
+		return [
+			self._find_string_in_string(i.group)
+			for i in data
+		]
+
+class FriendFilter(BaseContentFilter):
+	def filter(self, data):
+		return [
+			self._find_string_in_list(i.friends)
+			for i in data
+		]
+
 class LocationFilter(BaseContentFilter):
 	def filter(self, data):
 		return [
-			self._find_string(i.location)
+			self._find_string_in_string(i.location)
 			for i in data
 		]
 
@@ -84,6 +84,13 @@ class HasExtraDetailsFilter(Filter):
 	def filter(self, data):
 		return [
 			bool(i.extra_details)
+			for i in data
+		]
+
+class ExtraDetailsFilter(BaseContentFilter):
+	def filter(self, data):
+		return [
+			bool(i.extra_details) and self._find_string_in_list(list(i.extra_details.keys()))
 			for i in data
 		]
 

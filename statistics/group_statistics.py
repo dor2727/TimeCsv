@@ -1,5 +1,9 @@
+import re
 
-class FilteredGroupedStats(GroupedStats):
+from TimeCsv.statistics.base_statistics import DetailedStats
+from TimeCsv.consts import PATTERN_NAMES_LIST, PATTERN_LOCATION
+
+class FilteredGroupedStats(DetailedStats):
 	STRIPPING_REGEX = [
 		# brackets
 		" ?\\(.*?\\)",

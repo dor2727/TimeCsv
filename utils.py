@@ -94,11 +94,30 @@ def get_midnight(d):
 	return datetime.datetime(*get_ymd_tuple(d))
 
 def seconds_to_str(n):
-	return ("%3d days %2d hours %2d minutes" % (
-		n // (60*60*24),
-		n // (60*60) % (24),
-		n // (60) % (60*24) % 60,
-	)).replace(" 0 days", "       ").replace(" 0 hours", "        ")
+	n = int(n)
+
+	s = ''
+
+	if days := (n // (60*60*24)):
+		s += f"{days:3d} days"
+	else:
+		s += " " * (3+1+4)
+
+	s += ' '
+
+	if hours := (n // (60*60) % (24)):
+		s += f"{hours:2d} hours"
+	else:
+		s += " " * (2+1+5)
+
+	s += ' '
+
+	if minutes := (n // (60) % (60*24) % 60):
+		s += f"{minutes:2d} minutes"
+	else:
+		s += " " * (2+1+7)
+
+	return s
 
 def seconds_to_hours_str(n):
 	h = n / (3600)

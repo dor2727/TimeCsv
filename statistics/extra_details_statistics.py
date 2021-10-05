@@ -1,6 +1,8 @@
+from TimeCsv.statistics.base_statistics import DetailedStats
+from TimeCsv.filters import HasExtraDetailsFilter, ExtraDetailsFilter, DescriptionFilter, GroupFilter
 
-class ExtraDetailsGroupedStats(GroupedStats):
-	# _allowed_group_values = ("time", "amount", "total_amount")
+# do not use this class directly - it is a meta class
+class DetailedStats_ExtraDetails(DetailedStats):
 	"""
 	requires:
 		self._filter_obj
@@ -13,29 +15,38 @@ class ExtraDetailsGroupedStats(GroupedStats):
 		self._original_data = self.data
 		self.data = self._filter_obj % self.data
 
-	def _get_headers(self):
+
+	def _get_titles(self):
 		# get all headers
-		headers = set()
+		titles = set()
 
 		for i in self.data:
-			h = i.extra_details[self._extra_details_name]
-			if h:
-				headers.update(h)
+			t = i.extra_details[self._extra_details_name]
+			if t:
+				titles.update(t)
 
 		# return a list, sorted alphabetically
-		self._headers = sorted(headers)
-		return self._headers
+		self._titles = sorted(titles)
+		return self._titles
 
-	def _get_filtered_data_per_header(self, header):
+	# todo: make FilterExtraDetails
+	def _get_items_of_title(self, title):
 		return list(filter(
-			lambda i: header in i.extra_details[self._extra_details_name],
+			lambda i: title in i.extra_details[self._extra_details_name],
 			self.data
 		))
 
-class GroupedStats_ExtraDetailGeneric(ExtraDetailsGroupedStats):
+class DetailedStats_ExtraDetailGeneric(DetailedStats_ExtraDetails):
 	def __init__(self, search_filter, *args, **kwargs):
+		# a bit of a weird flow
+
+		# first, extract the `extra_details_name` hinted by the user, if there is one.
+		extra_details_name = kwargs.pop("extra_details_name", None)
+
+		# then, set the `data` and the rest of the __init__ flow
 		super().__init__(*args, **kwargs)
 
+		# next, create a _filter_obj
 		self._filter_obj = (
 			search_filter
 			 &
@@ -43,37 +54,50 @@ class GroupedStats_ExtraDetailGeneric(ExtraDetailsGroupedStats):
 			 &
 			~DescriptionFilter('&') # TODO: remove me. This is a patch since '&' is not parsed yet
 		)
-
+		# _filter_obj is used here for setting self.data to be the filtered data
 		self._initialize_data()
+		# using the filtered data, the extra_details_name is extracted
+		self._get_extra_details_name(extra_details_name)
+		# now, the filter_object is further narrowed
+		self._filter_obj &= ExtraDetailsFilter(self._extra_details_name)
+		# and the data is being filtered, again
+		self.data = self._filter_obj % self.data
 
-		self._get_extra_details_name()
 
-	def _get_extra_details_name(self):
+	def _get_extra_details_name(self, extra_details_name):
+		# get all extra_details names
 		names = sum(
 			(list(i.extra_details.keys()) for i in self.data),
 			[]
 		)
 		names = list(set(names))
 
+
+		# hopefully, the filter is specific enough, so that only one extra_details name was found
 		if len(names) == 1:
+			# ignoring the case where the user supplied `extra_details_name` != names[0]
 			self._extra_details_name = names[0]
+
 		elif len(names) == 0:
 			raise ValueError("No possible extra_details_name found")
+
 		else:
-			# TODO: maybe use the most frequent name?
-			print(names)
-			raise ValueError(f"Too many ({len(names)}) possible extra_details_name found")
+			if extra_details_name in names:
+				self._extra_details_name = extra_details_name
+			else:
+				print(names)
+				raise ValueError(f"Too many ({len(names)}) possible extra_details_name found")
 
 		return self._extra_details_name
 
-class GroupedStats_Lecture(ExtraDetailsGroupedStats):
+class DetailedStats_Lecture(DetailedStats_ExtraDetails):
+	_extra_details_name = "lecture"
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		self._extra_details_name = "lecture"
-
+		extra_details_regex_pattern = f"\\b{self._extra_details_name}\\b"
 		self._filter_obj = (
-			DescriptionFilter("lecture ")
+			DescriptionFilter(extra_details_regex_pattern, regex=True)
 			 &
 			HasExtraDetailsFilter()
 			 &
@@ -82,14 +106,14 @@ class GroupedStats_Lecture(ExtraDetailsGroupedStats):
 
 		self._initialize_data()
 
-class GroupedStats_Homework(ExtraDetailsGroupedStats):
+class DetailedStats_Homework(DetailedStats_ExtraDetails):
+	_extra_details_name = "homework"
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		self._extra_details_name = "homework"
-
+		extra_details_regex_pattern = f"\\b{self._extra_details_name}\\b"
 		self._filter_obj = (
-			DescriptionFilter("homework")
+			DescriptionFilter(extra_details_regex_pattern, regex=True)
 			 &
 			HasExtraDetailsFilter()
 			 &
@@ -98,28 +122,28 @@ class GroupedStats_Homework(ExtraDetailsGroupedStats):
 
 		self._initialize_data()
 
-class GroupedStats_Shower(ExtraDetailsGroupedStats):
+class DetailedStats_Shower(DetailedStats_ExtraDetails):
+	_extra_details_name = "shower"
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		self._extra_details_name = "shower"
-
+		extra_details_regex_pattern = f"\\b{self._extra_details_name}\\b"
 		self._filter_obj = (
-			DescriptionFilter("shower")
+			DescriptionFilter(extra_details_regex_pattern, regex=True)
 			 &
 			HasExtraDetailsFilter()
 		)
 
 		self._initialize_data()
 
-class GroupedStats_PrepareFood(ExtraDetailsGroupedStats):
+class DetailedStats_PrepareFood(DetailedStats_ExtraDetails):
 	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
 		self._extra_details_name = "prepare"
 
+		extra_details_regex_pattern = f"\\b{self._extra_details_name}\\b"
+
 		self._filter_obj = (
-			DescriptionFilter("prepare")
+			DescriptionFilter(extra_details_regex_pattern, regex=True)
 			 &
 			GroupFilter("Food")
 			 &
@@ -128,3 +152,4 @@ class GroupedStats_PrepareFood(ExtraDetailsGroupedStats):
 
 		self._initialize_data()
 
+		super().__init__(*args, **kwargs)

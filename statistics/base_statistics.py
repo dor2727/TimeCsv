@@ -15,20 +15,6 @@ class Stats(object):
 
 
 	#
-	# Getting the data
-	#
-	def get_stats_dict(self):
-		raise NotImplemented()
-
-	def get_stats_list(self):
-		"""
-		return 2 lists - headers & values
-		return them sorted
-		"""
-		raise NotImplemented()
-
-
-	#
 	# Exposing different properties of the data
 	#
 	@property
@@ -155,138 +141,104 @@ class BasicStats(Stats):
 		return s
 
 
-class AGenericStatsWithNoName(Stats):
-	pass
+class DetailedStats(Stats):
+	_allowed_grouping_methods = ("time", "time_average", "amount")
+	_allowed_sorting_methods  = ("alphabetically", "by_value")
+
+	def __init__(self, data, time_filter=None, grouping_method="time", sorting_method="by_value"):
+		super().__init__(data, time_filter)
 
 
-"""
-TODO
-add a flag: "sort_by_value"
-if true: sort the result of self.group by the values, and show the top values first
-else: sort alphabetically or whatever
-"""
-class GroupedStats(Stats):
-	_allowed_group_values = ("time", "time_average", "amount")
-	_allowed_sorting_methods = ("alphabetically", "by_value")
+		self._grouping_method = grouping_method.lower()
+		if self._grouping_method not in self._allowed_grouping_methods:
+			raise ValueError(f"invalid grouping_method: {grouping_method}")
 
-	def __init__(self, data, selected_time="All times", group_value="time", sort="by_value"):
-		self.data = data
-		self.selected_time = selected_time
-
-		self.group_value = group_value.lower()
-		if self.group_value not in self._allowed_group_values:
-			raise ValueError("invalid group_value: %s" % group_value)
-
-		self._sorting_method = sort.lower()
+		self._sorting_method = sorting_method.lower()
 		if self._sorting_method not in self._allowed_sorting_methods:
-			raise ValueError("invalid sorting_method: %s" % sort)
+			raise ValueError(f"invalid sorting_method: {sorting_method}")
 
-		self.values_dict = {}
 
 	#
-	def _get_headers(self):
+	# Required functions
+	#
+	def _get_titles(self):
+		raise NotImplemented
+
+	def _get_items_of_title(self, title):
+		raise NotImplemented
+
+
+	#
+	# Process & sort titles & values
+	#
+	def process_data(self):
 		"""
-		return list
-		and creates self._headers for caching
+		processes self.data
+		return 2 lists
+			1) titles: each item is the name of the group
+			2) values: each item is a list with the items
 		"""
-		raise NotImplemented()
+		titles = self._get_titles()
 
-	@property
-	def headers(self):
-		if hasattr(self, "headers_sorted"):
-			return self.headers_sorted
-		elif hasattr(self, "_headers"):
-			return self._headers
-		else:
-			# create self._headers & sort them
-			self.group()
+		values = list(map(
+			self._get_data_of_title,
+			titles
+		))
 
-			if hasattr(self, "headers_sorted"):
-				return self.headers_sorted
-			elif hasattr(self, "_headers"):
-				return self._headers
-			else:
-				raise NameError("could not find headers")
+		self.titles_sorted, self.values_sorted = self._sort(titles, values)
+		return self.titles_sorted, self.values_sorted
 
-	def _get_filtered_data_per_header(self, header):
-		raise NotImplemented()
-
-	def _set_value_of_header(self, header):
-		items = self._get_filtered_data_per_header(header)
-
-		self.values_dict[header] = {}
-		self.values_dict[header]["amount_of_time"]  = amount_of_time  = sum(map(int, items))
-		self.values_dict[header]["amount_of_items"] = amount_of_items = len(items)
-
-		if items:
-			self.values_dict[header]["item_average"] = amount_of_time / amount_of_items
-		else:
-			self.values_dict[header]["item_average"] = 0
-
-	def _get_value_of_header(self, header):
-		self._set_value_of_header(header)
-
-		if self.group_value == "time":
-			return self.values_dict[header]["amount_of_time"]
-		elif self.group_value == "amount":
-			return self.values_dict[header]["amount_of_items"]
-		elif self.group_value == "time_average":
-			return self.values_dict[header]["item_average"]
-		else:
-			raise ValueError
-
-	def _sort(self, headers, values):
+	def _sort(self, titles, values):
 		# if either headers or values are empty
-		if not headers or not values:
-			return headers, values
+		if not titles or not values:
+			return titles, values
 
-		z = zip(headers, values)
+		z = zip(titles, values)
+
+		# sort by title (str), alphabetically
 		if self._sorting_method == "alphabetically":
-			# sort by header (str), alphabetically
 			sorted_z = sorted(z, key=lambda i: i[0])
+		# sort by value, highest first
 		elif self._sorting_method == "by_value":
-			# sort by value, highest first
 			sorted_z = sorted(z, key=lambda i: i[1], reverse=True)
 		else:
 			raise ValueError("invalid sorting_method")
-		# unpack the zip into headers and values
-		h, v = list(zip(*sorted_z))
-		return h, v
 
-	def group(self):
-		"""
-		group self.data
-		return 2 lists
-		1) headers: each item is the name of the group
-		2) values:  each item is a list with the items
-		"""
-		headers = self._get_headers()
+		# unpack the zip into titles and values
+		t, v = list(zip(*sorted_z))
+		return t, v
 
-		values = list(map(
-			self._get_value_of_header,
-			headers
-		))
+	def _get_all_data_of_title(self, title):
+		items = self._get_items_of_title(title)
 
-		self.headers_sorted, self.values_sorted = self._sort(headers, values)
-		return self.headers_sorted, self.values_sorted
+		amount_of_items = len(items)
+		amount_of_time = sum(items)
 
+		if amount_of_items:
+			amount_of_time_on_average = amount_of_time / amount_of_items
+		else:
+			amount_of_time_on_average = 0
+
+		return amount_of_items, amount_of_time, amount_of_time_on_average
+
+	def _get_data_of_title(self, title):
+		amount_of_items, amount_of_time, amount_of_time_on_average = self._get_all_data_of_title(title)
+
+		if self._grouping_method == "time":
+			return amount_of_time
+		elif self._grouping_method == "amount":
+			return amount_of_items
+		elif self._grouping_method == "time_average":
+			return amount_of_time_on_average
+		else:
+			raise ValueError(f"invalid grouping_method: {self._grouping_method}")
+
+	#
+	# Plot utils
 	#
 	@property
 	def title(self):
-		return f"{self.__class__.__name__}({self.group_value}) - {self.selected_time}"
-
-	def _plot_prepare_data(self, headers=None, values=None, title=None):
-		# initializing values
-		# todo: this can be written in a more compact way
-		if headers is None:
-			if not hasattr(self, "headers_sorted"):
-				self.group()
-			headers = self.headers_sorted
-		if values is None:
-			if not hasattr(self, "values_sorted"):
-				self.group()
-			values = self.values_sorted
-		return headers, values
+		return f"{self.__class__.__name__}({self._grouping_method}) - {self.selected_time}"
 
 	def _plot_save(self, fig, save):
 		if save:
@@ -304,18 +256,14 @@ class GroupedStats(Stats):
 			plt.show()
 			return None
 
-	def _plot_set_title(self, fig, ax, title=None):
-		if title is None:
-			title = self.title
+	def _plot_set_title(self, fig, ax):
+		ax.set_title(self.title)
+		fig.canvas.set_window_title(self.title)
 
-		ax.set_title(title)
-		fig.canvas.set_window_title(title)
-
-	def _plot_make_pie(self, ax, values, headers):
-		total_seconds = sum(values)
+	def _plot_make_pie(self, ax, values, titles):
 		def pct(value):
 			# value is given as a percentage - a float between 0 to 100
-			hours_str = seconds_to_hours_str(value * total_seconds / 100)
+			hours_str = seconds_to_hours_str(value * self.amount_of_time / 100)
 			return f"{value:.1f}%\n{hours_str}h"
 
 		# making the pie chart
@@ -324,154 +272,154 @@ class GroupedStats(Stats):
 
 		return patches
 
-	def to_pie(self, headers=None, values=None, title=None, save=True):
-		"""
-		if bool(save) is False: interactively show the pie chard
-		if save is str: save the image to that path
-		if save is True: save to the default location
-
-		if save:
-			return open handle to the file with the image
-		"""
-		headers, values = self._plot_prepare_data(headers, values)
-
-		# plotting initialization
-		fig, ax = plt.subplots()
-
-		self._plot_make_pie(ax, values, headers)
-
-		self._plot_set_title(fig, ax, title)
-
-		return self._plot_save(fig, save)
-
-	def _plot_make_bar(self, values, headers):
+	def _plot_make_bar(self, ax, values, titles):
 		# making the bar graph
-		x = np.arange(len(headers))  # the label locations
+		x = np.arange(len(titles))  # the label locations
 		width = 0.35  # the width of the bars
 		rects = ax.bar(x, values, width)
 
 		# titles & labels
-		ax.set_ylabel(self.group_value)
+		ax.set_ylabel(self._grouping_method)
 		ax.set_xticks(x)
-		ax.set_xticklabels(headers)
+		ax.set_xticklabels(titles)
 
-	def to_bar(self, headers=None, values=None, title=None, save=True):
+		return rects
+
+	#
+	# Plotting
+	#
+	def to_pie(self, save=True):
 		"""
-		if bool(save) is False: interactively show the pie chard
-		if save is str: save the image to that path
-		if save is True: save to the default location
-
 		if save:
 			return open handle to the file with the image
+
+			if save is str:
+				save the image to that path
+			if save is True:
+				save to the default location
+
+		if bool(save) is False:
+			interactively show the pie chard
 		"""
-		headers, values = self._plot_prepare_data(headers, values)
+		self.process_data()
 
 		# plotting initialization
 		fig, ax = plt.subplots()
 
-		self._plot_make_bar(values, headers)
+		self._plot_make_pie(ax, self.values_sorted, self.titles_sorted)
 
-		self._plot_set_title(fig, ax, title)
+		self._plot_set_title(fig, ax)
 
 		return self._plot_save(fig, save)
 
+	def to_bar(self, save=True):
+		"""
+		if save:
+			return open handle to the file with the image
+
+			if save is str:
+				save the image to that path
+			if save is True:
+				save to the default location
+
+		if bool(save) is False:
+			interactively show the pie chard
+		"""
+		self.process_data()
+
+		# plotting initialization
+		fig, ax = plt.subplots()
+
+		self._plot_make_bar(self.values_sorted, self.titles_sorted)
+
+		self._plot_set_title(fig, ax)
+
+		return self._plot_save(fig, save)
+
+
 	#
-	def _generate_to_text_statistics_per_header(self, header, header_format, amount_of_time):
-		self._get_value_of_header(header)
-		stats = self.values_dict[header]
+	# Text utils
+	#
+	def _generate_text(self, header, text_per_item, footer):
+		s  = header()
 
-		stats["time_percentage"] = 100.0 * stats["amount_of_time"] / amount_of_time
+		for t in self.titles_sorted:
+			s += "\n"
+			s += text_per_item(t)
 
-		return "    %s (%4d) : %s (%5.2f%%) ; item average %s" % (
-			(header_format % header),
-			stats["amount_of_items"],
-			seconds_to_str(stats["amount_of_time"]),
-			stats["time_percentage"],
-			seconds_to_str(stats["item_average"]),
-		)
-	def _generate_to_telegram_statistics_per_header(self, header, header_format, amount_of_time):
-		self._get_value_of_header(header)
-		stats = self.values_dict[header]
-
-		stats["time_percentage"] = 100.0 * stats["amount_of_time"] / amount_of_time
-
-		return "    %s\n        (%4d) : %s (%5.2f%%)\n          avg %s" % (
-			(header_format % header),
-			stats["amount_of_items"],
-			seconds_to_str(stats["amount_of_time"]),
-			stats["time_percentage"],
-			seconds_to_str(stats["item_average"]),
-		)
-
-	def _generate_to_text_footer(self, header_format, amount_of_items, amount_of_time):
-		s  = "    " + '-'*57
 		s += "\n"
-		s += "    %s (%4d) : %2d days %2d hours %2d minutes" % (
-			(header_format % "Total"),
-			amount_of_items,
-			amount_of_time // (60*60*24),
-			amount_of_time // (60*60) % (24),
-			amount_of_time // (60) % (60*24) % 60,
-		)
+		s += footer()
+
 		return s
 
-	def _generate_to_text_header(self, events_per_day):
+	@property
+	def _text_title_format(self):
+		return "%%-%ds" % (max(map(len, self.titles_sorted), default=1) + 1)
+
+	def _text_generate_header(self):
 		s  = self.time_representation_str
 		s += "\n"
-		s += f"  events per day = {events_per_day:.2f}"
-
+		s += f"  events per day = {self.events_per_day:.2f}"
 		return s
 
+	def _text_generate_footer(self):
+		if not self.titles_sorted:
+			return "    No titles found :("
+		if not self.amount_of_items:
+			return "    No items found :("
 
-
-	def _generate_text(self, header, statistics_per_header, footer):
-		"""
-		TODO
-		and create a wrapper
-			self._value
-			that brings the relevant one based on self.group_value
-
-		clean this function
-		"""
-
-		# calculate statistics for the whole time period
-		amount_of_items = len(self.data)
-		amount_of_time = sum(map(int, self.data))
-
-		if amount_of_time == 0:
-			events_per_day = 0
-		else:
-			amount_of_days = (self.data[-1].date - self.data[0].date).days + 1
-			events_per_day = amount_of_items / amount_of_days
-
-		s = header(events_per_day)
-
-		if not amount_of_items:
-			s += "\n    No items found :("
-			return s
-
-		# print per-header statistics
-		header_format = "%%-%ds" % (max(map(len, self.headers), default=1) + 1)
-		for h in self.headers:
-			s += "\n"
-			s += statistics_per_header(h, header_format, amount_of_time)
-
+		s  = "    " + '-'*57
 		s += "\n"
-		s += footer(header_format, amount_of_items, amount_of_time)
-
+		s += "    %s (%4d) : %s" % (
+			(self._text_title_format % "Total"),
+			self.amount_of_items,
+			seconds_to_str(self.amount_of_time),
+		)
 		return s
 
+	def _text_generate_item(self, title):
+		amount_of_items, amount_of_time, amount_of_time_on_average = self._get_all_data_of_title(title)
+
+		time_percentage = amount_of_time / self.amount_of_time * 100.0
+
+		return "    %s (%4d) : %s (%5.2f%%) ; item average %s" % (
+			(self._text_title_format % title),
+			amount_of_items,
+			seconds_to_str(amount_of_time),
+			time_percentage,
+			seconds_to_str(amount_of_time_on_average),
+		)
+
+	def _telegram_generate_item(self, item):
+		amount_of_items, amount_of_time, amount_of_time_on_average = self._get_all_data_of_title(title)
+
+		time_percentage = amount_of_time / self.amount_of_time * 100.0
+
+		return "    %s\n        (%4d) : %s (%5.2f%%)\n          avg %s" % (
+			(self._text_title_format % title),
+			amount_of_items,
+			seconds_to_str(amount_of_time),
+			time_percentage,
+			seconds_to_str(amount_of_time_on_average),
+		)
+
+	#
+	# Printing
+	#
 	def to_text(self):
+		self.process_data()
+
 		return self._generate_text(
-			self._generate_to_text_header,
-			self._generate_to_text_statistics_per_header,
-			self._generate_to_text_footer
+			self._text_generate_header,
+			self._text_generate_item,
+			self._text_generate_footer
 		)
 
 	def to_telegram(self):
-		return self._generate_text(
-			self._generate_to_text_header,
-			self._generate_to_telegram_statistics_per_header,
-			self._generate_to_text_footer
-		)
+		self.process_data()
 
+		return self._generate_text(
+			self._text_generate_header,
+			self._telegram_generate_item,
+			self._text_generate_footer
+		)

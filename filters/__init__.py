@@ -3,6 +3,7 @@ from TimeCsv.filters.content_filters import DescriptionFilter    , \
 											FriendFilter         , \
 											LocationFilter       , \
 											HasExtraDetailsFilter, \
+											ExtraDetailsFilter   , \
 											DurationFilter
 from TimeCsv.filters.time_filters    import TimeFilter_None    , \
 											TimeFilter_Days    , \

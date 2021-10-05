@@ -15,8 +15,8 @@ def main(data_object=None, args_list=None):
 	if args.productive_pie:
 		return get_productivity_pie(data, selected_time, save=False, focused=args.productive_pie_focused)
 	elif search_filter is None:
-		return get_special_text(data, selected_time, args)
+		return get_special_text(data, time_filter, args)
 	elif search_filter is not None and args.extra_details:
-		return get_extra_details_text(data, selected_time, search_filter, args)
+		return get_extra_details_text(data, time_filter, search_filter, args)
 	else:
 		return get_search_filter_text(data, time_filter, search_filter, args)

@@ -1,6 +1,6 @@
 import os
 
-import TimeCsv.statistics
+from TimeCsv.statistics import *
 from TimeCsv.utils import print_items
 from TimeCsv.parsing import DataFolder, DataFile
 from TimeCsv.cli.filters import initialize_time_filter, initialize_search_filter
@@ -87,54 +87,55 @@ def get_text(g, args):
 
 
 # handles the 'special' category of the args, or the default
-def get_special_text(data, selected_time, args):
-	groupedstats_params = {
-		"selected_time" : selected_time,
-		"group_value"   : args.grouping_method,
-		"sort"          : args.sorting_method,
+def get_special_text(data, time_filter, args):
+	detailedstats_params = {
+		"time_filter"     : time_filter,
+		"grouping_method" : args.grouping_method,
+		"sorting_method"  : args.sorting_method,
 	}
 	kwargs = {}
 
 	# big switch-case for different GroupedStats classes
 	if args.location:
-		cls = TimeCsv.statistics.GroupedStats_Location
+		cls = DetailedStats_Location
 	elif args.friend:
-		cls = TimeCsv.statistics.GroupedStats_Friend
+		cls = DetailedStats_Friend
 	elif args.group:
-		cls = TimeCsv.statistics.GroupGroupedStats
+		cls = GroupGroupedStats
 		kwargs = {"category_name": args.group.capitalize()}
 	elif args.lecture:
-		cls = TimeCsv.statistics.GroupedStats_Lecture
+		cls = DetailedStats_Lecture
 	elif args.homework:
-		cls = TimeCsv.statistics.GroupedStats_Homework
+		cls = DetailedStats_Homework
 	elif args.shower:
-		cls = TimeCsv.statistics.GroupedStats_Shower
+		cls = DetailedStats_Shower
 	elif args.prepare_food:
-		cls = TimeCsv.statistics.GroupedStats_PrepareFood
+		cls = DetailedStats_PrepareFood
 	else: # default statistics
-		cls = TimeCsv.statistics.GroupedStats_Group
+		cls = DetailedStats_Group
 
 
 	g = cls(
 		data,
 		**kwargs,
-		**groupedstats_params
+		**detailedstats_params
 	)
 
 	return get_text(g, args)
 
 # handles the 'extra-details' flag
-def get_extra_details_text(data, selected_time, search_filter, args):
-	groupedstats_params = {
-		"selected_time" : selected_time,
-		"group_value"   : args.grouping_method,
-		"sort"          : args.sorting_method,
+def get_extra_details_text(data, time_filter, search_filter, args):
+	detailedstats_params = {
+		"time_filter"        : time_filter,
+		"grouping_method"    : args.grouping_method,
+		"sorting_method"     : args.sorting_method,
+		"extra_details_name" : args.extra_details_name,
 	}
 
-	g = TimeCsv.statistics.GroupedStats_ExtraDetailGeneric(
+	g = DetailedStats_ExtraDetailGeneric(
 		search_filter,
 		data,
-		**groupedstats_params,
+		**detailedstats_params,
 	)
 
 	return get_text(g, args)
@@ -143,7 +144,7 @@ def get_extra_details_text(data, selected_time, search_filter, args):
 def get_search_filter_text(data, time_filter, search_filter, args):
 	found_items = search_filter % data
 
-	g = TimeCsv.statistics.BasicStats(
+	g = BasicStats(
 		found_items,
 		time_filter=time_filter
 	)
