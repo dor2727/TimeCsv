@@ -1,5 +1,10 @@
 from TimeCsv.statistics.base_statistics import DetailedStats
-from TimeCsv.filters import HasExtraDetailsFilter, ExtraDetailsFilter, DescriptionFilter, GroupFilter
+from TimeCsv.filters import HasExtraDetailsFilter, \
+							ExtraDetailsFilter, \
+							ExtraDetailsValueFilter, \
+							DescriptionFilter, \
+							GroupFilter
+from TimeCsv.utils import re_exact
 
 # do not use this class directly - it is a meta class
 class DetailedStats_ExtraDetails(DetailedStats):
@@ -29,12 +34,8 @@ class DetailedStats_ExtraDetails(DetailedStats):
 		self._titles = sorted(titles)
 		return self._titles
 
-	# todo: make FilterExtraDetails
 	def _get_items_of_title(self, title):
-		return list(filter(
-			lambda i: title in i.extra_details[self._extra_details_name],
-			self.data
-		))
+		return ExtraDetailsValueFilter(title, self._extra_details_name).get_filtered_data(self.data)
 
 class DetailedStats_ExtraDetailGeneric(DetailedStats_ExtraDetails):
 	def __init__(self, search_filter, *args, **kwargs):

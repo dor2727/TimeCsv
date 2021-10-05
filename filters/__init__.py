@@ -1,9 +1,10 @@
-from TimeCsv.filters.content_filters import DescriptionFilter    , \
-											GroupFilter          , \
-											FriendFilter         , \
-											LocationFilter       , \
-											HasExtraDetailsFilter, \
-											ExtraDetailsFilter   , \
+from TimeCsv.filters.content_filters import DescriptionFilter      , \
+											GroupFilter            , \
+											FriendFilter           , \
+											LocationFilter         , \
+											HasExtraDetailsFilter  , \
+											ExtraDetailsFilter     , \
+											ExtraDetailsValueFilter, \
 											DurationFilter
 from TimeCsv.filters.time_filters    import TimeFilter_None    , \
 											TimeFilter_Days    , \
