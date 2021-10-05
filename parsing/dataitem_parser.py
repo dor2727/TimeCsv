@@ -1,10 +1,10 @@
 import os
-import re
 import csv
 
 from TimeCsv.consts import *
 from TimeCsv.utils import *
 from TimeCsv.parsing.parse_exception import ParseError
+
 
 class DataItemParser(object):
 	"""
@@ -39,6 +39,9 @@ class DataItemParser(object):
 			)
 
 	def __repr__(self):
+		if self.is_comment:
+			return "# A comment"
+
 		return "%s : %s : %s : %-14s : %s" % (
 			self._format_date(),
 			self._format_start_time(),
@@ -169,19 +172,6 @@ class DataItemParser(object):
 		return s
 	def _parser_description(self, s):
 		self.description = s
-
-		# get both the word before the brackets, and the value of the brackets
-		extra_details = re.findall("(\\w+)\\s+\\((.*?)\\)", s)
-		if not extra_details:
-			# TODO: maybe make it an empy dict instead of None
-			self.extra_details = None
-		else:
-			# self.extra_details = dict(extra_details)
-			self.extra_details = {
-				k: v.split(EXTRA_DETAILS_SEPERATOR)
-				for k,v in extra_details
-			}
-
 		return s
 
 	@property

@@ -2,7 +2,6 @@ import re
 
 from TimeCsv.statistics.base_statistics import DetailedStatsFiltered
 from TimeCsv.filters import GroupFilter
-from TimeCsv.consts import PATTERN_NAMES_LIST, PATTERN_LOCATION
 
 
 class DetailedStats_Group(DetailedStatsFiltered):
@@ -31,9 +30,9 @@ class DetailedStats_Group(DetailedStatsFiltered):
 		titles = set()
 
 		for i in self.data:
-			t = self._strip(i.description)
+			t = i.description_stripped
 			if not t:
-				print(f"empty description for: {i}")
+				print(f"empty stripped description for: {i}")
 			titles.add(t)
 
 		# return a list, sorted alphabetically
@@ -42,29 +41,9 @@ class DetailedStats_Group(DetailedStatsFiltered):
 
 	def _get_items_of_title(self, title):
 		return list(filter(
-			lambda i: title == self._strip(i.description),
+			lambda i: title == i.description_stripped,
 			self.data
 		))
-
-
-	# todo
-	STRIPPING_REGEX = [
-		# brackets
-		" ?\\(.*?\\)",
-		# friends
-		" ?with %s" % PATTERN_NAMES_LIST,
-		" ?for %s"  % PATTERN_NAMES_LIST,
-		" ?to %s"   % PATTERN_NAMES_LIST,
-		# at location
-		PATTERN_LOCATION,
-
-		# specific patterns
-		" ?to friends"
-	]
-	def _strip(self, s):
-		for r in self.STRIPPING_REGEX:
-			s = re.sub(r, '', s)
-		return s.strip()
 
 
 class DetailedStats_Games(DetailedStats_Group):

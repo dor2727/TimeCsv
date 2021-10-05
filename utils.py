@@ -31,41 +31,8 @@ def newest(path=DEFAULT_DATA_DIRECTORY):
 #
 # parsing utils
 #
-def find_friends_in_str(s, search_at_beginning=False):
-	# get all from the patterns
-	found = sum(
-		(pattern.findall(s) for pattern in FRIEND_PATTERN),
-		[]
-	)
-	if search_at_beginning:
-		found += re.findall('^' + PATTERN_NAMES_LIST, s)
-
-	# join all results into a big string
-	found = ' '.join(i[0] for i in found)
-	# remove 'and', and convert back into a list
-	found = re.sub("\\band\\b", '', found)
-	found = found.split()
-	# unique
-	return list(OrderedDict.fromkeys(found))
-
-def find_location_in_str(s):
-	if PATTERN_LOCATION_THEIR_PLACE in s:
-		return "Their place"
-
-	l = re.findall(PATTERN_LOCATION, s)
-	if len(l) == 0:
-		return None
-	elif len(l) == 1:
-		return l[0]
-	else:
-		return l
-
-def find_vehicle_in_str(s):
-	for vehicle in VEHICLES:
-		if f"by {vehicle}" in s:
-			return vehicle
-	return None
-
+def ordered_unique(l):
+	return list(OrderedDict.fromkeys(l))
 
 def counter(data):
     return list(Counter(data).items())

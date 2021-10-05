@@ -4,8 +4,9 @@ import csv
 
 from TimeCsv.consts import *
 from TimeCsv.utils import *
-from TimeCsv.parsing.dataitem import DataItemParser
-from TimeCsv.parsing.parse_exception import ParseError
+from TimeCsv.parsing.dataitem_parser     import DataItemParser
+from TimeCsv.parsing.description_details import DETAIL_PARSERS
+from TimeCsv.parsing.parse_exception     import ParseError
 
 
 class DataItem(DataItemParser):
@@ -33,7 +34,28 @@ class DataItem(DataItemParser):
 		is_in_date_range:
 			checks whether this object is contained within a date range
 	"""
+	def __init__(self, items, file_name="Unknown", line="??"):
+		super().__init__(items, file_name, line)
+		
+		if not self.is_comment:
+			self._process_description_details()
 
+	def _process_description_details(self):
+		for k, v in DETAIL_PARSERS.items():
+			setattr(self, k, v.extract_values(self))
+
+	@property
+	def description_stripped(self):
+		description = self.description
+
+		for k, v in DETAIL_PARSERS.items():
+			description = v.strip(description)
+
+		return description
+
+
+
+	# exported functions
 	def __getitem__(self, n):
 		return self._items[n]
 
@@ -57,19 +79,6 @@ class DataItem(DataItemParser):
 			return int(self) + other
 		else:
 			return NotImplemented
-
-
-	@property
-	def friends(self):
-		return find_friends_in_str(self.description, self.group == "Friends")
-
-	@property
-	def location(self):
-		return find_location_in_str(self.description)
-
-	@property
-	def vehicle(self):
-		return find_vehicle_in_str(self.description)
 
 
 	def is_in_date_range(self, start_date, end_date,

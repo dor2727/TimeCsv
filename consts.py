@@ -32,39 +32,6 @@ STOP_TIME_INITIALS_STOP     = ('s', 'e') # stop_time can either indicate when th
 STOP_TIME_INITIALS_BREAK    = ('b',)     # or how long it lasted
 STOP_TIME_INITIALS_DURATION = ('d', 't') + STOP_TIME_INITIALS_BREAK
 
-EXTRA_DETAILS_SEPERATOR = " ; "
-
-
-#
-# Regex patterns
-#
-# Regex patterns - friends
-#
-# a name starts with a capital letter. full names are written without space.
-re_cappital_word = "[A-Z][A-Za-z]*"
-# names list is
-#     Name Name Name and Name
-#     which is - at least one
-#         where the last one (if there is more than one) is followed by "and"
-#         and any name which is not the first nor the last has space before and after itself
-PATTERN_NAMES_LIST  = "((%s)( %s)*( and %s)*)" % (tuple([re_cappital_word])*3)
-FRIEND_PATTERN_PATTERN_WORDS = ["with", "for", "to"]
-FRIEND_PATTERN = [
-	re.compile(f"(?<={word} )" + PATTERN_NAMES_LIST)
-	for word in FRIEND_PATTERN_PATTERN_WORDS
-]
-#
-# Regex patterns - location
-#
-# a location will be wrapped by @ at both ends
-# e.g.: go for a walk @ some place @
-PATTERN_LOCATION = " ?@ ?(.*?) ?@"
-PATTERN_LOCATION_THEIR_PLACE = "@@"
-#
-# Regex patterns - vehicle
-#
-VEHICLES = ["bicycle", "car", "foot"]
-
 
 #
 # Date
