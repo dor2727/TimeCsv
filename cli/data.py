@@ -101,8 +101,13 @@ def get_special_text(data, time_filter, args):
 	elif args.friend:
 		cls = DetailedStats_Friend
 	elif args.group:
-		cls = GroupGroupedStats
-		kwargs = {"category_name": args.group.capitalize()}
+		cls = DetailedStats_Group
+		kwargs = {
+			"group_name": re_exact(args.group.lower()),
+			# filter_obj_kwargs
+			"case_sensitive": False,
+			"regex": True,
+		}
 	elif args.lecture:
 		cls = DetailedStats_Lecture
 	elif args.homework:

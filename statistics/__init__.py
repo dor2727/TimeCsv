@@ -7,4 +7,8 @@ from TimeCsv.statistics.extra_details_statistics import DetailedStats_ExtraDetai
 														DetailedStats_Homework          , \
 														DetailedStats_Shower            , \
 														DetailedStats_PrepareFood
-# from TimeCsv.statistics.extra_details_statistics import StrFilter
+from TimeCsv.statistics.group_statistics         import DetailedStats_Group  , \
+														DetailedStats_Games  , \
+														DetailedStats_Youtube, \
+														DetailedStats_Life   , \
+														DetailedStats_Read

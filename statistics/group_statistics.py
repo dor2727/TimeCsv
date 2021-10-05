@@ -1,9 +1,53 @@
 import re
 
-from TimeCsv.statistics.base_statistics import DetailedStats
+from TimeCsv.statistics.base_statistics import DetailedStatsFiltered
+from TimeCsv.filters import GroupFilter
 from TimeCsv.consts import PATTERN_NAMES_LIST, PATTERN_LOCATION
 
-class FilteredGroupedStats(DetailedStats):
+
+class DetailedStats_Group(DetailedStatsFiltered):
+	def __init__(
+		self, data, group_name=None,
+		time_filter=None, grouping_method="time", sorting_method="by_value",
+		**filter_obj_kwargs,
+	):
+		self._set_filter_obj(group_name, **filter_obj_kwargs)
+
+		super().__init__(data, self._filter_obj, time_filter, grouping_method, sorting_method)
+
+
+	def _set_filter_obj(self, group_name, **filter_obj_kwargs):
+		self._group_name = getattr(self, "_group_name", group_name)
+
+		if self._group_name is None:
+			raise ValueError("DetailedStats_Group received None as group name")
+
+		print(f"filter_obj_kwargs: {filter_obj_kwargs}")
+		self._filter_obj = GroupFilter(self._group_name, **filter_obj_kwargs)
+		return self._filter_obj
+
+
+	def _get_titles(self):
+		titles = set()
+
+		for i in self.data:
+			t = self._strip(i.description)
+			if not t:
+				print(f"empty description for: {i}")
+			titles.add(t)
+
+		# return a list, sorted alphabetically
+		self._titles = sorted(titles)
+		return self._titles
+
+	def _get_items_of_title(self, title):
+		return list(filter(
+			lambda i: title == self._strip(i.description),
+			self.data
+		))
+
+
+	# todo
 	STRIPPING_REGEX = [
 		# brackets
 		" ?\\(.*?\\)",
@@ -17,64 +61,20 @@ class FilteredGroupedStats(DetailedStats):
 		# specific patterns
 		" ?to friends"
 	]
-
-	def __init__(self, data, filter_obj, **kwargs):
-		super().__init__(data, **kwargs)
-
-		self._filter_obj = filter_obj
-
-		self._initialize_data()
-
-	def _initialize_data(self):
-		self._original_data = self.data
-		self.data = self._filter_obj % self.data
-
 	def _strip(self, s):
 		for r in self.STRIPPING_REGEX:
 			s = re.sub(r, '', s)
 		return s.strip()
 
-	def _get_headers(self):
-		# get all headers
-		headers = set()
 
-		for i in self.data:
-			h = self._strip(i.description)
-			if not h:
-				print("empty description for: %s" % i)
-			headers.add(h)
+class DetailedStats_Games(DetailedStats_Group):
+	_group_name = "Gaming"
 
-		# return a list, sorted alphabetically
-		self._headers = sorted(headers)
-		return self._headers
+class DetailedStats_Youtube(DetailedStats_Group):
+	_group_name = "Youtube"
 
-	def _get_filtered_data_per_header(self, header):
-		return list(filter(
-			lambda i: header == self._strip(i.description),
-			self.data
-		))
+class DetailedStats_Life(DetailedStats_Group):
+	_group_name = "Life"
 
-class GroupGroupedStats(FilteredGroupedStats):
-	"""
-	requires:
-		self._category_name
-	"""
-	def __init__(self, data, category_name=None, **kwargs):
-		self._category_name = getattr(self, "_category_name", category_name)
-
-		filter_obj = GroupFilter(self._category_name)
-
-		super().__init__(data, filter_obj, **kwargs)
-
-
-class GroupedStats_Games(GroupGroupedStats):
-	_category_name = "Gaming"
-
-class GroupedStats_Youtube(GroupGroupedStats):
-	_category_name = "Youtube"
-
-class GroupedStats_Life(GroupGroupedStats):
-	_category_name = "Life"
-
-class GroupedStats_Read(GroupGroupedStats):
-	_category_name = "Read"
+class DetailedStats_Read(DetailedStats_Group):
+	_group_name = "Read"

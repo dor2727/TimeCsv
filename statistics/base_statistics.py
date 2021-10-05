@@ -423,3 +423,16 @@ class DetailedStats(Stats):
 			self._telegram_generate_item,
 			self._text_generate_footer
 		)
+
+
+class DetailedStatsFiltered(DetailedStats):
+	def __init__(self, data, filter_obj, time_filter=None, grouping_method="time", sorting_method="by_value"):
+		super().__init__(data, time_filter, grouping_method, sorting_method)
+
+		self._filter_obj = filter_obj
+
+		self._initialize_data()
+
+	def _initialize_data(self):
+		self._original_data = self.data
+		self.data = self._filter_obj % self.data
