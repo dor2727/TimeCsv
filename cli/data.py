@@ -96,10 +96,12 @@ def get_special_text(data, time_filter, args):
 	kwargs = {}
 
 	# big switch-case for different GroupedStats classes
-	if args.location:
-		cls = DetailedStats_Location
-	elif args.friend:
+	if args.friend:
 		cls = DetailedStats_Friend
+	elif args.location:
+		cls = DetailedStats_Location
+	elif args.vehicle:
+		cls = DetailedStats_Vehicle
 	elif args.group:
 		cls = DetailedStats_Group
 		kwargs = {

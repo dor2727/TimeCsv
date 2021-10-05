@@ -41,6 +41,7 @@ def parse_args(args_list=None):
 	grouping.add_argument("--group"              , type=str , default=None, dest="group"       , help="show statistics per group")
 	grouping.add_argument("--friend", "--friends", action="store_true"    , dest="friend"      , help="show friend statistics")
 	grouping.add_argument("--location"           , action="store_true"    , dest="location"    , help="show location statistics")
+	grouping.add_argument("--vehicle"            , action="store_true"    , dest="vehicle"     , help="show vehicle statistics")
 	#
 	grouping.add_argument("--youtube"            , action="store_true"    , dest="youtube"     , help="show youtube statistics")
 	grouping.add_argument("--gaming"             , action="store_true"    , dest="gaming"      , help="show gaming statistics")

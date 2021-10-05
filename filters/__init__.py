@@ -1,7 +1,10 @@
 from TimeCsv.filters.content_filters import DescriptionFilter      , \
 											GroupFilter            , \
 											FriendFilter           , \
+											HasLocationFilter      , \
 											LocationFilter         , \
+											HasVehicleFilter       , \
+											VehicleFilter          , \
 											HasExtraDetailsFilter  , \
 											ExtraDetailsFilter     , \
 											ExtraDetailsValueFilter, \

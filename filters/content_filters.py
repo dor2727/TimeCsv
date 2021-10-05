@@ -92,10 +92,41 @@ class FriendFilter(BaseContentFilter):
 			for i in data
 		]
 
+# Filters whether there is a location set
+class HasLocationFilter(Filter):
+	def filter(self, data):
+		return [
+			bool(i.location)
+			for i in data
+		]
+
 class LocationFilter(BaseContentFilter):
 	def filter(self, data):
 		return [
-			self._find_string_in_string(i.location)
+			(
+				bool(i.location)
+				and
+				self._find_string_in_string(i.location)
+			)
+			for i in data
+		]
+
+# Filters whether there is a location set
+class HasVehicleFilter(Filter):
+	def filter(self, data):
+		return [
+			bool(i.vehicle)
+			for i in data
+		]
+
+class VehicleFilter(BaseContentFilter):
+	def filter(self, data):
+		return [
+			(
+				bool(i.vehicle)
+				and
+				self._find_string_in_string(i.vehicle)
+			)
 			for i in data
 		]
 
