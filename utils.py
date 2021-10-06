@@ -11,16 +11,6 @@ from TimeCsv.consts import *
 #
 # file utils
 #
-
-def read_telegram_file(filename):
-	handle = open(os.path.join(
-		TELEGRAM_DATA_DIRECTORY,
-		filename
-	))
-	data = handle.read().strip()
-	handle.close()
-	return data
-
 # get the newsest file
 def newest(path=DEFAULT_DATA_DIRECTORY):
 	files = os.listdir(path)
