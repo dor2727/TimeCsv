@@ -14,4 +14,5 @@ from TimeCsv.statistics.group_statistics         import DetailedStats_Group  , \
 														DetailedStats_Games  , \
 														DetailedStats_Youtube, \
 														DetailedStats_Life   , \
-														DetailedStats_Read
+														DetailedStats_Read   , \
+														DetailedStats_ReadBook

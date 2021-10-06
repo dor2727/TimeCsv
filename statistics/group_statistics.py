@@ -2,6 +2,7 @@ import re
 
 from TimeCsv.statistics.base_statistics import DetailedStatsFiltered
 from TimeCsv.filters import GroupFilter
+from TimeCsv.utils import re_exact
 
 
 class DetailedStats_Group(DetailedStatsFiltered):
@@ -17,11 +18,12 @@ class DetailedStats_Group(DetailedStatsFiltered):
 
 	def _set_filter_obj(self, group_name, **filter_obj_kwargs):
 		self._group_name = getattr(self, "_group_name", group_name)
+		self._filter_obj_kwargs = getattr(self, "_filter_obj_kwargs", filter_obj_kwargs)
 
 		if self._group_name is None:
 			raise ValueError("DetailedStats_Group received None as group name")
 
-		self._filter_obj = GroupFilter(self._group_name, **filter_obj_kwargs)
+		self._filter_obj = GroupFilter(self._group_name, **self._filter_obj_kwargs)
 		return self._filter_obj
 
 
@@ -46,13 +48,21 @@ class DetailedStats_Group(DetailedStatsFiltered):
 
 
 class DetailedStats_Games(DetailedStats_Group):
-	_group_name = "Gaming"
+	_group_name = re_exact("Gaming")
+	_filter_obj_kwargs = {"case_sensitive": True, "regex": True}
 
 class DetailedStats_Youtube(DetailedStats_Group):
-	_group_name = "Youtube"
+	_group_name = re_exact("Youtube")
+	_filter_obj_kwargs = {"case_sensitive": True, "regex": True}
 
 class DetailedStats_Life(DetailedStats_Group):
-	_group_name = "Life"
+	_group_name = re_exact("Life")
+	_filter_obj_kwargs = {"case_sensitive": True, "regex": True}
 
 class DetailedStats_Read(DetailedStats_Group):
-	_group_name = "Read"
+	_group_name = re_exact("Read")
+	_filter_obj_kwargs = {"case_sensitive": True, "regex": True}
+
+class DetailedStats_ReadBook(DetailedStats_Group):
+	_group_name = re_exact("ReadBook")
+	_filter_obj_kwargs = {"case_sensitive": True, "regex": True}
