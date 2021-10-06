@@ -12,7 +12,7 @@ There are 3 wrappers defined here:
 import logging
 import telegram
 
-from TelegramBots.utils import *
+from TimeCsv.Telegram_Bot.utils import *
 
 
 """
