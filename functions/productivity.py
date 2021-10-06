@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from enum import Enum
 
 from TimeCsv import DataFolder, \
-					GroupFilter, DescriptionFilter, \
+					GroupFilter, DescriptionFilter, FriendFilter, \
 					DetailedStats_AllGroups
 from TimeCsv.consts import DEFAULT_PIE_PATH
 from TimeCsv.utils import seconds_to_hours_str
@@ -14,13 +14,19 @@ PRODUCTIVITY_GROUPS = [
 		"filter": (
 			(GroupFilter("Life") & ~DescriptionFilter("toilet"))
 			 |
+			GroupFilter("Sleep")
+			 |
 			GroupFilter("Ill")
 		),
 	},
 	{
 		"name": "Chen",
 		"index": 2,
-		"filter": GroupFilter("Chen"),
+		"filter": (
+			GroupFilter("Chen")
+			 |
+			FriendFilter("Chen")
+		),
 	},
 	{
 		"name": "Social",
@@ -40,6 +46,8 @@ PRODUCTIVITY_GROUPS = [
 			GroupFilter("Project")
 			 |
 			GroupFilter("Work")
+			 |
+			GroupFilter("JobSearch")
 		),
 	},
 	{
@@ -111,6 +119,8 @@ PRODUCTIVITY_GROUPS = [
 			(GroupFilter("Life") &  DescriptionFilter("toilet"))
 			 |
 
+			GroupFilter("Apartment")
+			 |
 			GroupFilter("Chill")
 			 |
 			GroupFilter("Vacation")
