@@ -17,6 +17,7 @@ from TimeCsv import DetailedStats_AllGroups  , \
 					TimeFilter_Year    , \
 					TimeFilter_ThisWeek, \
 					DataFolder
+from TimeCsv.functions.productivity import get_productivity_pie
 from TimeCsv.Telegram_Bot.telegram_bot_template import TelegramSecureServer, TelegramCommands, TelegramScheduledCommands
 from TimeCsv.Telegram_Bot.utils import initialize_logger, get_named_filter
 
@@ -160,7 +161,6 @@ class TimeCsvCommands(TelegramCommands):
 		self._productive_pie(
 			get_named_filter(filter_name),
 			focused=bool(int(focused)),
-			time_filter=filter_name,
 			update=update,
 		)
 
@@ -171,7 +171,6 @@ class TimeCsvCommands(TelegramCommands):
 		self._productive_pie(
 			time_filter,
 			focused=bool(focused),
-			time_filter=time_filter,
 			update=update,
 		)
 
@@ -182,7 +181,6 @@ class TimeCsvCommands(TelegramCommands):
 		self._productive_pie(
 			time_filter,
 			focused=bool(focused),
-			time_filter=time_filter,
 			update=update,
 		)
 
