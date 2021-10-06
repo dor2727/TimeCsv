@@ -373,7 +373,7 @@ class DetailedStats(Stats):
 		if not self.amount_of_items:
 			return "    No items found :("
 
-		s  = "    " + '-'*57
+		s  = "    " + '-'*50
 		s += "\n"
 		s += "    %s (%4d) : %s" % (
 			(self._text_title_format % "Total"),
@@ -395,17 +395,16 @@ class DetailedStats(Stats):
 			seconds_to_str(amount_of_time_on_average),
 		)
 
-	def _telegram_generate_item(self, item):
+	def _telegram_generate_item(self, title):
 		amount_of_items, amount_of_time, amount_of_time_on_average = self._get_all_data_of_title(title)
 
 		time_percentage = amount_of_time / self.amount_of_time * 100.0
 
-		return "    %s\n        (%4d) : %s (%5.2f%%)\n          avg %s" % (
+		return "    %s\n        (%4d) : %s (%5.2f%%)" % (
 			(self._text_title_format % title),
 			amount_of_items,
 			seconds_to_str(amount_of_time),
 			time_percentage,
-			seconds_to_str(amount_of_time_on_average),
 		)
 
 	#
