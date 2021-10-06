@@ -1,8 +1,11 @@
 import matplotlib.pyplot as plt
+from enum import Enum
 
 from TimeCsv import DataFolder, \
-					GroupFilter, DescriptionFilter
+					GroupFilter, DescriptionFilter, \
+					DetailedStats_AllGroups
 from TimeCsv.consts import DEFAULT_PIE_PATH
+from TimeCsv.utils import seconds_to_hours_str
 
 PRODUCTIVITY_GROUPS = [
 	{
@@ -247,7 +250,7 @@ def save_pie(fig, save):
 		plt.show()
 		return None
 
-def set_lables(headers, values):
+def set_lables(patches, headers, values):
 	labels = [f"{h} - {seconds_to_hours_str(v)} h" for h, v in zip(headers, values)]
 	plt.legend(patches, labels, loc="upper left")
 
@@ -289,8 +292,8 @@ def get_productivity_pie(data=None, time_filter=None, save=True, focused=False):
 	fig, ax = plt.subplots()
 
 	patches = make_pie(ax, headers, values)
-	set_lables(headers, values)
-	set_title(fig, ax, time_filter)
+	set_lables(patches, headers, values)
+	title = set_title(fig, ax, time_filter)
 
 	# plotting
 	make_clickable_pie(fig, patches, data, productivity_groups, title)
