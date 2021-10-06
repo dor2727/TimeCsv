@@ -1,24 +1,26 @@
 #!/bin/bash
 PROJECT=TimeCsv
 FOLDER=~/Projects/$PROJECT
-LOG=$FOLDER/daily_wget.log
-LOG_NEW=$FOLDER/daily_wget.log.new
+LOG_FOLDER=$FOLDER/Telegram_Bot/Logs
+LOG=$LOG_FOLDER/daily_wget.log
+LOG_NEW=$LOG_FOLDER/daily_wget.log.new
 TEMP_LOCATION=$FOLDER/data/_latest
 
 
 # Declare a string array with type
 declare -a FileNameArray=(
-	"2019_year_1_big_holiday.tcsv"
-	"2019_year_1_semester_2_exams.tcsv"
-	"2020_year_2_big_holiday.tcsv"
-	"2020_year_2_semester_1_exams.tcsv"
-	"2020_year_2_semester_1.tcsv"
-	"2020_year_2_semester_2.tcsv"
-	"2020_year_2_small_holiday.tcsv"
-	"2021_year_3_semester_1.tcsv"
-	"2021_year_3_semester_2.tcsv"
-	"2021_year_3_small_holiday.tcsv"
-	"2021_year_3_big_holiday.tcsv"
+	"University/2019_year_1_big_holiday.tcsv"
+	"University/2019_year_1_semester_2_exams.tcsv"
+	"University/2020_year_2_big_holiday.tcsv"
+	"University/2020_year_2_semester_1_exams.tcsv"
+	"University/2020_year_2_semester_1.tcsv"
+	"University/2020_year_2_semester_2.tcsv"
+	"University/2020_year_2_small_holiday.tcsv"
+	"University/2021_year_3_semester_1.tcsv"
+	"University/2021_year_3_semester_2.tcsv"
+	"University/2021_year_3_small_holiday.tcsv"
+	"University/2021_year_3_big_holiday.tcsv"
+	"Work/2021_classiq.tcsv"
 )
 
 date > $LOG_NEW 2>&1
