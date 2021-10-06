@@ -4,7 +4,7 @@ from enum import Enum
 from TimeCsv import DataFolder, \
 					GroupFilter, DescriptionFilter, FriendFilter, \
 					DetailedStats_AllGroups
-from TimeCsv.consts import DEFAULT_PIE_PATH
+from TimeCsv.consts import DEFAULT_PIE_PATH, DEFAULT_SELECTED_TIME
 from TimeCsv.utils import seconds_to_hours_str
 
 PRODUCTIVITY_GROUPS = [
