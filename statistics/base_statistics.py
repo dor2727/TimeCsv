@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 # from TimeCsv.consts import *
 # from TimeCsv.utils import *
 # from TimeCsv.filters import *
+from TimeCsv.consts import	DEFAULT_PIE_PATH, DEFAULT_BAR_PATH
 from TimeCsv.utils import 	shorten_selected_time, \
 							format_dates         , \
 							seconds_to_str       , \
