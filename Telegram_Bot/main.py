@@ -17,6 +17,7 @@ from TimeCsv import DetailedStats_AllGroups  , \
 					TimeFilter_Year    , \
 					TimeFilter_ThisWeek, \
 					DataFolder
+from TimeCsv.utils import wget, get_wget_log
 from TimeCsv.Telegram_Bot.telegram_bot_template import TelegramSecureServer, TelegramCommands, TelegramScheduledCommands
 from TimeCsv.Telegram_Bot.utils import initialize_logger, get_named_filter
 
@@ -187,7 +188,7 @@ class TimeCsvCommands(TelegramCommands):
 		)
 
 	#
-	# Debug
+	# Reload
 	#
 	def command_reload(self, update=None, context=None):
 		self.datafolder.reload()
@@ -198,6 +199,25 @@ class TimeCsvCommands(TelegramCommands):
 		if update is not None:
 			self.send_text("reload - done", update)
 
+	def command_wget(self, update=None, context=None):
+		wget(logging.info, update, context)
+
+		# if update is None - we are called from the scheduler
+		# only answer the user if the user asks the reload
+		if update is not None:
+			self.send_text(f"wget - done\n{get_wget_log()}", update)
+
+		wget_only, = self.parse_args(context, int)
+		if not bool(wget_only):
+			self.command_reload(update, context)
+
+	def full_reload(self):
+		self.command_wget()
+		self.command_reload()
+
+	#
+	# Debug
+	#
 	def command_test(self, update=None, context=None):
 		s = "test"
 		if context is not None and context.args:

@@ -105,3 +105,27 @@ def print_items(l, ret=False):
 		return '\n'.join(i.__repr__() for i in l)
 	else:
 		print('\n'.join(i.__repr__() for i in l))
+
+
+#
+# wget utils
+#
+def wget(log_func=print, update=None, context=None):
+	if update is None:
+		log_func(f"[wget]: update = None")
+	else:
+		log_func(f"[wget]: update: {str(update)}")
+
+	if context is None:
+		log_func(f"[wget]: context = None")
+	else:
+		log_func(f"[wget]: context: {str(context)}")
+
+	os.system(DAILY_WGET_PATH)
+	log_func(f"    [w] wget : {time.asctime()}")
+
+def get_wget_log():
+	handle = open(DAILY_WGET_LOG_PATH)
+	s = handle.read()
+	handle.close()
+	return s
