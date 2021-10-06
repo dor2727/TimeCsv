@@ -1,8 +1,0 @@
-<snippet>
-	<content><![CDATA[
-${4:----}/${5:--}/${6:--},${7:--}:${8:--},e${1:00}:${2:05},Think,plan ${3:tomorrow}
-]]></content>
-	<tabTrigger>plantomorrow</tabTrigger>
-	<scope>source.time</scope>
-	<description>plan tomorrow</description>
-</snippet>

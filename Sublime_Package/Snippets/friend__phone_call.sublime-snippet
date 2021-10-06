@@ -1,8 +1,0 @@
-<snippet>
-	<content><![CDATA[
-${4:----}/${5:--}/${6:--},${7:--}:${8:--},e${1:10}:${2:30},Friends,phone call with ${3}
-]]></content>
-	<tabTrigger>friendphone</tabTrigger>
-	<scope>source.time</scope>
-	<description>friend phone call</description>
-</snippet>

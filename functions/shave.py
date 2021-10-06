@@ -1,7 +1,7 @@
-import TimeCsv.statistics
-from TimeCsv.parsing import DataFolder
-from TimeCsv.filters import *
+#!/usr/bin/env python3
 import numpy as np
+
+from TimeCsv import DataFolder, DescriptionFilter, GroupFilter
 
 shave_filter = DescriptionFilter("shave") & GroupFilter("Life")
 
@@ -26,12 +26,14 @@ def get_beard_growing_amount(data):
 
 def get_shave_statistics(datafolder=None):
 	datafolder = datafolder or DataFolder()
-	d = shave_filter % datafolder.data
+	data = shave_filter % datafolder.data
 
-	diff = get_beard_growing_amount(d)
+	diff = get_beard_growing_amount(data)
 	# from seconds to days
 	diff /= 60*60*24
 
-	# print(diff)
 	print(f"Shaving every {diff.mean():.2f} ± {diff.std():.2f} days")
-	print(f"average shave time: {np.mean(d) / 60:.2f} minutes")
+	print(f"average shave time: {np.mean(data) / 60:.2f} minutes")
+
+if __name__ == '__main__':
+	get_shave_statistics()

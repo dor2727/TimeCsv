@@ -1,5 +1,4 @@
-from TimeCsv.cli import main
-from TimeCsv.parsing import DataFolder
+from TimeCsv.cli.cli import main
 
 if __name__ == '__main__':
 	print(main())

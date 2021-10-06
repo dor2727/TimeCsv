@@ -1,16 +1,15 @@
+# python files
 __pycache__
 *.pyc
 
+# personal data
 data
-data_backup
-Telegram_Bot/data
-daily_wget.log
-daily_wget.log.new
+Telegram_Bot/Data
+Logs
+Other
 
 key
 chat_id
 
-personal
 Documentation/Other
-Dropbox_App
 

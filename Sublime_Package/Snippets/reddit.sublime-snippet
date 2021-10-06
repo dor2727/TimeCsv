@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+${4:----}/${5:--}/${6:--},${7:--}:${8:--},e${1:09}:${2:00},Reddit,${3:random}
+]]></content>
+	<tabTrigger>reddit</tabTrigger>
+	<scope>source.time</scope>
+	<description>reddit</description>
+</snippet>

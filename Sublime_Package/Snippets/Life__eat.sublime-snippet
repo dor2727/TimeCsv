@@ -1,8 +1,0 @@
-<snippet>
-	<content><![CDATA[
-${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:09}:${2:00},Life,eat
-]]></content>
-	<tabTrigger>eat</tabTrigger>
-	<scope>source.time</scope>
-	<description>eat</description>
-</snippet>

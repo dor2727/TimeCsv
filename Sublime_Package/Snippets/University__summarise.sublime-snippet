@@ -1,8 +1,0 @@
-<snippet>
-	<content><![CDATA[
-${4:----}/${5:--}/${6:--},${7:--}:${8:--},e${1:07}:${2:00},University,summarise (${3:waves})
-]]></content>
-	<tabTrigger>summarise</tabTrigger>
-	<scope>source.time</scope>
-	<description>summarise</description>
-</snippet>

@@ -8,7 +8,7 @@ cli.py
 
 # UTILS
 consts.py
-time_utils.py
+utils.py
 tests.py
 	manual tests
 
