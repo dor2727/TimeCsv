@@ -13,7 +13,6 @@ DAILY_WGET_LOG_PATH = os.path.expanduser("~/Projects/TimeCsv/Telegram_Bot/Logs/d
 # temporary files
 DEFAULT_PIE_PATH = "/tmp/pie.png"
 DEFAULT_BAR_PATH = "/tmp/bar.png"
->>>>>>> main
 
 
 #
