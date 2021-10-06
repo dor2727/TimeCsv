@@ -262,19 +262,25 @@ def set_title(fig, ax, time_filter):
 	ax.set_title(title)
 	fig.canvas.manager.set_window_title(f"Productive Pie - {selected_time}")
 
+	return title
+
 
 def make_clickable_pie(fig, patches, data, productivity_groups, title):
 	def onclick(event):
 		patch = event.artist
 		label = patch.get_label()
 
-		group = [i for i in productivity_groups if i["name"] == label][0]
-
-		filtered_data = group["filter"] % data
-
 		print(f"=== {label} ===")
 
-		g = TimeCsv.statistics.GroupedStats_Group(filtered_data, selected_time=f"{title} - {label}")
+		# get the group data
+		group = [i for i in productivity_groups if i["name"] == label][0]
+		filtered_data = group["filter"] % data
+
+		# create statistics
+		g = DetailedStats_AllGroups( data=filtered_data )
+		g.title = f"{title} - {label}"
+
+		# print & plot
 		print(g.to_text())
 		g.to_pie(save=False)
 
