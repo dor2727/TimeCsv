@@ -129,6 +129,62 @@ class TimeCsvCommands(TelegramCommands):
 	#
 	# Productive Pie
 	#
+	def _productive_pie(self, time_filter, update=None, **kwargs):
+		pie_file = get_productivity_pie(
+			data=time_filter % self.datafolder.data,
+			save=True,
+			**kwargs
+		)
+
+		self.send_image(pie_file, update)
+
+	def command_productive_pie(self, update, context):
+		focused, = self.parse_args(context, int) # taking a boolean value as int. Expecting only 0 or 1.
+
+		def kbd(name):
+			return InlineKeyboardButton(name, callback_data=f"menu_productive_pie {name} {focused}")
+
+		keyboard = [
+			[kbd("today"), kbd("yesterday"), kbd("week"), kbd("last_week")],
+			[kbd("month"), kbd("year"), kbd("all")],
+		]
+		update.message.reply_text(
+			"Select date:",
+			reply_markup=InlineKeyboardMarkup(keyboard)
+		)
+
+	def menu_productive_pie(self, update, context):
+		data = update.callback_query.data
+		callback_name, filter_name, focused = data.split()
+
+		self._productive_pie(
+			get_named_filter(filter_name),
+			focused=bool(int(focused)),
+			time_filter=filter_name,
+			update=update,
+		)
+
+	def command_productive_pie_month(self, update=None, context=None):
+		month, year, focused = self.parse_args(context, int, int, int)
+		time_filter = TimeFilter_Month(month, year)
+
+		self._productive_pie(
+			time_filter,
+			focused=bool(focused),
+			time_filter=time_filter,
+			update=update,
+		)
+
+	def command_productive_pie_year(self, update=None, context=None):
+		year, focused = self.parse_args(context, int, int)
+		time_filter = TimeFilter_Year(year)
+
+		self._productive_pie(
+			time_filter,
+			focused=bool(focused),
+			time_filter=time_filter,
+			update=update,
+		)
 
 	#
 	# Debug

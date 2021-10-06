@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 
-from TimeCsv.parsing import DataFolder
-from TimeCsv.filters import *
-import TimeCsv.statistics
+from TimeCsv import DataFolder, \
+					GroupFilter, DescriptionFilter
+from TimeCsv.consts import DEFAULT_PIE_PATH
 
 PRODUCTIVITY_GROUPS = [
 	{
@@ -247,6 +247,18 @@ def save_pie(fig, save):
 		plt.show()
 		return None
 
+def set_lables(headers, values):
+	labels = [f"{h} - {seconds_to_hours_str(v)} h" for h, v in zip(headers, values)]
+	plt.legend(patches, labels, loc="upper left")
+
+def set_title(fig, ax, time_filter):
+	selected_time = time_filter.get_selected_time() if time_filter else DEFAULT_SELECTED_TIME
+
+	title = f"Productive Pie - {selected_time}"
+
+	ax.set_title(title)
+	fig.canvas.manager.set_window_title(f"Productive Pie - {selected_time}")
+
 
 def make_clickable_pie(fig, patches, data, productivity_groups, title):
 	def onclick(event):
@@ -269,25 +281,18 @@ def make_clickable_pie(fig, patches, data, productivity_groups, title):
 	fig.canvas.mpl_connect('pick_event', onclick)
 
 
-def get_productivity_pie(data=None, selected_time="All time", save=True, focused=False):
+def get_productivity_pie(data=None, time_filter=None, save=True, focused=False):
 	headers, values, data, productivity_groups = prepare_data(data, focused)
+
 
 	# plotting initialization
 	fig, ax = plt.subplots()
 
 	patches = make_pie(ax, headers, values)
+	set_lables(headers, values)
+	set_title(fig, ax, time_filter)
 
-
-	# labels
-	labels = [f"{h} - {seconds_to_hours_str(v)} h" for h, v in zip(headers, values)]
-	plt.legend(patches, labels, loc="upper left")
-
-	# titles
-	title = f"Productive Pie - {selected_time}"
-	ax.set_title(title)
-	fig.canvas.set_window_title(f"Productive Pie - {selected_time}")
-
-
+	# plotting
 	make_clickable_pie(fig, patches, data, productivity_groups, title)
 
 	return save_pie(fig, save)
