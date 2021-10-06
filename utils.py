@@ -59,21 +59,24 @@ def seconds_to_str(n):
 
 	s = ''
 
-	if days := (n // (60*60*24)):
+	days = (n // (60*60*24))
+	if days:
 		s += f"{days:3d} days"
 	else:
 		s += " " * (3+1+4)
 
 	s += ' '
 
-	if hours := (n // (60*60) % (24)):
+	hours = (n // (60*60) % (24))
+	if hours:
 		s += f"{hours:2d} hours"
 	else:
 		s += " " * (2+1+5)
 
 	s += ' '
 
-	if minutes := (n // (60) % (60*24) % 60):
+	minutes = (n // (60) % (60*24) % 60)
+	if minutes:
 		s += f"{minutes:2d} minutes"
 	else:
 		s += " " * (2+1+7)
