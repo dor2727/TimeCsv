@@ -27,9 +27,12 @@ date > $LOG_NEW 2>&1
 
 for FILENAME in "${FileNameArray[@]}"; do
   echo $FILENAME
+  echo $FILENAME >> $LOG_NEW 2>&1
   ~/Projects/Dropbox-Uploader/dropbox_uploader.sh download Projects/$PROJECT/data/$FILENAME $TEMP_LOCATION >> $LOG_NEW 2>&1
+  echo moving $FILENAME
   echo moving $FILENAME >> $LOG_NEW 2>&1
   mv $TEMP_LOCATION $FOLDER/data/$FILENAME >> $LOG_NEW 2>&1
 done
 
+echo DONE
 cat $LOG_NEW >> $LOG

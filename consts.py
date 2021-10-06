@@ -5,7 +5,7 @@ import datetime
 #
 # Filesystem paths & extensions
 #
-DEFAULT_DATA_DIRECTORY  = os.path.expanduser("~/Projects/Projects/TimeCsv/data")
+DEFAULT_DATA_DIRECTORY  = os.path.expanduser("~/Projects/TimeCsv/data")
 POSSIBLE_FILE_EXTENSIONS = [".tcsv", ".csv", ".txt", ""]
 # wget
 DAILY_WGET_PATH = os.path.expanduser("~/Projects/TimeCsv/daily_wget.sh")
