@@ -291,3 +291,6 @@ def get_productivity_pie(data=None, selected_time="All time", save=True, focused
 	make_clickable_pie(fig, patches, data, productivity_groups, title)
 
 	return save_pie(fig, save)
+
+if __name__ == '__main__':
+	get_productivity_pie()
