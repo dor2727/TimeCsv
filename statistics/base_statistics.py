@@ -242,7 +242,15 @@ class DetailedStats(Stats):
 	#
 	@property
 	def title(self):
-		return f"{self.__class__.__name__}({self._grouping_method}) - {self.selected_time}"
+		return getattr(
+			self,
+			"_title",
+			f"{self.__class__.__name__}({self._grouping_method}) - {self.selected_time}"
+		)
+
+	@title.setter
+	def title(self, value):
+		self._title = value
 
 	def _plot_save(self, fig, save):
 		if save:
