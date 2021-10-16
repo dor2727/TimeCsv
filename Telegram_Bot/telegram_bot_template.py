@@ -64,6 +64,12 @@ class TelegramServer(object):
 
 				continue
 
+			# telegram.error.NetworkError
+			except telegram.error.NetworkError as exc:
+				logging.warning(f"[*] Caught telegram.error.NetworkError ({str(exc)}) in main (loop) - continue")
+
+				continue
+
 			except Exception as exc:
 				logging.warning(f"[!] Caught general error in main (loop) - quitting")
 				logging.warning(exception_message())
@@ -244,6 +250,11 @@ class TelegramScheduledCommands(object):
 					else:
 						logging.warning(f"[*] Caught socket.gaierror ({exc.errno}) in main (loop) - continue")
 						logging.warning(str(exc))
+
+					continue
+
+				except telegram.error.NetworkError as exc:
+					logging.warning(f"[*] Caught telegram.error.NetworkError ({str(exc)}) in run_scheduler - continue")
 
 					continue
 
