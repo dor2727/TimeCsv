@@ -280,7 +280,7 @@ class TimeCsvTelegramAPI(
 
 
 def test():
-	initialize_logger(debug=True)
+	initialize_logger(debug=False)
 
 	t = TimeCsvTelegramAPI()
 	# t.loop()
