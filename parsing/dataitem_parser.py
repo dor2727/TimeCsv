@@ -32,11 +32,10 @@ class DataItemParser(object):
 		if self._check_if_comment(items):
 			return
 
-		self._items = []
-		for i in range(len(self.PARSERS)):
-			self._items.append(
-				self.PARSERS[i](items[i])
-			)
+		self._items = [
+			parser(item)
+			for parser, item in zip(self.PARSERS, items)
+		]
 
 	def __repr__(self):
 		if self.is_comment:

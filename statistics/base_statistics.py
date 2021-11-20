@@ -89,8 +89,11 @@ class Stats(object):
 	def to_telegram(self):
 		return self.to_text()
 
+	def to_dict(self):
+		raise NotImplemented()
+
 	def to_csv(self):
-		items = self.get_stats_dict().items()
+		items = self.to_dict().items()
 		# sort by keys
 		items = sorted(items, key=lambda x: x[0])
 
@@ -100,7 +103,7 @@ class Stats(object):
 		return ','.join(headers) + '\n' + ','.join(values)
 
 	def to_json(self):
-		return json.dumps(self.get_stats_dict(), sort_keys=True)
+		return json.dumps(self.to_dict(), sort_keys=True)
 
 	def to_pie(self, headers=None, values=None, title=None, save=True):
 		"""
