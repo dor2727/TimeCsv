@@ -55,12 +55,15 @@ def get_midsleep(start, stop):
 
 def print_basic_sleep_statistics(sleep_start, sleep_stop):
 	def pprint(name, l):
-		print(f"sleep {name:6s} average: {l.mean() + BASE_HOUR}")
+		avg_time = l.mean() + BASE_HOUR
+		avg_time_hh = int(avg_time) - 24
+		avg_time_mm = (avg_time - 24 - avg_time_hh) * 60 / 100
+		print(f"sleep {name:6s} average: {avg_time} <=> {avg_time_hh:02d}:{int(avg_time_mm*100):02d}")
 
 	pprint("start" , sleep_start)
 	pprint("stop"  , sleep_stop)
 	pprint("middle", get_midsleep(sleep_start, sleep_stop))
-	pprint("length", sleep_stop - sleep_start)
+	print(f"sleep length average: {(sleep_stop - sleep_start).mean()}")
 	print(f"len items: {len(sleep_start)}")
 
 
