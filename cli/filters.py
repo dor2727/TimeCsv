@@ -37,7 +37,7 @@ def initialize_time_filter(args):
 			time_filter = build_time_filter(args)
 		# else, treat it as `all_time`
 		else:
-			return TimeFilter_None()
+			time_filter = TimeFilter_None()
 
 	return time_filter
 

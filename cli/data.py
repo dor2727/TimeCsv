@@ -48,12 +48,12 @@ def get_data(data_object, args):
 
 	
 	data = time_filter % data_object.data
-	# filter data by time
-	if time_filter is None:
-		data          = data_object.data
-		selected_time = "All time"
-	else:
-		TimeFilter_None
+	# # filter data by time
+	# if time_filter is None:
+	# 	data          = data_object.data
+	# 	selected_time = "All time"
+	# else:
+	# 	TimeFilter_None
 
 	return data, time_filter, search_filter
 
