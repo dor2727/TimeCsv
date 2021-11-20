@@ -263,6 +263,7 @@ class DetailedStats(Stats):
 			plt.close(fig)
 
 			return open(path, "rb")
+
 		# plotting - interactive
 		else:
 			plt.show()

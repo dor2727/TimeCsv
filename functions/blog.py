@@ -3,10 +3,6 @@ from TimeCsv import DataFolder, \
 					ExtraDetailsFilter, GroupFilter, \
 					DetailedStats_ExtraDetails
 
-# import TimeCsv.statistics
-# from TimeCsv.parsing import DataFolder
-# from TimeCsv.filters import *
-
 
 # requires `self._extra_details_name`
 class DetailedStats_Blog(DetailedStats_ExtraDetails):
