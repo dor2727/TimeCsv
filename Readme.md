@@ -1,5 +1,8 @@
 # TimeCsv
 
+This project is a way for me to track my time, and get statistics about it.
+This project sets a syntax and a parser, together with filters and statistics about the data.
+
 ## documentation & examples
 An example file for the data format is found in the documentation folder
 
