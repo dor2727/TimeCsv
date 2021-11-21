@@ -4,7 +4,7 @@ FOLDER=~/Projects/$PROJECT
 LOG_FOLDER=$FOLDER/Telegram_Bot/Logs
 LOG=$LOG_FOLDER/daily_wget.log
 LOG_NEW=$LOG_FOLDER/daily_wget.log.new
-FILENAME="University/2021_year_3_big_holiday.tcsv"
+FILENAME="Work/2021_classiq.tcsv"
 TEMP_LOCATION=$FOLDER/data/_latest
 
 date > $LOG_NEW 2>&1
