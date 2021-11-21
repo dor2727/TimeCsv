@@ -3,6 +3,7 @@ import socket
 import logging
 import threading
 import schedule
+import http
 
 from TimeCsv.Telegram_Bot.consts import KEY_FILEPATH, CHAT_ID_FILEPATH
 from TimeCsv.Telegram_Bot.wrappers import wrapper_log, wrapper_log_secure, wrapper_whitelist
@@ -64,10 +65,16 @@ class TelegramServer(object):
 
 				continue
 
-			# telegram.error.NetworkError
 			except telegram.error.NetworkError as exc:
 				logging.warning(f"[*] Caught telegram.error.NetworkError ({str(exc)}) in main (loop) - continue")
+				continue
 
+			except telegram.vendor.ptb_urllib3.urllib3.exceptions.ProtocolError as exc:
+				logging.warning(f"[*] Caught telegram.vendor.ptb_urllib3.urllib3.exceptions.ProtocolError ({str(exc)}) in main (loop) - continue")
+				continue
+
+			except http.client.RemoteDisconnected as exc:
+				logging.warning(f"[*] Caught http.client.RemoteDisconnected ({str(exc)}) in main (loop) - continue")
 				continue
 
 			except Exception as exc:
@@ -255,7 +262,14 @@ class TelegramScheduledCommands(object):
 
 				except telegram.error.NetworkError as exc:
 					logging.warning(f"[*] Caught telegram.error.NetworkError ({str(exc)}) in run_scheduler - continue")
+					continue
 
+				except telegram.vendor.ptb_urllib3.urllib3.exceptions.ProtocolError as exc:
+					logging.warning(f"[*] Caught telegram.vendor.ptb_urllib3.urllib3.exceptions.ProtocolError ({str(exc)}) in run_scheduler - continue")
+					continue
+
+				except http.client.RemoteDisconnected as exc:
+					logging.warning(f"[*] Caught http.client.RemoteDisconnected ({str(exc)}) in run_scheduler - continue")
 					continue
 
 				except Exception as exc:

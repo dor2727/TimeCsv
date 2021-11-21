@@ -34,8 +34,9 @@ def parse_args(args_list=None):
 
 
 	debugging = parser.add_argument_group("Debugging")
-	debugging.add_argument("--debug"   , action="store_true")
-	debugging.add_argument("--test"    , action="store_true")
+	debugging.add_argument("--debug", action="store_true")
+	debugging.add_argument("--test" , action="store_true")
+	debugging.add_argument("--pdb"  , action="store_true")
 
 	grouping = parser.add_argument_group("grouping")
 	grouping.add_argument("--group"              , type=str , default=None, dest="group"       , help="show statistics per group")
@@ -94,6 +95,10 @@ def post_process_args(args):
 		print(f"[*] args: {args}")
 
 	expand_args(args)
+
+
+	if args.pdb:
+		import ipdb; ipdb.set_trace()
 
 
 	if args.test:

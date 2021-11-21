@@ -62,7 +62,7 @@ class DataItem(DataItemParser):
 
 	# return total event time in seconds
 	def __int__(self):
-		return (self.stop_time - self.start_time).seconds
+		return int( (self.stop_time - self.start_time).total_seconds() )
 
 	# when __add__ is called (usually by calling `sum` on a list of DataItems), cast to int
 	def __add__(self, other):

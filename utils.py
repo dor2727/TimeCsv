@@ -26,6 +26,7 @@ def ordered_unique(l):
 
 def counter(data):
     return list(Counter(data).items())
+
 #
 # regex utils
 #
