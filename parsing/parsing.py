@@ -2,8 +2,8 @@ import os
 import re
 import csv
 
-from TimeCsv.consts import *
 from TimeCsv.utils import *
+from TimeCsv.parsing.consts import *
 from TimeCsv.parsing.dataitem_parser     import DataItemParser
 from TimeCsv.parsing.description_details import DETAIL_PARSERS
 from TimeCsv.parsing.parse_exception     import ParseError

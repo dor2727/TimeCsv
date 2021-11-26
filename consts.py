@@ -5,31 +5,11 @@ import datetime
 #
 # Filesystem paths & extensions
 #
-DEFAULT_DATA_DIRECTORY  = os.path.expanduser("~/Dropbox/Projects/TimeCsv/data")
+DEFAULT_DATA_DIRECTORY   = os.path.expanduser("~/Dropbox/Projects/TimeCsv/data")
 POSSIBLE_FILE_EXTENSIONS = [".tcsv", ".csv", ".txt", ""]
 # temporary files
 DEFAULT_PIE_PATH = "/tmp/pie.png"
 DEFAULT_BAR_PATH = "/tmp/bar.png"
-
-
-#
-# File format
-#
-# headers to look for in every csv
-BASE_HEADERS = ["Date", "Start", "Stop", "Group", "Description"]
-# Date parsing
-COPY_LAST_DATE             = "----/--/--"
-ADD_LAST_DATE              = "----/--/+1"
-SPECIAL_DATE_FORMATS       = [COPY_LAST_DATE, ADD_LAST_DATE]
-# start time parsing
-COPY_LAST_START_TIME       = "--:--"
-SPECIAL_START_TIME_FORMATS = [COPY_LAST_START_TIME]
-# stop time parsing
-COPY_LAST_STOP_TIME        = "---:--"
-SPECIAL_STOP_TIME_FORMATS  = [COPY_LAST_STOP_TIME]
-STOP_TIME_INITIALS_STOP     = ('s', 'e') # stop_time can either indicate when the event ended
-STOP_TIME_INITIALS_BREAK    = ('b',)     # or how long it lasted
-STOP_TIME_INITIALS_DURATION = ('d', 't') + STOP_TIME_INITIALS_BREAK
 
 
 #
