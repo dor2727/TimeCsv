@@ -137,8 +137,14 @@ class DataFile(object):
 			lambda x: not x.is_comment,
 			map(
 				# parse each line
-				lambda x: DataItem(x),
-				r
+				# obj is the output of enumerate - obj[0] is index, obj[1] is value
+				lambda obj: DataItem(
+					obj[1],
+					self.headers,
+					file_name=self._path,
+					line=obj[0],
+				),
+				enumerate(r)
 			)
 		))
 		handle.close()
