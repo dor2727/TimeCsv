@@ -15,7 +15,7 @@ class DataItem(DataItemParser):
 		__int__:
 			return the duration in seconds
 		__add__:
-			casting to int, and addind the durations
+			casting to int, and adding the durations
 		__getitem__:
 			return the items in the csv order
 		__repr__
