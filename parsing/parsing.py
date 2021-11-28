@@ -184,6 +184,9 @@ class DataFile(object):
 
 		self.locations = [i[0] for i in self.locations_histogram]
 
+	# exported functions
+	def __getitem__(self, n):
+		return self.data[n]
 
 	def _validate_data(self):
 		invalid_items = [i for i in self.data if not i.is_fully_parsed()]
