@@ -191,7 +191,6 @@ class DataFile(object):
 	def _validate_data(self):
 		invalid_items = [i for i in self.data if not i.is_fully_parsed()]
 		return invalid_items or True
-		return all(x.is_fully_parsed() for x in self.data)
 
 	@property
 	def _data_range(self):
