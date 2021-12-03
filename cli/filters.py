@@ -6,10 +6,10 @@ from TimeCsv.filters import AutoFilter, \
 							join_filters_with_or, join_filters_with_and
 
 def initialize_search_filter(args):
-	filters = []
-
-	for s in args.search_string:
-		filters.append(AutoFilter(s, force_regex=args.force_regex))
+	filters = [
+		AutoFilter(s, force_regex=args.force_regex)
+		for s in args.search_string
+	]
 
 	if not filters:
 		f = None
