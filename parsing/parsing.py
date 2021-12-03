@@ -80,6 +80,16 @@ class DataItem(DataItemParser):
 		else:
 			return NotImplemented
 
+	# Compares the date of 2 DataItems
+	def __lt__(self, other):
+		return self.stop_time <  other.start_time
+	def __le__(self, other):
+		return self.stop_time <= other.start_time
+	def __ge__(self, other):
+		return self.start_time >= other.stop_time
+	def __gt__(self, other):
+		return self.start_time >  other.stop_time
+
 
 	def is_in_date_range(self, start_date, end_date,
 		include_by_start=True, include_by_stop=False):
