@@ -8,7 +8,7 @@ from TimeCsv.parsing.parse_exception import ParseError
 
 class DataItemParser(object):
 	"""
-	ignored lines are either empty lines or lines starting with '#'
+	comment lines are either empty lines or lines starting with '#'
 
 	expected input for __init__ is a list of items in the following order:
 		date        (str) (yyyy/mm/dd)
