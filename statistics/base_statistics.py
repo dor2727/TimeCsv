@@ -182,9 +182,9 @@ class DetailedStats(Stats):
 			1) titles: each item is the name of the group
 			2) values: each item is a list with the items
 		"""
-		titles = self._get_titles()
+		titles = self._titles = self._get_titles()
 
-		values = list(map(
+		values = self._values = list(map(
 			self._get_data_of_title,
 			titles
 		))
@@ -209,7 +209,7 @@ class DetailedStats(Stats):
 			raise ValueError("invalid sorting_method")
 
 		# unpack the zip into titles and values
-		t, v = list(zip(*sorted_z))
+		t, v = tuple(zip(*sorted_z))
 		return t, v
 
 	def _get_all_data_of_title(self, title):
