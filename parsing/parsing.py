@@ -140,7 +140,6 @@ class DataFile(object):
 				# obj is the output of enumerate - obj[0] is index, obj[1] is value
 				lambda obj: DataItem(
 					obj[1],
-					self.headers,
 					file_name=self._path,
 					line=obj[0],
 				),
