@@ -184,13 +184,12 @@ class DataFile(object):
 
 		self.locations = [i[0] for i in self.locations_histogram]
 
-	# exported functions
-	def __getitem__(self, n):
-		return self.data[n]
-
 	def _validate_data(self):
 		invalid_items = [i for i in self.data if not i.is_fully_parsed()]
 		return invalid_items or True
+
+	def __getitem__(self, n):
+		return self.data[n]
 
 	@property
 	def _data_range(self):
@@ -251,6 +250,10 @@ class DataFolder(object):
 		self.data      =          sum([i.data      for i in self.data_files], [])
 		self.friends   = list(set(sum([i.friends   for i in self.data_files], [])))
 		self.locations = list(set(sum([i.locations for i in self.data_files], [])))
+
+
+	def __getitem__(self, n):
+		return self.data[n]
 
 	def reload(self):
 		for i in self.data_files:
