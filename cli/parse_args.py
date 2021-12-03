@@ -50,6 +50,7 @@ def parse_args(args_list=None):
 	details = parser.add_argument_group("details")
 	details.add_argument("--extra-details", "--extra", action="store_true",     dest="extra_details"     , help="extra details within the search filter")
 	details.add_argument("--extra-details-name"      , type=str , default=None, dest="extra_details_name", help="sets the name of the extra details. Useful for cases when multiple names are found")
+	#
 	details.add_argument("--lecture"                 , action="store_true",     dest="lecture"           , help="show lecture statistics")
 	details.add_argument("--homework"                , action="store_true",     dest="homework"          , help="show homework statistics")
 	details.add_argument("--shower"                  , action="store_true",     dest="shower"            , help="show shower statistics")
