@@ -13,8 +13,9 @@ from TimeCsv.filters.time_filters    import TimeFilter_None    , \
 											TimeFilter_Days    , \
 											TimeFilter_Today   , \
 											TimeFilter_ThisWeek, \
-											TimeFilter_Year    , \
+											TimeFilter_Weeks   , \
 											TimeFilter_Month   , \
+											TimeFilter_Year    , \
 											TimeFilter_DateRange
 from TimeCsv.filters.generic_filters import StrFilter , \
 											AutoFilter, \
