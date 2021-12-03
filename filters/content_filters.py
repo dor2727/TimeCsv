@@ -7,7 +7,7 @@ from TimeCsv.filters.filter_utils import find_string_in_string, find_string_in_l
 
 # do not use this class directly - it is a meta class
 class BaseContentFilter(Filter):
-	def __init__(self, string_to_find, case_sensitive=False, regex=False):
+	def __init__(self, string_to_find, case_sensitive=True, regex=False):
 		self.case_sensitive = case_sensitive
 		self.regex = regex
 
