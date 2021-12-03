@@ -3,8 +3,8 @@ import os
 from TimeCsv.statistics import *
 from TimeCsv.utils import print_items, re_exact
 from TimeCsv.parsing import DataFolder, DataFile
-from TimeCsv.cli.filters import initialize_time_filter, initialize_search_filter
-from TimeCsv.filters import TimeFilter_None
+from TimeCsv.filters import TimeFilter_None, \
+							initialize_time_filter, initialize_search_filter
 
 # Find the relative file path (it may be a relative path)
 def open_data_file(data_object=None, file_path=None):
