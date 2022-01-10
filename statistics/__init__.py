@@ -16,3 +16,4 @@ from TimeCsv.statistics.group_statistics         import DetailedStats_Group  , \
 														DetailedStats_Life   , \
 														DetailedStats_Read   , \
 														DetailedStats_ReadBook
+from TimeCsv.statistics.description_statistics   import DetailedStats_Description
