@@ -66,7 +66,7 @@ PATTERN_LOCATION_THEIR_PLACE = "@@"
 #
 # Regex patterns - vehicle
 #
-VEHICLES = ["bicycle", "car", "foot"]
+VEHICLES = ["bicycle", "car", "foot", "bus"]
 VEHICLE_PATTERN_STRIP = [
 	re.compile(f" ?by {vehicle}")
 	for vehicle in VEHICLES
