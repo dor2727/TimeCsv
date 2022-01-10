@@ -6,8 +6,10 @@ from TimeCsv.filters import HasExtraDetailsFilter, \
 							GroupFilter
 from TimeCsv.utils import re_exact
 
-# do not use this class directly - it is a meta class
-class DetailedStats_ExtraDetails(DetailedStats):
+from functools import reduce
+
+# do not use this class directly - it is an abstract class
+class DetailedStats_ExtraDetails_Abstract(DetailedStats):
 	"""
 	requires:
 		self._filter_obj
@@ -65,16 +67,15 @@ class DetailedStats_ExtraDetail(DetailedStats_ExtraDetails_Abstract):
 
 	def _get_extra_details_name(self):
 		# get all extra_details names
-		names = sum(
-			(list(i.extra_details.keys()) for i in self.data),
-			[]
+		names = reduce(
+			set.union,
+			(set(i.extra_details.keys()) for i in self.data)
 		)
-		names = list(set(names))
 
 
 		# hopefully, the filter is specific enough, so that only one extra_details name was found
 		if len(names) == 1:
-			self._extra_details_name = names[0]
+			self._extra_details_name = list(names)[0]
 
 		elif len(names) == 0:
 			raise ValueError("No possible extra_details_name found")
