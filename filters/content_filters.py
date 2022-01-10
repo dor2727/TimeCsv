@@ -1,4 +1,3 @@
-import re
 import operator
 
 from TimeCsv.filters.base_filters import Filter

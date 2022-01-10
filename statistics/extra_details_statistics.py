@@ -4,7 +4,6 @@ from TimeCsv.filters import HasExtraDetailsFilter, \
 							ExtraDetailsValueFilter, \
 							DescriptionFilter, \
 							GroupFilter
-from TimeCsv.utils import re_exact
 
 from functools import reduce
 

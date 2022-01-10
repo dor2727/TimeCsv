@@ -1,6 +1,6 @@
 from TimeCsv.statistics.base_statistics import DetailedStatsFiltered
 from TimeCsv.statistics.description_statistics import DetailedStats_Description
-from TimeCsv.filters import GroupFilter, DescriptionFilter
+from TimeCsv.filters import GroupFilter
 from TimeCsv.utils import re_exact
 
 
