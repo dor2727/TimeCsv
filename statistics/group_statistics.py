@@ -1,5 +1,3 @@
-import re
-
 from TimeCsv.statistics.base_statistics import DetailedStatsFiltered
 from TimeCsv.filters import GroupFilter
 from TimeCsv.utils import re_exact

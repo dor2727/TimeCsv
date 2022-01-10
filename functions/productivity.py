@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from enum import Enum
 
 from TimeCsv import DataFolder, \
 					GroupFilter, DescriptionFilter, FriendFilter, \

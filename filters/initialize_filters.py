@@ -9,7 +9,6 @@ from TimeCsv.filters.time_filters    import TimeFilter_None    , \
 from TimeCsv.filters.filter_utils import 	join_filters_with_or, \
 											join_filters_with_and
 
-
 def initialize_search_filter(args):
 	filters = [
 		AutoFilter(s, force_regex=args.force_regex)

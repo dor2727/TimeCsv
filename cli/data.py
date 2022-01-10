@@ -46,8 +46,8 @@ def get_data(data_object, args):
 	time_filter   = initialize_time_filter(args)
 	search_filter = initialize_search_filter(args)
 
-	
 	data = time_filter % data_object.data
+	
 	return data, time_filter, search_filter
 
 
