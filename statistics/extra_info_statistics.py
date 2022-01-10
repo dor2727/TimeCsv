@@ -1,5 +1,7 @@
 from TimeCsv.statistics.base_statistics import DetailedStats
+from TimeCsv.statistics.group_statistics import DetailedStats_Group
 from TimeCsv.filters import GroupFilter, FriendFilter, LocationFilter, VehicleFilter
+from TimeCsv.utils import re_exact
 
 class DetailedStats_AllGroups(DetailedStats):
 	def _get_titles(self):
@@ -16,53 +18,36 @@ class DetailedStats_AllGroups(DetailedStats):
 		return self._titles
 
 	def _get_items_of_title(self, title):
-		return GroupFilter(title).get_filtered_data(self.data)
+		return GroupFilter(re_exact(title), case_sensitive=True, regex=True).get_filtered_data(self.data)
 
-	# def _plot_make_clickable_pie(self, fig, patches):
-	# 	def onclick(event):
-	# 		patch = event.artist
-	# 		label = patch.get_label()
+	def _plot_make_pie_clickable(self, fig, patches):
+		def onclick(event):
+			# Get the patch and its label
+			patch = event.artist
+			label = patch.get_label()
 
-	# 		print(f"=== {label} ===")
+			# Create a grouped-stats object for that label
+			g = DetailedStats_Group(
+				self.data,
+				group_name=re_exact(label),
+				time_filter=self._time_filter,
+				grouping_method=self._grouping_method,
+				sorting_method=self._sorting_method,
+				case_sensitive=False, regex=True,
+			)
 
-	# 		g = GroupGroupedStats(
-	# 			self.data,
-	# 			category_name=label.capitalize(),
+			# Set title prefix
+			g._title_prefix = getattr(self, "_title_prefix", '') + f"{self.__class__.__name__}({self._grouping_method}) / "
 
-	# 			selected_time=f"{self.selected_time} - {label}",
 
-	# 			group_value=self.group_value,
-	# 			sort=self._sorting_method,
-	# 		)
-	# 		print(g.to_text())
-	# 		g.to_pie(save=False)
+			print(f"=== {label} ===")
+			print(g.to_text())
+			g.to_pie(save=False)
 
-	# 	for patch in patches:
-	# 		patch.set_picker(True)
+		for patch in patches:
+			patch.set_picker(True)
 
-	# 	fig.canvas.mpl_connect('pick_event', onclick)
-
-	# def to_pie(self, headers=None, values=None, title=None, save=True):
-	# 	"""
-	# 	if bool(save) is False: interactively show the pie chard
-	# 	if save is str: save the image to that path
-	# 	if save is True: save to the default location
-
-	# 	if save:
-	# 		return open handle to the file with the image
-	# 	"""
-	# 	headers, values = self._plot_prepare_data(headers, values)
-
-	# 	# plotting initialization
-	# 	fig, ax = plt.subplots()
-
-	# 	patches = self._plot_make_pie(ax, values, headers)
-
-	# 	self._plot_set_title(fig, ax, title)
-
-	# 	self._plot_make_clickable_pie(fig, patches)
-
-	# 	return self._plot_save(fig, save)
+		fig.canvas.mpl_connect('pick_event', onclick)
 
 class DetailedStats_Friend(DetailedStats):
 	def _get_titles(self):
