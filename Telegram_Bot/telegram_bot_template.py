@@ -14,6 +14,7 @@ from TimeCsv.Telegram_Bot.utils import *
 
 # from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackQueryHandler
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+import telegram # telegram.error.NetworkError, telegram.vendor.ptb_urllib3.urllib3.exceptions.ProtocolError
 
 
 class TelegramServer(object):
