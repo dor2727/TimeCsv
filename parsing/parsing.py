@@ -1,12 +1,10 @@
 import os
-import re
 import csv
 
-from TimeCsv.consts import *
 from TimeCsv.utils import *
+from TimeCsv.parsing.consts import *
 from TimeCsv.parsing.dataitem_parser     import DataItemParser
 from TimeCsv.parsing.description_details import DETAIL_PARSERS
-from TimeCsv.parsing.parse_exception     import ParseError
 
 
 class DataItem(DataItemParser):
@@ -15,7 +13,7 @@ class DataItem(DataItemParser):
 		__int__:
 			return the duration in seconds
 		__add__:
-			casting to int, and addind the durations
+			casting to int, and adding the durations
 		__getitem__:
 			return the items in the csv order
 		__repr__
@@ -80,6 +78,16 @@ class DataItem(DataItemParser):
 		else:
 			return NotImplemented
 
+	# Compares the date of 2 DataItems
+	def __lt__(self, other):
+		return self.stop_time <  other.start_time
+	def __le__(self, other):
+		return self.stop_time <= other.start_time
+	def __ge__(self, other):
+		return self.start_time >= other.stop_time
+	def __gt__(self, other):
+		return self.start_time >  other.stop_time
+
 
 	def is_in_date_range(self, start_date, end_date,
 		include_by_start=True, include_by_stop=False):
@@ -137,8 +145,13 @@ class DataFile(object):
 			lambda x: not x.is_comment,
 			map(
 				# parse each line
-				lambda x: DataItem(x),
-				r
+				# obj is the output of enumerate - obj[0] is index, obj[1] is value
+				lambda obj: DataItem(
+					obj[1],
+					file_name=self._path,
+					line=obj[0],
+				),
+				enumerate(r)
 			)
 		))
 		handle.close()
@@ -178,11 +191,12 @@ class DataFile(object):
 
 		self.locations = [i[0] for i in self.locations_histogram]
 
-
 	def _validate_data(self):
 		invalid_items = [i for i in self.data if not i.is_fully_parsed()]
 		return invalid_items or True
-		return all(x.is_fully_parsed() for x in self.data)
+
+	def __getitem__(self, n):
+		return self.data[n]
 
 	@property
 	def _data_range(self):
@@ -243,6 +257,10 @@ class DataFolder(object):
 		self.data      =          sum([i.data      for i in self.data_files], [])
 		self.friends   = list(set(sum([i.friends   for i in self.data_files], [])))
 		self.locations = list(set(sum([i.locations for i in self.data_files], [])))
+
+
+	def __getitem__(self, n):
+		return self.data[n]
 
 	def reload(self):
 		for i in self.data_files:

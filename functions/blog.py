@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from TimeCsv import DataFolder, \
 					ExtraDetailsFilter, GroupFilter, \
-					DetailedStats_ExtraDetails
+					DetailedStats_ExtraDetails_Abstract
 
 
 # requires `self._extra_details_name`
-class DetailedStats_Blog(DetailedStats_ExtraDetails):
+class DetailedStats_Blog(DetailedStats_ExtraDetails_Abstract):
 	_extra_details_name = None
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)

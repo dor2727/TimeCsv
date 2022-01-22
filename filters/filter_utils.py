@@ -1,3 +1,4 @@
+import re
 import operator
 import functools
 

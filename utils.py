@@ -1,12 +1,9 @@
 import os
-import sys
-import time
-import traceback
+import datetime
 
 from collections import OrderedDict, Counter
 
 from TimeCsv.consts import *
-
 
 #
 # file utils
@@ -16,7 +13,6 @@ def newest(path=DEFAULT_DATA_DIRECTORY):
 	files = os.listdir(path)
 	paths = [os.path.join(path, basename) for basename in files]
 	return max(paths, key=os.path.getctime)
-
 
 #
 # parsing utils
@@ -99,7 +95,6 @@ def format_dates(date1, date2):
 		*get_ymd_tuple(date1),
 		*get_ymd_tuple(date2),
 	)
-
 
 #
 # debug utils

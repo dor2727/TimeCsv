@@ -18,7 +18,7 @@ class Filter(object):
 	def __mod__(self, other):
 		# verify input
 		if not isinstance(other, Iterable):
-			raise TypeError(f"unsupported operand type(s) for +: '{self.__class__}' and '{type(other)}'")
+			raise TypeError(f"unsupported operand type(s) for %: '{self.__class__}' and '{type(other)}'")
 
 		# before the following check, verify that the list is not empty:
 		if len(other) == 0:
@@ -30,7 +30,7 @@ class Filter(object):
 		if hasattr(other, "__getitem__"):
 			# Should check all the items, but there is currently no such case of a list with mixed types
 			if not isinstance(other[0], DataItem):
-				raise TypeError(f"unsupported operand type(s) for +: '{self.__class__}' and a '{type(other)} of {type(other[0])}'")
+				raise TypeError(f"unsupported operand type(s) for %: '{self.__class__}' and a '{type(other)} of {type(other[0])}'")
 			# can also use this, in case of import-loop, not allowing this file to import DataItem
 			# if other[0].__class__.__name__ != "DataItem":
 

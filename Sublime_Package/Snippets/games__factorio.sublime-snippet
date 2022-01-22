@@ -1,6 +1,6 @@
 <snippet>
 	<content><![CDATA[
-${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:10}:${2:30},Gaming,factorio
+${3:----}/${4:--}/${5:--},${6:--}:${7:--},e${1:10}:${2:30},GamingSolo,factorio
 ]]></content>
 	<tabTrigger>factorio</tabTrigger>
 	<scope>source.time</scope>

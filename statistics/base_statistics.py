@@ -1,12 +1,8 @@
-import re
 import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-# from TimeCsv.consts import *
-# from TimeCsv.utils import *
-# from TimeCsv.filters import *
-from TimeCsv.consts import	DEFAULT_PIE_PATH, DEFAULT_BAR_PATH
+from TimeCsv.consts import	DEFAULT_PIE_PATH
 from TimeCsv.utils import 	shorten_selected_time, \
 							format_dates         , \
 							seconds_to_str       , \
@@ -185,9 +181,9 @@ class DetailedStats(Stats):
 			1) titles: each item is the name of the group
 			2) values: each item is a list with the items
 		"""
-		titles = self._get_titles()
+		titles = self._titles = self._get_titles()
 
-		values = list(map(
+		values = self._values = list(map(
 			self._get_data_of_title,
 			titles
 		))
@@ -212,7 +208,7 @@ class DetailedStats(Stats):
 			raise ValueError("invalid sorting_method")
 
 		# unpack the zip into titles and values
-		t, v = list(zip(*sorted_z))
+		t, v = tuple(zip(*sorted_z))
 		return t, v
 
 	def _get_all_data_of_title(self, title):
@@ -248,7 +244,13 @@ class DetailedStats(Stats):
 		return getattr(
 			self,
 			"_title",
-			f"{self.__class__.__name__}({self._grouping_method}) - {self.selected_time}"
+			(
+				f"{getattr(self, '_title_prefix', '')}"
+				f"{self.__class__.__name__}"
+				f"({self._grouping_method})"
+				 " - "
+				f"{self.selected_time}"
+			)
 		)
 
 	@title.setter
@@ -323,7 +325,10 @@ class DetailedStats(Stats):
 		# plotting initialization
 		fig, ax = plt.subplots()
 
-		self._plot_make_pie(ax, self.values_sorted, self.titles_sorted)
+		patches = self._plot_make_pie(ax, self.values_sorted, self.titles_sorted)
+
+		if hasattr(self, "_plot_make_pie_clickable"):
+			self._plot_make_pie_clickable(fig, patches)
 
 		self._plot_set_title(fig, ax)
 

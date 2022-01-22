@@ -4,10 +4,11 @@ from TimeCsv.filters import HasExtraDetailsFilter, \
 							ExtraDetailsValueFilter, \
 							DescriptionFilter, \
 							GroupFilter
-from TimeCsv.utils import re_exact
 
-# do not use this class directly - it is a meta class
-class DetailedStats_ExtraDetails(DetailedStats):
+from functools import reduce
+
+# do not use this class directly - it is an abstract class
+class DetailedStats_ExtraDetails_Abstract(DetailedStats):
 	"""
 	requires:
 		self._filter_obj
@@ -38,7 +39,7 @@ class DetailedStats_ExtraDetails(DetailedStats):
 		return ExtraDetailsValueFilter(title, self._extra_details_name).get_filtered_data(self.data)
 
 # extracts `extra_details_name` automatically
-class DetailedStats_ExtraDetailGeneric(DetailedStats_ExtraDetails):
+class DetailedStats_ExtraDetail(DetailedStats_ExtraDetails_Abstract):
 	def __init__(self, search_filter, *args, **kwargs):
 		# a bit of a weird flow
 
@@ -65,16 +66,15 @@ class DetailedStats_ExtraDetailGeneric(DetailedStats_ExtraDetails):
 
 	def _get_extra_details_name(self):
 		# get all extra_details names
-		names = sum(
-			(list(i.extra_details.keys()) for i in self.data),
-			[]
+		names = reduce(
+			set.union,
+			(set(i.extra_details.keys()) for i in self.data)
 		)
-		names = list(set(names))
 
 
 		# hopefully, the filter is specific enough, so that only one extra_details name was found
 		if len(names) == 1:
-			self._extra_details_name = names[0]
+			self._extra_details_name = list(names)[0]
 
 		elif len(names) == 0:
 			raise ValueError("No possible extra_details_name found")
@@ -86,7 +86,7 @@ class DetailedStats_ExtraDetailGeneric(DetailedStats_ExtraDetails):
 		return self._extra_details_name
 
 # used when `extra_details_name` is specified
-class DetailedStats_ExtraDetailSpecific(DetailedStats_ExtraDetails):
+class DetailedStats_ExtraDetailWithName(DetailedStats_ExtraDetails_Abstract):
 	def __init__(self, search_filter, extra_details_name, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
@@ -100,7 +100,7 @@ class DetailedStats_ExtraDetailSpecific(DetailedStats_ExtraDetails):
 
 		self._initialize_data()
 
-class DetailedStats_Lecture(DetailedStats_ExtraDetails):
+class DetailedStats_Lecture(DetailedStats_ExtraDetails_Abstract):
 	_extra_details_name = "lecture"
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -113,7 +113,7 @@ class DetailedStats_Lecture(DetailedStats_ExtraDetails):
 
 		self._initialize_data()
 
-class DetailedStats_Homework(DetailedStats_ExtraDetails):
+class DetailedStats_Homework(DetailedStats_ExtraDetails_Abstract):
 	_extra_details_name = "homework"
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -126,7 +126,7 @@ class DetailedStats_Homework(DetailedStats_ExtraDetails):
 
 		self._initialize_data()
 
-class DetailedStats_Shower(DetailedStats_ExtraDetails):
+class DetailedStats_Shower(DetailedStats_ExtraDetails_Abstract):
 	_extra_details_name = "shower"
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -135,7 +135,7 @@ class DetailedStats_Shower(DetailedStats_ExtraDetails):
 
 		self._initialize_data()
 
-class DetailedStats_PrepareFood(DetailedStats_ExtraDetails):
+class DetailedStats_PrepareFood(DetailedStats_ExtraDetails_Abstract):
 	_extra_details_name = "prepare"
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
