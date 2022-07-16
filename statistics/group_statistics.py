@@ -81,7 +81,7 @@ class DetailedStats_Group(DetailedStatsFiltered):
 
 
 class DetailedStats_Games(DetailedStats_Group):
-	_group_name = re_exact("Gaming")
+	_group_name = "\\bGaming"
 	_filter_obj_kwargs = {"case_sensitive": True, "regex": True}
 
 class DetailedStats_Youtube(DetailedStats_Group):
