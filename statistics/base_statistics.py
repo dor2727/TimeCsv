@@ -51,6 +51,8 @@ class Stats(object):
 		# return in seconds
 		if self.amount_of_items == 0:
 			return 0
+		if self.amount_of_items == 1:
+			return 0
 
 		return (self.amount_of_days * 24 * 60 * 60) / self.amount_of_items
 
@@ -228,7 +230,10 @@ class DetailedStats(Stats):
 
 		if amount_of_items:
 			amount_of_time_on_average = amount_of_time / amount_of_items
-			time_between_events_on_average = (self.amount_of_days * 24 * 60 * 60) / amount_of_items
+			if amount_of_items == 1:
+				time_between_events_on_average = 0
+			else:
+				time_between_events_on_average = (self.amount_of_days * 24 * 60 * 60) / amount_of_items
 		else:
 			amount_of_time_on_average = 0
 			time_between_events_on_average = 0
