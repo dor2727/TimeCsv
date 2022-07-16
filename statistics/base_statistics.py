@@ -46,6 +46,14 @@ class Stats(object):
 
 		return self.amount_of_time / self.amount_of_items
 
+	@property
+	def time_between_events_on_average(self):
+		# return in seconds
+		if self.amount_of_items == 0:
+			return 0
+
+		return (self.amount_of_days * 24 * 60 * 60) / self.amount_of_items
+
 
 	#
 	# Exposing different ways of printing the data
@@ -134,11 +142,12 @@ class BasicStats(Stats):
 		s += "\n"
 		s += f"  events per day = {self.events_per_day:.2f}"
 		s += "\n"
-		s += "    (%3d) : %s (%5.2f%%) ; item average %s" % (
+		s += "    (%3d) : %s (%5.2f%%) ; item average %s ; distance average %s" % (
 			self.amount_of_items,
 			seconds_to_str(self.amount_of_time),
 			self.time_percentage,
 			seconds_to_str(self.amount_of_time_on_average),
+			seconds_to_str(self.time_between_events_on_average),
 		)
 
 		return s
@@ -219,13 +228,15 @@ class DetailedStats(Stats):
 
 		if amount_of_items:
 			amount_of_time_on_average = amount_of_time / amount_of_items
+			time_between_events_on_average = (self.amount_of_days * 24 * 60 * 60) / amount_of_items
 		else:
 			amount_of_time_on_average = 0
+			time_between_events_on_average = 0
 
-		return amount_of_items, amount_of_time, amount_of_time_on_average
+		return amount_of_items, amount_of_time, amount_of_time_on_average, time_between_events_on_average
 
 	def _get_data_of_title(self, title):
-		amount_of_items, amount_of_time, amount_of_time_on_average = self._get_all_data_of_title(title)
+		amount_of_items, amount_of_time, amount_of_time_on_average, time_between_events_on_average = self._get_all_data_of_title(title)
 
 		if self._grouping_method == "time":
 			return amount_of_time
@@ -400,20 +411,21 @@ class DetailedStats(Stats):
 		return s
 
 	def _text_generate_item(self, title):
-		amount_of_items, amount_of_time, amount_of_time_on_average = self._get_all_data_of_title(title)
+		amount_of_items, amount_of_time, amount_of_time_on_average, time_between_events_on_average = self._get_all_data_of_title(title)
 
 		time_percentage = amount_of_time / self.amount_of_time * 100.0
 
-		return "    %s (%4d) : %s (%5.2f%%) ; item average %s" % (
+		return "    %s (%4d) : %s (%5.2f%%) ; item average %s ; distance average %s" % (
 			(self._text_title_format % title),
 			amount_of_items,
 			seconds_to_str(amount_of_time),
 			time_percentage,
 			seconds_to_str(amount_of_time_on_average),
+			seconds_to_str(time_between_events_on_average),
 		)
 
 	def _telegram_generate_item(self, title):
-		amount_of_items, amount_of_time, amount_of_time_on_average = self._get_all_data_of_title(title)
+		amount_of_items, amount_of_time, amount_of_time_on_average, time_between_events_on_average = self._get_all_data_of_title(title)
 
 		time_percentage = amount_of_time / self.amount_of_time * 100.0
 
