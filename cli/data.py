@@ -94,6 +94,14 @@ def get_special_text(data, time_filter, args):
 		cls = DetailedStats_Location
 	elif args.vehicle:
 		cls = DetailedStats_Vehicle
+	elif args.gaming:
+		cls = DetailedStats_Group
+		kwargs = {
+			"group_name": "\\bGaming",
+			# filter_obj_kwargs
+			"case_sensitive": False,
+			"regex": True,
+		}
 	elif args.group:
 		cls = DetailedStats_Group
 		kwargs = {

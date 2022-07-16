@@ -83,8 +83,6 @@ def expand_args(args):
 	if args.grouping_method == "avg":
 		args.grouping_method = "time_average"
 
-	if args.gaming:
-		args.group = "Gaming"
 	elif args.youtube:
 		args.group = "Youtube"
 
