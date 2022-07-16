@@ -7,3 +7,4 @@ filter_podcast = GroupFilter("Podcast") | DescriptionFilter("podcast")
 
 # only "sleep" items, no "more sleep", and only items with more than 3 hours
 filter_sleep = GroupFilter("Sleep") & ~DescriptionFilter("more") & DurationFilter(f">{60*60*3}")
+filter_sleep = GroupFilter("Sleep") & DescriptionFilter("night") & DurationFilter(f">{60*60*3}")
