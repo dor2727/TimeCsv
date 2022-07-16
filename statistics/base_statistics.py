@@ -1,4 +1,5 @@
 import json
+import functools
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -153,6 +154,14 @@ class BasicStats(Stats):
 
 		return s
 
+
+def require_processed_data(func):
+	@functools.wraps(func)
+	def inner(self, *args, **kwargs):
+		if not (hasattr(self, "titles_sorted") and hasattr(self, "values_sorted")):
+			self.process_data()
+		return func(self, *args, **kwargs)
+	return inner
 
 class DetailedStats(Stats):
 	_allowed_grouping_methods = ("time", "time_average", "amount")
@@ -322,6 +331,7 @@ class DetailedStats(Stats):
 	#
 	# Plotting
 	#
+	@require_processed_data
 	def to_pie(self, save=True):
 		"""
 		if save:
@@ -335,8 +345,6 @@ class DetailedStats(Stats):
 		if bool(save) is False:
 			interactively show the pie chard
 		"""
-		self.process_data()
-
 		# plotting initialization
 		fig, ax = plt.subplots()
 
@@ -349,6 +357,7 @@ class DetailedStats(Stats):
 
 		return self._plot_save(fig, save)
 
+	@require_processed_data
 	def to_bar(self, save=True):
 		"""
 		if save:
@@ -362,8 +371,6 @@ class DetailedStats(Stats):
 		if bool(save) is False:
 			interactively show the pie chard
 		"""
-		self.process_data()
-
 		# plotting initialization
 		fig, ax = plt.subplots()
 
@@ -443,18 +450,16 @@ class DetailedStats(Stats):
 	#
 	# Printing
 	#
+	@require_processed_data
 	def to_text(self):
-		self.process_data()
-
 		return self._generate_text(
 			self._text_generate_header,
 			self._text_generate_item,
 			self._text_generate_footer
 		)
 
+	@require_processed_data
 	def to_telegram(self):
-		self.process_data()
-
 		return self._generate_text(
 			self._text_generate_header,
 			self._telegram_generate_item,
