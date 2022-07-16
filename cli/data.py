@@ -118,6 +118,8 @@ def get_special_text(data, time_filter, args):
 		cls = DetailedStats_Shower
 	elif args.prepare_food:
 		cls = DetailedStats_PrepareFood
+	elif args.all_groups:
+		cls = DetailedStats_AllGroups
 	else: # default statistics
 		cls = DetailedStats_AllGroups
 
@@ -151,7 +153,6 @@ def get_extra_details_text(data, time_filter, search_filter, args):
 			data,
 			**detailedstats_params,
 		)
-
 
 	return get_text(g, args)
 
