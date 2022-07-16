@@ -264,7 +264,7 @@ def set_lables(patches, headers, values):
 	plt.legend(patches, labels, loc="upper left")
 
 def set_title(fig, ax, time_filter):
-	selected_time = time_filter.get_selected_time() if time_filter else DEFAULT_SELECTED_TIME
+	selected_time = time_filter.selected_time if time_filter else DEFAULT_SELECTED_TIME
 
 	title = f"Productive Pie - {selected_time}"
 
