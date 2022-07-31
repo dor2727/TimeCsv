@@ -85,7 +85,12 @@ class MultiFilter(Filter):
 		)
 
 	def __repr__(self):
-		return f"({repr(self.filter_1)}) {self.operation} ({repr(self.filter_2)})"
+		if isinstance(self.filter_2, MultiFilter) and self.filter_2.operation == self.operation:
+			return f"({repr(self.filter_1)}) {self.operation} ({repr(self.filter_2)[1:-1]})"
+		elif isinstance(self.filter_1, MultiFilter) and self.filter_1.operation == self.operation:
+			return f"({repr(self.filter_1)[1:-1]}) {self.operation} ({repr(self.filter_2)})"
+		else:
+			return f"({repr(self.filter_1)}) {self.operation} ({repr(self.filter_2)})"
 
 	@property
 	def _selected_time(self):
