@@ -144,7 +144,7 @@ class BasicStats(Stats):
 		s += "\n"
 		s += f"  events per day = {self.events_per_day:.2f}"
 		s += "\n"
-		s += "    (%3d) : %s (%5.2f%%) ; item average %s ; distance average %s" % (
+		s += "    (%3d) : %s (%5.2f%%) │ item average %s │ distance average %s" % (
 			self.amount_of_items,
 			seconds_to_str(self.amount_of_time),
 			self.time_percentage,
@@ -429,7 +429,7 @@ class DetailedStats(Stats):
 
 		time_percentage = amount_of_time / self.amount_of_time * 100.0
 
-		return "    %s (%4d) : %s (%5.2f%%) ; item average %s ; distance average %s" % (
+		return "    %s (%4d) : %s (%5.2f%%) │ item average %s │ distance average %s" % (
 			(self._text_title_format % title),
 			amount_of_items,
 			seconds_to_str(amount_of_time),
