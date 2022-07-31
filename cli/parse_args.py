@@ -4,7 +4,7 @@ import argparse
 from TimeCsv.consts import DEFAULT_DATA_DIRECTORY
 
 try:
-	from TimeCsv.tests import test
+	from TimeCsv.Other.tests import test
 except ImportError:
 	def test(*args, **kwargs):
 		print("no `tests` file found")
@@ -98,7 +98,7 @@ def post_process_args(args):
 
 
 	if args.pdb:
-		import ipdb; ipdb.set_trace()
+		breakpoint()
 
 
 	if args.test:
