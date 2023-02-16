@@ -4,7 +4,8 @@ import datetime
 #
 # Filesystem paths & extensions
 #
-DEFAULT_DATA_DIRECTORY   = os.path.expanduser("~/Dropbox/Projects/TimeCsv/data")
+MAIN_FOLDER = os.path.dirname(os.path.dirname(__file__))
+DEFAULT_DATA_DIRECTORY   = os.path.join(MAIN_FOLDER, "data")
 POSSIBLE_FILE_EXTENSIONS = [".tcsv", ".csv", ".txt", ""]
 # temporary files
 DEFAULT_PIE_PATH = "/tmp/pie.png"
