@@ -59,6 +59,13 @@ class Filter(object):
 	def __repr__(self):
 		return self.__class__.__name__
 
+
+def _remove_brackets(s):
+	return s[1:-1]
+
+def _should_remove_brackets(f: Filter, operation):
+	return isinstance(f, MultiFilter) and f.operation == operation
+
 _OPERATOR_MAP = {
 	"and": operator.and_,
 	"or": operator.or_,
@@ -87,12 +94,15 @@ class MultiFilter(Filter):
 		)
 
 	def __repr__(self):
-		if isinstance(self.filter_2, MultiFilter) and self.filter_2.operation == self.operation:
-			return f"({repr(self.filter_1)}) {self.operation} ({repr(self.filter_2)[1:-1]})"
-		elif isinstance(self.filter_1, MultiFilter) and self.filter_1.operation == self.operation:
-			return f"({repr(self.filter_1)[1:-1]}) {self.operation} ({repr(self.filter_2)})"
-		else:
-			return f"({repr(self.filter_1)}) {self.operation} ({repr(self.filter_2)})"
+		filter_1_repr = repr(self.filter_1)
+		filter_2_repr = repr(self.filter_2)
+
+		if _should_remove_brackets(self.filter_1, self.operation):
+			filter_1_repr = _remove_brackets(filter_1_repr)
+		if _should_remove_brackets(self.filter_2, self.operation):
+			filter_2_repr = _remove_brackets(filter_2_repr)
+
+		return f"({filter_1_repr}) {self.operation} ({filter_2_repr})"
 
 	@property
 	def _selected_time(self):
