@@ -16,17 +16,11 @@ class StrFilter(Filter):
 			case_sensitive=case_sensitive, regex=regex
 		)
 
-		self._multi = self._group | self._description
+		self._filter = self._group | self._description
 
 		self.string = string
 		self.case_sensitive = case_sensitive
 		self.regex = regex
-
-	def filter(self, data):
-		return self._multi.filter(data)
-
-	def __repr__(self):
-		return self._multi.__repr__()
 
 # auto classify which filter to use
 class AutoFilter(Filter):
@@ -107,12 +101,6 @@ class AutoFilter(Filter):
 			raise ValueError("AutoFilter got empty string")
 
 		return string, exclude, regex, friends, location, vehicle
-
-	def filter(self, data):
-		return self._filter.filter(data)
-
-	def __repr__(self):
-		return self._filter.__repr__()
 
 
 class AutoTimeFilter(BaseTimeFilter):

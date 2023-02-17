@@ -10,6 +10,9 @@ class Filter(object):
 		if hasattr(self, "_filter_single_item") and callable(self._filter_single_item):
 			return map(self._filter_single_item, data)
 
+		if hasattr(self, "_filter") and isinstance(self._filter, Filter):
+			return self._filter.filter(data)
+
 		raise NotImplementedError
 
 	def get_filtered_data(self, data):
@@ -56,7 +59,10 @@ class Filter(object):
 		"""
 		return NotFilter(self)
 
-	def __repr__(self):
+	def __repr__(self):		
+		if hasattr(self, "_filter") and isinstance(self._filter, Filter):
+			return self._filter.__repr__()
+
 		return self.__class__.__name__
 
 
