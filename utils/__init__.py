@@ -7,4 +7,5 @@ from .date_time import 	get_ymd_tuple,         \
 						seconds_to_hours_str,  \
 						shorten_selected_time, \
 						format_dates
+from .case_sensitive import convert_to_case_sensitive
 from .debug import print_items

@@ -1,5 +1,6 @@
 import operator
 
+from ..utils  import convert_to_case_sensitive
 from TimeCsv.filters.base_filters import Filter
 from TimeCsv.filters.filter_utils import find_string_in_string, find_string_in_list
 
@@ -15,10 +16,7 @@ class BaseContentFilter(Filter):
 		self.case_sensitive = _set_default_value(case_sensitive, True)
 		self.regex          = _set_default_value(regex         , False)
 
-		if self.case_sensitive:
-			self.string_to_find = string_to_find
-		else:
-			self.string_to_find = string_to_find.lower()
+		self.string_to_find = convert_to_case_sensitive(string_to_find, self.case_sensitive)
 
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self.string_to_find})"
@@ -104,10 +102,7 @@ class ExtraDetailsValueFilter(BaseContentFilter):
 	def __init__(self, string_to_find, extra_details_name, case_sensitive=False, regex=False):
 		super().__init__(string_to_find, case_sensitive, regex)
 
-		if self.case_sensitive:
-			self.extra_details_name = extra_details_name
-		else:
-			self.extra_details_name = extra_details_name.lower()
+		self.extra_details_name = convert_to_case_sensitive(extra_details_name, self.case_sensitive)
 
 	def _filter_single_item(self, item):
 		return (
