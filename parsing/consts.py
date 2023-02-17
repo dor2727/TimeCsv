@@ -1,5 +1,5 @@
 import re
-
+from functools import partial
 
 #
 # File format
@@ -54,6 +54,9 @@ FRIEND_PATTERN_STRIP = [
 	for word in FRIEND_PATTERN_WORDS
 ]
 FRIEND_PATTERN_TO_FRIENDS = " to friends"
+
+PATTERN_EXACT_AND = re.compile("\\band\\b")
+REMOVE_AND = partial(PATTERN_EXACT_AND.sub, '')
 
 
 #
