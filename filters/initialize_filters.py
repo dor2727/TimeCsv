@@ -45,6 +45,16 @@ def initialize_time_filter(args):
 
 	return time_filter
 
+def build_default_time_filter(args):
+	# if the default location is used, set the filter to 2 months
+	if args.file == DEFAULT_DATA_DIRECTORY:
+		args.months_back = 2
+		time_filter = build_time_filter(args)
+	# else, treat it as `all_time`
+	else:
+		time_filter = TimeFilter_None()
+
+
 def build_time_filter(args):
 	filters = []
 
