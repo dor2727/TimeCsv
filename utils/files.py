@@ -1,5 +1,7 @@
 import os
 
+from .consts import DEFAULT_DATA_DIRECTORY
+
 # get the newsest file
 def newest(path=DEFAULT_DATA_DIRECTORY):
 	files = os.listdir(path)

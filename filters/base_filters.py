@@ -2,7 +2,7 @@ import operator
 import itertools
 from collections.abc import Iterable
 
-from TimeCsv.consts import DEFAULT_SELECTED_TIME
+from TimeCsv.utils.consts import DEFAULT_SELECTED_TIME
 from TimeCsv.parsing import DataItem
 
 class Filter(object):

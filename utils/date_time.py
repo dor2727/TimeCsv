@@ -1,5 +1,7 @@
 import datetime
 
+from .consts import DATE_REPRESENTATION_PATTERN
+
 def get_ymd_tuple(d):
 	"ymd stands for Year, Month, Day"
 	return (d.year, d.month, d.day)
