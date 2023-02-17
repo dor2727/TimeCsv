@@ -22,22 +22,16 @@ class BaseContentFilter(Filter):
 		return f"{self.__class__.__name__}({self.string_to_find})"
 
 	def _find_string_in_string(self, string_to_search_in, string_to_find=None):
-		if string_to_find is None:
-			string_to_find = self.string_to_find
-
 		return find_string_in_string(
-			string_to_find,
+			string_to_find or self.string_to_find,
 			string_to_search_in,
 			self.regex,
 			self.case_sensitive
 		)
 
 	def _find_string_in_list(self, list_to_search_in, string_to_find=None):
-		if string_to_find is None:
-			string_to_find = self.string_to_find
-
 		return find_string_in_list(
-			string_to_find,
+			string_to_find or self.string_to_find,
 			list_to_search_in,
 			self.regex,
 			self.case_sensitive
