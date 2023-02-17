@@ -1,7 +1,7 @@
 import re
 
-from TimeCsv.utils import ordered_unique
-from TimeCsv.parsing.consts import *
+from .consts import *
+from ..utils import ordered_unique
 
 class DescriptionDetailsParser(object):
 	PATTERN_STRIP = None
