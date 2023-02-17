@@ -82,7 +82,7 @@ class TimeFilter_ThisWeek(TimeFilter_Days):
 	def __repr__(self):
 		return f"{self.__class__.__name__}"
 class TimeFilter_Weeks(TimeFilter_Days):
-	def __init__(self, weeks: int=7):
+	def __init__(self, weeks: int=2):
 		"""
 			amount of weeks to take
 				1 means the past 7 days, including today
@@ -106,6 +106,13 @@ class TimeFilter_Month(BaseTimeFilter):
 
 			if month==0: get current month
 		"""
+		self._set_month_and_year(month, year)
+
+		self.start_time = datetime.datetime(self.year, self.month, 1)
+		self.stop_time  = datetime.datetime(self.year, self.month,
+			calendar.monthrange(self.year, self.month)[1])
+
+	def _set_month_and_year(self, month: int=0, year: int=0):
 		now = datetime.datetime.now()
 
 		self.month = month or now.month
@@ -118,9 +125,6 @@ class TimeFilter_Month(BaseTimeFilter):
 		else:
 			self.year = year
 
-		self.start_time = datetime.datetime(self.year, self.month, 1)
-		self.stop_time  = datetime.datetime(self.year, self.month,
-			calendar.monthrange(self.year, self.month)[1])
 
 	def _filter_single_item(self, item):
 		return (
@@ -178,4 +182,6 @@ class TimeFilter_DateRange(BaseTimeFilter):
 
 	@property
 	def _selected_time(self):
-		return "daterange"
+		start = self.start_time.strftime("%Y/%m/%d")
+		stop  = self.stop_time.strftime("%Y/%m/%d")
+		return f"daterange ({start} --> {stop})"
