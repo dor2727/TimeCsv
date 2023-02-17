@@ -2,27 +2,21 @@ import re
 import operator
 import functools
 
+def _reduce_iterable(iterable, function):
+	l = list(filter(bool, l))
+	if not l:
+		return None
+
+	return functools.reduce(
+		function,
+		l
+	)
+
 def join_filters_with_or(l):
-	# check if list is empty
-	l = list(filter(bool, l))
-	if not l:
-		return None
+	return _reduce_iterable(l, operator.or_)
 
-	return functools.reduce(
-		operator.or_,
-		l
-	)
-
-def join_filters_with_and(l):
-	# check if list is empty
-	l = list(filter(bool, l))
-	if not l:
-		return None
-
-	return functools.reduce(
-		operator.and_,
-		l
-	)
+def join_filters_with_and(l: "Iterable[Filter]"):
+	return _reduce_iterable(l, operator.and_)
 
 
 def find_string_in_string(string_to_find, string_to_search_in, regex, case_sensitive):
