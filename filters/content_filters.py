@@ -3,12 +3,17 @@ import operator
 from TimeCsv.filters.base_filters import Filter
 from TimeCsv.filters.filter_utils import find_string_in_string, find_string_in_list
 
+def _set_default_value(value: bool|None, default_value):
+	if type(value) is bool:
+		return value
+	else:
+		return default_value
 
 # do not use this class directly - it is a meta class
 class BaseContentFilter(Filter):
 	def __init__(self, string_to_find, case_sensitive=None, regex=None):
-		self.case_sensitive = case_sensitive if type(case_sensitive) is bool else True
-		self.regex          = regex          if type(regex)          is bool else False
+		self.case_sensitive = _set_default_value(case_sensitive, True)
+		self.regex          = _set_default_value(regex         , False)
 
 		if self.case_sensitive:
 			self.string_to_find = string_to_find
