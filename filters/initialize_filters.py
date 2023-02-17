@@ -31,7 +31,7 @@ def initialize_time_filter(args):
 	if args.all_time:
 		return TimeFilter_None()
 
-	time_filter   = build_time_filter(args)
+	time_filter = build_time_filter(args)
 
 	# if nothing is set, use default value
 	if time_filter is None:
