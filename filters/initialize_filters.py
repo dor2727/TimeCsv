@@ -1,13 +1,13 @@
 import datetime
 
-from TimeCsv.consts import DEFAULT_DATA_DIRECTORY
-from TimeCsv.filters.generic_filters import AutoFilter
-from TimeCsv.filters.time_filters    import TimeFilter_None    , \
-											TimeFilter_Days    , \
-											TimeFilter_Month   , \
-											TimeFilter_Year
-from TimeCsv.filters.filter_utils import 	join_filters_with_or, \
-											join_filters_with_and
+from .generic_filters import AutoFilter
+from .time_filters import 	TimeFilter_None    , \
+							TimeFilter_Days    , \
+							TimeFilter_Month   , \
+							TimeFilter_Year
+from .filter_utils import 	join_filters_with_or, \
+							join_filters_with_and
+from ..consts import DEFAULT_DATA_DIRECTORY
 
 def initialize_search_filter(args):
 	filters = [

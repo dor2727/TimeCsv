@@ -1,8 +1,8 @@
 import calendar
 import datetime
 
-from TimeCsv.utils import get_midnight, format_dates
-from TimeCsv.filters.base_filters import ComplexFilter, TrueFilter
+from ..utils import get_midnight, format_dates
+from .base_filters import ComplexFilter, TrueFilter
 
 # - do not use this class directly - it is an abstract class
 # - the ComplexFilter is here for generic_filters.py:AutoTimeFilter

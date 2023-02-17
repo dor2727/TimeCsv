@@ -1,10 +1,10 @@
-from TimeCsv.filters.base_filters import ComplexFilter
-from TimeCsv.filters.content_filters import *
-from TimeCsv.filters.filter_utils import join_filters_with_or
-from TimeCsv.filters.time_filters import *
-from TimeCsv.parsing import DescriptionDetailsParser_Friends , \
-							DescriptionDetailsParser_Location, \
-							DescriptionDetailsParser_Vehicle
+from .base_filters import ComplexFilter
+from .content_filters import *
+from .filter_utils import join_filters_with_or
+from .time_filters import *
+from ..parsing import 	DescriptionDetailsParser_Friends , \
+						DescriptionDetailsParser_Location, \
+						DescriptionDetailsParser_Vehicle
 
 # find str in either group or description
 class StrFilter(ComplexFilter):

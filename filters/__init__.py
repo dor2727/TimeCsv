@@ -1,30 +1,6 @@
-from TimeCsv.filters.content_filters import DescriptionFilter      , \
-											GroupFilter            , \
-											FriendFilter           , \
-											HasLocationFilter      , \
-											LocationFilter         , \
-											HasVehicleFilter       , \
-											VehicleFilter          , \
-											HasExtraDetailsFilter  , \
-											ExtraDetailsFilter     , \
-											ExtraDetailsValueFilter, \
-											DurationFilter
-from TimeCsv.filters.time_filters    import TimeFilter_None    , \
-											TimeFilter_Days    , \
-											TimeFilter_Today   , \
-											TimeFilter_ThisWeek, \
-											TimeFilter_Weeks   , \
-											TimeFilter_Month   , \
-											TimeFilter_Year    , \
-											TimeFilter_DateRange
-from TimeCsv.filters.generic_filters import StrFilter , \
-											AutoFilter, \
-											AutoTimeFilter
-from TimeCsv.filters.special_filters import filter_podcast, \
-											filter_sleep
-
-from TimeCsv.filters.filter_utils import join_filters_with_or, \
-										 join_filters_with_and
-
-from TimeCsv.filters.initialize_filters import initialize_time_filter, \
-											   initialize_search_filter
+from .content_filters import *
+from .filter_utils import *
+from .generic_filters import *
+from .initialize_filters import *
+from .special_filters import *
+from .time_filters import *

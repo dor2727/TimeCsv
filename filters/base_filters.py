@@ -2,8 +2,8 @@ import operator
 import itertools
 from collections.abc import Iterable
 
-from TimeCsv.utils.consts import DEFAULT_SELECTED_TIME
-from TimeCsv.parsing import DataItem
+from ..utils.consts import DEFAULT_SELECTED_TIME
+from ..parsing import DataItem
 
 class Filter(object):
 	def filter(self, data):

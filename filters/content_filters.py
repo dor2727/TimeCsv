@@ -1,8 +1,8 @@
 import operator
 
+from .base_filters import Filter
+from .filter_utils import find_string_in_string, find_string_in_list
 from ..utils  import convert_to_case_sensitive
-from TimeCsv.filters.base_filters import Filter
-from TimeCsv.filters.filter_utils import find_string_in_string, find_string_in_list
 
 def _set_default_value(value: bool|None, default_value):
 	if type(value) is bool:
