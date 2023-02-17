@@ -8,7 +8,7 @@ from TimeCsv.parsing import DescriptionDetailsParser_Friends , \
 
 # find str in either group or description
 class StrFilter(Filter):
-	def __init__(self, string, case_sensitive=None, regex=False):
+	def __init__(self, string, case_sensitive=None, regex=None):
 		self._group       = GroupFilter(      string,
 			case_sensitive=case_sensitive, regex=regex
 		)
