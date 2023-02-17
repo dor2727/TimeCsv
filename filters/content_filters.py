@@ -10,7 +10,7 @@ def _set_default_value(value: bool|None, default_value):
 	else:
 		return default_value
 
-# do not use this class directly - it is a meta class
+# do not use this class directly - it is an abstract class
 class BaseContentFilter(Filter):
 	def __init__(self, string_to_find, case_sensitive=None, regex=None):
 		self.case_sensitive = _set_default_value(case_sensitive, True)
@@ -37,20 +37,30 @@ class BaseContentFilter(Filter):
 			self.case_sensitive
 		)
 
-
+#
+# Desscription
+#
 class DescriptionFilter(BaseContentFilter):
 	def _filter_single_item(self, item):
 		return self._find_string_in_string(item.description)
 
+#
+# Group
+#
 class GroupFilter(BaseContentFilter):
 	def _filter_single_item(self, item):
 		return self._find_string_in_string(item.group)
 
+#
+# Friend
+#
 class FriendFilter(BaseContentFilter):
 	def _filter_single_item(self, item):
 		return self._find_string_in_list(item.friends)
 
-# Filters whether there is a location set
+#
+# Location
+#
 class HasLocationFilter(Filter):
 	def _filter_single_item(self, item):
 		return bool(item.location)
@@ -63,7 +73,9 @@ class LocationFilter(BaseContentFilter):
 			self._find_string_in_string(item.location)
 		)
 
-# Filters whether there is a location set
+#
+# Vehicle
+#
 class HasVehicleFilter(Filter):
 	def _filter_single_item(self, item):
 		return bool(item.vehicle)
@@ -76,7 +88,9 @@ class VehicleFilter(BaseContentFilter):
 			self._find_string_in_string(item.vehicle)
 		)
 
-# Filters whether there are extra_details in the DataItem
+#
+# Extra Details
+#
 class HasExtraDetailsFilter(Filter):
 	def _filter_single_item(self, item):
 		return bool(item.extra_details)
@@ -107,6 +121,9 @@ class ExtraDetailsValueFilter(BaseContentFilter):
 			self._find_string_in_list(item.extra_details[self.extra_details_name])
 		)
 
+#
+# Duration
+#
 _OPERATOR_MAP = {
 	"maximum": operator.ge,
 	"minimum": operator.le,
