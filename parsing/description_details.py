@@ -14,9 +14,17 @@ class DescriptionDetailsParser(object):
 
 	# this function requires only the description
 	@classmethod
-	def strip(self, string):
-		return re.sub(self.PATTERN_STRIP, '', string).strip()
+	def strip(cls, string):
+		if isinstance(cls.PATTERN_STRIP, (str, re.Pattern)):
+			return re.sub(cls.PATTERN_STRIP, '', string).strip()
 
+		elif isinstance(cls.PATTERN_STRIP, list):
+			for pattern in cls.PATTERN_STRIP:
+				string = re.sub(pattern, '', string)
+			return string.strip()
+
+		else:
+			raise NotImplemented
 
 class DescriptionDetailsParser_ExtraDetails(DescriptionDetailsParser):
 	PATTERN_STRIP   = EXTRA_DETAILS_PATTERN_STRIP
@@ -124,12 +132,6 @@ class DescriptionDetailsParser_Vehicle(DescriptionDetailsParser):
 	@classmethod
 	def extract_values(self, dataitem):
 		return self.extract_values_from_string(dataitem.description)
-
-	@classmethod
-	def strip(self, string):
-		for pattern in self.PATTERN_STRIP:
-			string = re.sub(pattern, '', string)
-		return string.strip()
 
 	# An extracted API for finding a location in a string without a dataitem
 	@classmethod
