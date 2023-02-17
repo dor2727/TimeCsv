@@ -43,7 +43,7 @@ re_cappital_word = "[A-Z][A-Za-z]*"
 #         and any name which is not the first nor the last has space before and after itself
 PATTERN_NAMES_LIST  = "((%s)( %s)*( and %s)*)" % (tuple([re_cappital_word])*3)
 
-FRIEND_PATTERN_WORDS = ["with", "for", "to"]
+FRIEND_PATTERN_WORDS = ["with", "for", "to", "help"]
 
 FRIEND_PATTERN_EXTRACT = [
 	re.compile(f"(?<={word} ){PATTERN_NAMES_LIST}")
