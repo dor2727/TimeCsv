@@ -69,7 +69,9 @@ class MultiFilter(Filter):
 	def __init__(self, filter_1, filter_2, operation):
 		self.filter_1 = filter_1
 		self.filter_2 = filter_2
+		self._set_operator(operation)
 
+	def _set_operator(self, operation):
 		self.operation = operation
 		try:
 			self.operator = _OPERATOR_MAP[operation.lower()]
