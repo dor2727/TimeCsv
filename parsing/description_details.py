@@ -9,7 +9,7 @@ class DescriptionDetailsParser(object):
 
 	# this function requires the whole DataItem object
 	@classmethod
-	def extract_values(self, dataitem):
+	def extract_values(cls, dataitem):
 		raise NotImplemented
 
 	# this function requires only the description
@@ -31,9 +31,9 @@ class DescriptionDetailsParser_ExtraDetails(DescriptionDetailsParser):
 	PATTERN_EXTRACT = EXTRA_DETAILS_PATTERN_EXTRACT
 
 	@classmethod
-	def extract_values(self, dataitem):
+	def extract_values(cls, dataitem):
 		try:
-			extra_details = re.findall(self.PATTERN_EXTRACT, dataitem.description)
+			extra_details = re.findall(cls.PATTERN_EXTRACT, dataitem.description)
 		except:
 			import ipdb; ipdb.set_trace()
 
@@ -49,8 +49,8 @@ class DescriptionDetailsParser_Friends(DescriptionDetailsParser):
 	PATTERN_EXTRACT = FRIEND_PATTERN_EXTRACT
 
 	@classmethod
-	def extract_values(self, dataitem):
-		found = self._get_all_friends(self, dataitem)
+	def extract_values(cls, dataitem):
+		found = cls._get_all_friends(dataitem)
 
 		friends_list = self._combine_friends_list(self, found)
 
@@ -100,22 +100,22 @@ class DescriptionDetailsParser_Location(DescriptionDetailsParser):
 
 
 	@classmethod
-	def extract_values(self, dataitem):
-		return self.extract_values_from_string(dataitem.description)
+	def extract_values(cls, dataitem):
+		return cls.extract_values_from_string(dataitem.description)
 
 	@classmethod
-	def strip(self, string):
-		string = re.sub(self.PATTERN_STRIP, '', string)
+	def strip(cls, string):
+		string = re.sub(cls.PATTERN_STRIP, '', string)
 		string = re.sub(PATTERN_LOCATION_THEIR_PLACE, '', string)
 		return string.strip()
 
 	# An extracted API for finding a location in a string without a dataitem
 	@classmethod
-	def extract_values_from_string(self, string):
+	def extract_values_from_string(cls, string):
 		if PATTERN_LOCATION_THEIR_PLACE in string:
 			return "Their place"
 
-		l = re.findall(self.PATTERN_EXTRACT, string)
+		l = re.findall(cls.PATTERN_EXTRACT, string)
 		if len(l) == 0:
 			return None
 		elif len(l) == 1:
@@ -130,12 +130,12 @@ class DescriptionDetailsParser_Vehicle(DescriptionDetailsParser):
 
 
 	@classmethod
-	def extract_values(self, dataitem):
-		return self.extract_values_from_string(dataitem.description)
+	def extract_values(cls, dataitem):
+		return cls.extract_values_from_string(dataitem.description)
 
 	# An extracted API for finding a location in a string without a dataitem
-	@classmethod
-	def extract_values_from_string(self, string):
+	@staticmethod
+	def extract_values_from_string(string):
 		for vehicle in VEHICLES:
 			if f"by {vehicle}" in string:
 				return vehicle
