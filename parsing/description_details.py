@@ -51,47 +51,50 @@ class DescriptionDetailsParser_Friends(DescriptionDetailsParser):
 	@classmethod
 	def extract_values(cls, dataitem):
 		found = cls._get_all_friends(dataitem)
-
-		friends_list = self._combine_friends_list(self, found)
-
-		# unique
-		return ordered_unique(friends_list)
-
-	def _get_all_friends(self, dataitem):
-		found = []
-		for pattern in self.PATTERN_EXTRACT:
-			found += re.findall(pattern, dataitem.description)
-
-		# search_at_beginning 
-		if dataitem.group == "Friends":
-			found += re.findall(f"^{PATTERN_NAMES_LIST}", dataitem.description)
-
-		return found
-
-	def _combine_friends_list(self, friends_list):
-		# join all results into a big string
-		friends_list = ' '.join(i[0] for i in friends_list)
-		# remove 'and', and convert back into a list
-		friends_list = re.sub("\\band\\b", '', friends_list)
-		friends_list = friends_list.split()
-		return friends_list
-
-	@classmethod
-	def strip(self, string):
-		for pattern in self.PATTERN_STRIP:
-			string = re.sub(pattern, '', string)
-		return string.strip()
+		return cls._combine_and_order_friends_list(found)
 
 	# An extracted API for finding friends in a string without a dataitem
 	@classmethod
-	def extract_values_from_string(self, string):
+	def extract_values_from_string(cls, string):
+		found = cls._get_friends_from_description(string)
+		return cls._combine_and_order_friends_list(found)
+
+	@classmethod
+	def _get_friends_from_description(cls, description):
 		found = []
-		for pattern in self.PATTERN_EXTRACT:
-			found += re.findall(pattern, string)
 
-		friends_list = self._combine_friends_list(self, found)
+		for pattern in cls.PATTERN_EXTRACT:
+			found += re.findall(pattern, description)
 
-		# unique
+		return found
+
+	@staticmethod
+	def _get_friends_from_group(dataitem):
+		# search_at_beginning 
+		if dataitem.group == "Friends":
+			found = re.findall(f"^{PATTERN_NAMES_LIST}", dataitem.description)
+		else:
+			found = []
+
+		return found
+
+	@classmethod
+	def _get_all_friends(cls, dataitem):
+		return cls._get_friends_from_description(dataitem.description) + cls._get_friends_from_group(dataitem)
+
+	@staticmethod
+	def _combine_friends_list(friends_list):
+		# get the first result from `re.findall`
+		all_results = map(itemgetter(0), friends_list)
+
+		all_results = map(REMOVE_AND, all_results)
+
+		all_results_2d = map(str.split, all_results)
+		return sum(all_results_2d, [])
+
+	@classmethod
+	def _combine_and_order_friends_list(cls, friends_list):
+		friends_list = cls._combine_friends_list(found)
 		return ordered_unique(friends_list)
 
 class DescriptionDetailsParser_Location(DescriptionDetailsParser):
