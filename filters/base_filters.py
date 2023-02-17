@@ -10,9 +10,6 @@ class Filter(object):
 		if hasattr(self, "_filter_single_item") and callable(self._filter_single_item):
 			return map(self._filter_single_item, data)
 
-		if hasattr(self, "_filter") and isinstance(self._filter, Filter):
-			return self._filter.filter(data)
-
 		raise NotImplementedError
 
 	def get_filtered_data(self, data):
@@ -60,10 +57,27 @@ class Filter(object):
 		return NotFilter(self)
 
 	def __repr__(self):		
+		return self.__class__.__name__
+
+class ComplexFilter(Filter):
+	def filter(self, data):
+		if hasattr(self, "_filter") and isinstance(self._filter, Filter):
+			return self._filter.filter(data)
+
+		return super().filter(data)
+
+	@property
+	def selected_time(self):
+		if hasattr(self, "_filter") and isinstance(self._filter, Filter):
+			return self._filter._selected_time
+
+		return super()._selected_time
+
+	def __repr__(self):		
 		if hasattr(self, "_filter") and isinstance(self._filter, Filter):
 			return self._filter.__repr__()
 
-		return self.__class__.__name__
+		return super().__repr__()
 
 
 def _remove_brackets(s):

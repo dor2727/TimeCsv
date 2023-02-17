@@ -1,4 +1,4 @@
-from TimeCsv.filters.base_filters import Filter
+from TimeCsv.filters.base_filters import ComplexFilter
 from TimeCsv.filters.content_filters import *
 from TimeCsv.filters.filter_utils import join_filters_with_or
 from TimeCsv.filters.time_filters import *
@@ -7,7 +7,7 @@ from TimeCsv.parsing import DescriptionDetailsParser_Friends , \
 							DescriptionDetailsParser_Vehicle
 
 # find str in either group or description
-class StrFilter(Filter):
+class StrFilter(ComplexFilter):
 	def __init__(self, string, case_sensitive=None, regex=None):
 		self._group       = GroupFilter(      string,
 			case_sensitive=case_sensitive, regex=regex
@@ -23,7 +23,7 @@ class StrFilter(Filter):
 		self.regex = regex
 
 # auto classify which filter to use
-class AutoFilter(Filter):
+class AutoFilter(ComplexFilter):
 	_not_filter_prefix = ('~', '!')
 
 	def __init__(self, string, case_sensitive=None, force_regex=False):
@@ -159,13 +159,3 @@ class AutoTimeFilter(BaseTimeFilter):
 			raise ValueError("Invalid input type")
 		if len(time_range_tuple) > 3 and type(time_range_tuple[3]) is not bool:
 			raise ValueError("Invalid input type")
-
-	def filter(self, data):
-		return self._filter.filter(data)
-
-	def __repr__(self):
-		return self._filter.__repr__()
-
-	@property
-	def _selected_time(self):
-		return self._filter._selected_time

@@ -2,10 +2,11 @@ import calendar
 import datetime
 
 from TimeCsv.utils import get_midnight, format_dates
-from TimeCsv.filters.base_filters import Filter, TrueFilter
+from TimeCsv.filters.base_filters import ComplexFilter, TrueFilter
 
-# do not use this class directly - it is a meta class
-class BaseTimeFilter(Filter):
+# - do not use this class directly - it is an abstract class
+# - the ComplexFilter is here for generic_filters.py:AutoTimeFilter
+class BaseTimeFilter(ComplexFilter):
 	def _filter_single_item(self, item):
 		return item.is_in_date_range(self.start_time, self.stop_time)
 
