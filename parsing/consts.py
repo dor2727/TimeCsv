@@ -20,6 +20,8 @@ STOP_TIME_INITIALS_STOP     = ('s', 'e') # stop_time can either indicate when th
 STOP_TIME_INITIALS_BREAK    = ('b',)     # or how long it lasted
 STOP_TIME_INITIALS_DURATION = ('d', 't') + STOP_TIME_INITIALS_BREAK
 
+GROUP_SEPERATOR = ":"
+
 
 #
 # Extra details

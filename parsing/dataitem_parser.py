@@ -165,7 +165,9 @@ class DataItemParser(object):
 		return self.stop_time
 	def _parser_group(self, s):
 		self.group = s
-		return s
+		self.groups = tuple(s.split(GROUP_SEPERATOR))
+		self.main_group = self.groups[0]
+		return self.groups
 	def _parser_description(self, s):
 		self.description = s
 		return s
