@@ -95,7 +95,7 @@ class DescriptionDetailsParser_Friends(DescriptionDetailsParser):
 
 	@classmethod
 	def _combine_and_order_friends_list(cls, friends_list):
-		friends_list = cls._combine_friends_list(found)
+		friends_list = cls._combine_friends_list(friends_list)
 		return ordered_unique(friends_list)
 
 class DescriptionDetailsParser_Location(DescriptionDetailsParser):
