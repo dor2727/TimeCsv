@@ -70,19 +70,13 @@ class DataItem(DataItemParser):
 			return int(self) + other
 		else:
 			return NotImplemented
-	def __radd__(self, other):
-		if type(other) is DataItem:
-			return int(self) + int(other)
-		elif type(other) is int:
-			return int(self) + other
-		else:
-			return NotImplemented
+	__radd__ = __add__
 
 	# Compares the date of 2 DataItems
 	def __lt__(self, other):
-		return self.stop_time <  other.start_time
+		return self.stop_time  <  other.start_time
 	def __le__(self, other):
-		return self.stop_time <= other.start_time
+		return self.stop_time  <= other.start_time
 	def __ge__(self, other):
 		return self.start_time >= other.stop_time
 	def __gt__(self, other):
