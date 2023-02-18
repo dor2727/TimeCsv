@@ -106,10 +106,15 @@ class DataFile(object):
 		self.reload()
 
 	def __repr__(self):
-		return "%s : %s : %d items" % (
+		if getattr(self, "empty", False):
+			items_message = "Empty"
+		else:
+			items_message = "%d items" % len(self.data)
+
+		return "%s : %s : %s" % (
 			self.__class__.__name__,
 			self._path,
-			len(self.data)
+			items_message
 		)
 
 	def reload(self):
