@@ -7,7 +7,7 @@ from .time_filters import 	TimeFilter_None    , \
 							TimeFilter_Year
 from .filter_utils import 	join_filters_with_or, \
 							join_filters_with_and
-from ..consts import DEFAULT_DATA_DIRECTORY
+from ..utils.consts import DEFAULT_DATA_DIRECTORY
 
 def initialize_search_filter(args):
 	filters = [

@@ -1,6 +1,6 @@
-from TimeCsv.utils import *
-from TimeCsv.parsing.consts import *
-from TimeCsv.parsing.parse_exception import ParseError
+from ..consts import *
+from ..parse_exception import ParseError
+from ..utils import *
 
 
 class DataItemParser(object):

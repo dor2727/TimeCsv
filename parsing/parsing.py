@@ -1,10 +1,10 @@
 import os
 import csv
 
-from TimeCsv.utils import *
-from TimeCsv.parsing.consts import *
-from TimeCsv.parsing.dataitem_parser     import DataItemParser
-from TimeCsv.parsing.description_details import DETAIL_PARSERS
+from .consts import *
+from .dataitem_parser     import DataItemParser
+from .description_details import DETAIL_PARSERS
+from ..utils import *
 
 
 class DataItem(DataItemParser):
