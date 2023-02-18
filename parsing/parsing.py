@@ -198,11 +198,17 @@ class DataFile(object):
 		return self.data[n]
 
 	@property
-	def _data_range(self):
+	def data_range(self):
 		if self.data:
 			return self.data[0].start_time, self.data[-1].stop_time
 		else:
 			return NULL_DATE, NULL_DATE
+	@property
+	def start_time(self):
+		return self.data_range[0]
+	@property
+	def stop_time(self):
+		return self.data_range[1]
 
 
 class DataFolder(object):
@@ -242,7 +248,7 @@ class DataFolder(object):
 		# sort the data files by date
 		self.data_files = sorted(
 			self.data_files,
-			key=lambda df: df._data_range[1]
+			key=lambda df: df.stop_time
 		)
 
 
