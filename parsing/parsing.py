@@ -263,6 +263,9 @@ class DataFolder(object):
 		self.friends   = list(set(sum([i.friends   for i in self.data_files], [])))
 		self.locations = list(set(sum([i.locations for i in self.data_files], [])))
 
+		self.titles    = list(set(sum([i.titles    for i in self.data_files], [])))
+		self.titles.sort()
+
 
 	def __getitem__(self, n):
 		return self.data[n]
