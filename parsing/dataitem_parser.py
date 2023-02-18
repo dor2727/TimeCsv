@@ -1,5 +1,5 @@
-from ..consts import *
-from ..parse_exception import ParseError
+from .consts import *
+from .parse_exception import ParseError
 from ..utils import *
 
 
