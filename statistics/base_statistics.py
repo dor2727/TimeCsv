@@ -9,6 +9,7 @@ from TimeCsv.utils import 	shorten_selected_time, \
 							seconds_to_str       , \
 							seconds_to_hours_str
 
+
 class Stats(object):
 	def __init__(self, data, time_filter=None):
 		self.data = data
@@ -91,13 +92,13 @@ class Stats(object):
 	# Exporing the data
 	#
 	def to_text(self):
-		raise NotImplemented()
+		raise NotImplemented
 
 	def to_telegram(self):
 		return self.to_text()
 
 	def to_dict(self):
-		raise NotImplemented()
+		raise NotImplemented
 
 	def to_csv(self):
 		items = self.to_dict().items()
@@ -117,7 +118,7 @@ class Stats(object):
 		if save is str: save the image to that path
 		if save is True: save to the default location
 		"""
-		raise NotImplemented()
+		raise NotImplemented
 
 	def to_bar(self, headers=None, values=None, title=None, save=True):
 		"""
@@ -125,7 +126,7 @@ class Stats(object):
 		if save is str: save the image to that path
 		if save is True: save to the default location
 		"""
-		raise NotImplemented()
+		raise NotImplemented
 
 
 class BasicStats(Stats):
@@ -169,7 +170,6 @@ class DetailedStats(Stats):
 
 	def __init__(self, data, time_filter=None, grouping_method="time", sorting_method="by_value"):
 		super().__init__(data, time_filter)
-
 
 		self._grouping_method = grouping_method.lower()
 		if self._grouping_method not in self._allowed_grouping_methods:
