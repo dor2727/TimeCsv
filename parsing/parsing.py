@@ -1,10 +1,41 @@
 import os
 import csv
+import pandas as pd
+from dataclasses import dataclass
+
 
 from .consts import *
 from .dataitem_parser     import DataItemParser
 from .description_details import DETAIL_PARSERS
 from ..utils import *
+
+
+
+@dataclass
+class DataItemDataclass:
+	# debug infi
+	_file_name: str
+	_line     : int
+
+	# main info - time
+	date      : datetime.datetime
+	start_time: datetime.datetime
+	stop_time : datetime.datetime
+
+	total_seconds: int
+
+	# main info - groups
+	group     : str
+	groups    : list[str]
+	main_group: str
+
+	# main info - description
+	description_full: str
+	description     : str
+	extra_details   : dict[str, list[str]]
+	friends         : list[str]
+	location        : str | None
+	vehicle         : str | None
 
 
 class DataItem(DataItemParser):
@@ -98,6 +129,28 @@ class DataItem(DataItemParser):
 		if include_by_stop  and (start_date <= self.stop_time  <= end_date):
 			return True
 		return False
+
+	def to_dataclass(self):
+		return DataItemDataclass(
+			_file_name      =self._file_name,
+			_line           =self._line,
+			# 
+			date            =self.date,
+			start_time      =self.start_time,
+			stop_time       =self.stop_time,
+			total_seconds   =int(self),
+			# 
+			group           =self.group,
+			groups          =self.groups,
+			main_group      =self.main_group,
+			# 
+			description_full=self.description,
+			description     =self.description_stripped,
+			extra_details   =self.extra_details,
+			friends         =self.friends,
+			location        =self.location,
+			vehicle         =self.vehicle,
+		)
 
 
 class DataFile(object):
@@ -210,6 +263,9 @@ class DataFile(object):
 	def stop_time(self):
 		return self.data_range[1]
 
+	def to_dataframe(self):
+		return pd.DataFrame(map(DataItem.to_dataclass, self.data))
+
 
 class DataFolder(object):
 	def __init__(self, folder=DEFAULT_DATA_DIRECTORY, recursive=True):
@@ -288,3 +344,7 @@ class DataFolder(object):
 				res &= temp
 
 		return invalid_items or res
+
+
+	def to_dataframe(self):
+		return pd.DataFrame(map(DataItem.to_dataclass, self.data))
