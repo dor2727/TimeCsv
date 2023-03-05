@@ -3,6 +3,13 @@ from .parse_exception import ParseError
 from ..utils import *
 
 
+class no_fail_tuple(tuple):
+	def __getitem__(self, index):
+		try:
+			return super().__getitem__(index)
+		except KeyError:
+			return None
+
 class DataItemParser(object):
 	"""
 	comment lines are either empty lines or lines starting with '#'
@@ -165,7 +172,7 @@ class DataItemParser(object):
 		return self.stop_time
 	def _parser_group(self, s):
 		self.group = s
-		self.groups = tuple(s.split(GROUP_SEPERATOR))
+		self.groups = no_fail_tuple(s.split(GROUP_SEPERATOR))
 		self.main_group = self.groups[0]
 		return self.groups
 	def _parser_description(self, s):
@@ -294,3 +301,4 @@ class DataItemParser(object):
 			type(self.description) is str,
 			self.stop_time > self.start_time,
 		])
+
