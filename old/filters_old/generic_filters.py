@@ -126,6 +126,8 @@ class AutoTimeFilter(BaseTimeFilter):
 	def __init__(self, arg):
 		self.arg = arg
 
+		# What's going on here?
+		# dict? *arg?
 		if type(arg) is dict:
 			if "year" not in arg or type(arg["year"]) is not int:
 				raise ValueError("Invalid input type")
