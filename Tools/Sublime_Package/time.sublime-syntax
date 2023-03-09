@@ -27,7 +27,7 @@ contexts:
       scope: punctuation.definition.comment.time
       push: line_comment
 
-    
+
 
     # Numbers
     # - match: '\b(-)?[0-9.]+\b'

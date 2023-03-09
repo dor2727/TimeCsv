@@ -42,4 +42,3 @@ def filter_file_name_exact(df: DataFrame, file_name: str):
 # Line
 def filter_line_number(df: DataFrame, line: int):
 	return filter_equal(df, "_line", line)
-

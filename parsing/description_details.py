@@ -71,7 +71,7 @@ class DescriptionDetailsParser_Friends(DescriptionDetailsParser):
 
 	@staticmethod
 	def _get_friends_from_group(dataitem):
-		# search_at_beginning 
+		# search_at_beginning
 		if dataitem.group == "Friends":
 			found = re.findall(f"^{PATTERN_NAMES_LIST}", dataitem.description)
 		else:

@@ -279,4 +279,3 @@ class TelegramScheduledCommands(object):
 					raise exc
 
 		threading.Thread(target=run_scheduler).start()
-

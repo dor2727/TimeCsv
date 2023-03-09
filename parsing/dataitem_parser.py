@@ -303,4 +303,3 @@ class DataItemParser(object):
 			type(self.description) is str,
 			self.stop_time > self.start_time,
 		])
-

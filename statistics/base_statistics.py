@@ -29,20 +29,20 @@ class Statistics:
 			return 0
 
 		return self.total_seconds / self.num_events
-	
+
 	def _total_duration(self, start_date=None, stop_date=None) -> Days:
 		if start_date is None:
 			start_date = self.df.date.min()
 		if stop_date is None:
 			stop_date = self.df.date.max()
-		
+
 		return stop_date - start_date
 
 	def amount_of_days(self, start_date=None, stop_date=None) -> Days:
 		return self._total_duration(start_date, stop_date).days
 	def amount_of_days_in_seconds(self, start_date=None, stop_date=None) -> Seconds:
 		return self._total_duration(start_date, stop_date).days
-	
+
 
 	def average_time_between_events(self, start_date=None, stop_date=None) -> Seconds:
 		# return in seconds

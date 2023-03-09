@@ -66,7 +66,7 @@ class DataItem(DataItemParser):
 	"""
 	def __init__(self, items, file_name="Unknown", line="??"):
 		super().__init__(items, file_name, line)
-		
+
 		if not self.is_comment:
 			self._process_description_details()
 
@@ -121,16 +121,16 @@ class DataItem(DataItemParser):
 		return DataItemDataclass(
 			_file_name      =self._file_name,
 			_line           =self._line,
-			# 
+			#
 			date            =self.date,
 			start_time      =self.start_time,
 			stop_time       =self.stop_time,
 			total_seconds   =int(self),
-			# 
+			#
 			group           =self.group,
 			groups          =self.groups,
 			main_group      =self.main_group,
-			# 
+			#
 			description_full=self.description,
 			description     =self.description_stripped,
 			extra_details   =self.extra_details,
