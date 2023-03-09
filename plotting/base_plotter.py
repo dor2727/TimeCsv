@@ -16,6 +16,9 @@ class FilteredDF:
 		self.statistics = Statistics(self.df)
 
 
+def filter_by_group_and_remove_none(filter_by_group, df: DataFrame, group: str):
+	return df[ filter_by_group(df, group).astype(bool) ]
+
 class BasePlotter:
 	def __init__(
 		self,
@@ -31,7 +34,7 @@ class BasePlotter:
 
 		self.filtered_dfs = [
 			FilteredDF(
-				self.df[filter_by_group(self.df, group)],
+				filter_by_group_and_remove_none(filter_by_group, self.df, group),
 				group
 			)
 			for group in self.group_names
@@ -43,6 +46,11 @@ class BasePlotter:
 
 		if not isinstance(groups, Collection):
 			raise ValueError(f"The groups given should be a collection. {groups.__class__.__name__} given")
+
+		groups = list(groups)
+
+		if None in groups:
+			groups.remove(None)
 
 		return groups
 
