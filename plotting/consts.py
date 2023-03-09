@@ -7,3 +7,7 @@ class SortingMethods(enum.Enum):
 
 	def __str__(self):
 		return self.value
+
+class Outputs(enum.Enum):
+	Terminal = "terminal"
+	Pie = "pie"
