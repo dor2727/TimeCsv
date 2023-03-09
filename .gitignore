@@ -7,6 +7,7 @@ data
 Telegram_Bot/Data
 Logs
 Other
+*.todo
 
 key
 chat_id
