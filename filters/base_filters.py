@@ -1,6 +1,7 @@
-from operator import and_
+import operator
 from functools import reduce
 from pandas import DataFrame
+from types import GeneratorType
 
 #
 # Generic filters
@@ -47,4 +48,21 @@ def join_filters_with_and(*filters: DataFrame):
 	if not filters:
 		raise ValueError("No filters given")
 
-	return reduce(and_, filters)
+	if len(filters) == 1 and isinstance(filters[0], GeneratorType):
+		filters = list(filters[0])
+
+	if len(filters) == 1:
+		return filters[0]
+
+	return reduce(operator.and_, filters)
+def join_filters_with_or(*filters: DataFrame):
+	if not filters:
+		raise ValueError("No filters given")
+
+	if len(filters) == 1 and isinstance(filters[0], GeneratorType):
+		filters = list(filters[0])
+
+	if len(filters) == 1:
+		return filters[0]
+
+	return reduce(operator.or_, filters)
