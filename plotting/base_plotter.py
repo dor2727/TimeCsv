@@ -3,6 +3,8 @@ from collections.abc import Collection
 from dataclasses import dataclass
 from pandas import DataFrame
 
+from .consts import SortingMethods
+
 from ..statistics import Statistics
 
 
@@ -18,10 +20,12 @@ class BasePlotter:
 	def __init__(
 		self,
 		df: DataFrame,
+		sorting_method: SortingMethods,
 		groups: "Callable[[df], list] | list",
 		filter_by_group: "Callable[[df, group], df]"
 	):
 		self.df = df
+		self.sorting_method = sorting_method
 
 		self.group_names = self._get_groups(groups)
 

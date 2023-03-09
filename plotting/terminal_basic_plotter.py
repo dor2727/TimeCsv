@@ -1,17 +1,12 @@
 from pandas import DataFrame
 
 from .base_plotter import BasePlotter
+from .consts import SortingMethods
 
 def sort_alphabetically(filtered_dfs: list[DataFrame]):
 	return sorted(
 		filtered_dfs,
 		key=lambda fdf: fdf.group_name,
-	)
-def sort_by_num_events(filtered_dfs: list[DataFrame]):
-	return sorted(
-		filtered_dfs,
-		key=lambda fdf: fdf.statistics.num_events,
-		reverse=True
 	)
 def sort_by_total_time(filtered_dfs: list[DataFrame]):
 	return sorted(
@@ -19,6 +14,18 @@ def sort_by_total_time(filtered_dfs: list[DataFrame]):
 		key=lambda fdf: fdf.statistics.total_seconds,
 		reverse=True
 	)
+def sort_by_num_events(filtered_dfs: list[DataFrame]):
+	return sorted(
+		filtered_dfs,
+		key=lambda fdf: fdf.statistics.num_events,
+		reverse=True
+	)
+
+sort_function = {
+	SortingMethods.Alphabetically : sort_alphabetically,
+	SortingMethods.TotalTime : sort_by_total_time,
+	SortingMethods.NumEvents : sort_by_num_events,
+}
 
 class TerminalBasicPlotter(BasePlotter):
 	def print_single_line(self, filtered_df) -> str:
@@ -38,5 +45,5 @@ class TerminalBasicPlotter(BasePlotter):
 	def basic_plot(self):
 		self.print_header()
 
-		for filtered_df in sort_by_total_time(self.filtered_dfs):
+		for filtered_df in sort_function[self.sorting_method](self.filtered_dfs):
 			self.print_single_line(filtered_df)
