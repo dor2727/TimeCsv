@@ -2,6 +2,8 @@ from pandas import DataFrame
 
 from .base_filters import *
 from ..parsing.description_details import DescriptionDetailsParser_Friends
+from ..parsing.consts import GROUP_SEPERATOR
+
 
 
 def filter_main_group(df: DataFrame, main_group: str):
@@ -13,6 +15,8 @@ def filter_sub_groups(df: DataFrame, *sub_groups: str):
 		filter_group_at_index(df, group, index)
 		for index, group in enumerate(sub_groups)
 	)
+def filter_sub_groups_from_str(df: DataFrame, sub_groups: str):
+	return filter_sub_groups(df, *sub_groups.split(GROUP_SEPERATOR))
 def filter_num_groups(df: DataFrame, amount: int):
 	return filter_list_length(df, "groups", amount)
 
