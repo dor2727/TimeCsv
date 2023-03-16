@@ -37,8 +37,8 @@ class TerminalBasicPlotter(BasePlotter):
 
 	def print_header(self):
 		print("%s -> %s (%4d events)" % (
-			self.df.date.min(),
-			self.df.date.max(),
+			self.df.date.min().date(),
+			self.df.date.max().date(),
 			self.df.shape[0],
 		))
 
