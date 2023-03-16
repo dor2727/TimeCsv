@@ -3,14 +3,7 @@ import datetime
 from .consts import *
 from .parse_exception import ParseError
 from ..utils import *
-
-
-class no_fail_tuple(tuple):
-	def __getitem__(self, index):
-		try:
-			return super().__getitem__(index)
-		except KeyError:
-			return None
+from ..utils.no_fail_tuple import no_fail_tuple
 
 class DataItemParser(object):
 	"""
