@@ -4,6 +4,7 @@ from .content_filters import *
 from ..parsing.description_details import	DescriptionDetailsParser_Friends     , \
 											DescriptionDetailsParser_Location    , \
 											DescriptionDetailsParser_Vehicle
+from ..parsing.consts import GROUP_SEPERATOR
 
 
 _PREFIX_NEGATIVE = ('~', '!')
@@ -39,6 +40,10 @@ _AUTO_FILTERS = (
 	(
 		filter_description_contains,
 		str.islower
+	),
+	(
+		filter_sub_groups_from_str,
+		lambda s: GROUP_SEPERATOR in s
 	),
 	(
 		filter_main_group,
