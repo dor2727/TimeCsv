@@ -50,7 +50,7 @@ def join_filters_with_and(*filters: DataFrame):
 	if not filters:
 		raise ValueError("No filters given")
 
-	if len(filters) == 1 and isinstance(filters[0], GeneratorType):
+	if len(filters) == 1 and isinstance(filters[0], (GeneratorType, list, tuple)):
 		filters = list(filters[0])
 
 	if len(filters) == 1:
@@ -61,7 +61,7 @@ def join_filters_with_or(*filters: DataFrame):
 	if not filters:
 		raise ValueError("No filters given")
 
-	if len(filters) == 1 and isinstance(filters[0], GeneratorType):
+	if len(filters) == 1 and isinstance(filters[0], (GeneratorType, list, tuple)):
 		filters = list(filters[0])
 
 	if len(filters) == 1:
