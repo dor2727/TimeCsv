@@ -1,6 +1,6 @@
 from .plotting.consts import Outputs
 from .filters import join_filters_with_or, join_filters_with_and, filter_content_auto
-from .cli import parse_args, open_data_file
+from .cli import parse_args, open_data_file, filter_by_time, filter_by_content
 
 from TimeCsv import *
 
@@ -12,25 +12,6 @@ group_by = {
 	"location"   : (get_all_locations  , filter_location_exact   ),
 	"vehicle"    : (get_all_vehicles   , filter_vehicle_exact    ),
 }
-
-def filter_by_time(df):
-	return df
-def filter_by_content(df, args):
-	if not args.search_string:
-		return df
-
-	# df = df[filter_main_group(df, "Gaming")]
-	if args.search_use_or:
-		combine = join_filters_with_or
-	else:
-		combine = join_filters_with_and
-
-	return df[
-		combine(
-			filter_content_auto(df, search_string)
-			for search_string in args.search_string
-		)
-	]
 
 def handle_plotter(df, args):
 	if args.list_group_by_options:
@@ -54,7 +35,7 @@ def main():
 
 	df = open_data_file(args.file).to_dataframe()
 
-	df = filter_by_time(df)
+	df = filter_by_time(df, args)
 	df = filter_by_content(df, args)
 
 	handle_plotter(df, args)
