@@ -29,7 +29,7 @@ _AUTO_FILTERS = (
 		DescriptionDetailsParser_Friends.extract_values_from_string
 	),
 	(
-		filter_location_exact,
+		filter_location_from_str,
 		DescriptionDetailsParser_Location.extract_values_from_string
 	),
 	(

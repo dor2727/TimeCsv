@@ -1,7 +1,8 @@
 from pandas import DataFrame
 
 from .base_filters import *
-from ..parsing.description_details import DescriptionDetailsParser_Friends
+from ..parsing.description_details import	DescriptionDetailsParser_Friends, \
+											DescriptionDetailsParser_Location
 from ..parsing.consts import GROUP_SEPERATOR
 
 
@@ -42,6 +43,9 @@ def filter_has_location(df: DataFrame):
 	return filter_str_non_empty(df, "location")
 def filter_location_exact(df: DataFrame, location: str):
 	return filter_str_contains(df, "location", location)
+def filter_location_from_str(df: DataFrame, location: str):
+	location: str = DescriptionDetailsParser_Location.extract_values_from_string(location)
+	return filter_location_exact(df, location)
 
 def filter_has_vehicle(df: DataFrame):
 	return filter_str_non_empty(df, "vehicle")
