@@ -9,6 +9,11 @@ from types import GeneratorType
 def filter_equal(df: DataFrame, attr_name: str, value):
 	return getattr(df, attr_name) == value
 
+def filter_is_null(df: DataFrame, attr_name: str):
+	return getattr(df, attr_name).isnull()
+def filter_is_not_null(df: DataFrame, attr_name: str):
+	return ~ (getattr(df, attr_name).isnull())
+
 #
 # string
 #
