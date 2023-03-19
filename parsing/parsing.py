@@ -35,8 +35,8 @@ class DataItemDataclass:
 	description     : str
 	extra_details   : dict[str, list[str]]
 	friends         : list[str]
-	location        : str | None
-	vehicle         : str | None
+	location        : str
+	vehicle         : str
 
 
 class DataItem(DataItemParser):
@@ -135,8 +135,8 @@ class DataItem(DataItemParser):
 			description     =self.description_stripped,
 			extra_details   =self.extra_details,
 			friends         =self.friends,
-			location        =self.location,
-			vehicle         =self.vehicle,
+			location        =self.location or '',
+			vehicle         =self.vehicle  or '',
 		)
 
 
