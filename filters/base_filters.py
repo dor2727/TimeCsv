@@ -17,8 +17,8 @@ def filter_is_not_null(df: DataFrame, attr_name: str):
 #
 # string
 #
-def filter_str_non_empty(df: DataFrame, attr_name: str, value: str):
-	return getattr(df, attr_name).str != ''
+def filter_str_non_empty(df: DataFrame, attr_name: str):
+	return getattr(df, attr_name) != ''
 def filter_str_contains(df: DataFrame, attr_name: str, value: str):
 	return getattr(df, attr_name).str.contains(value)
 def filter_str_regex(df: DataFrame, attr_name: str, pattern: str):
