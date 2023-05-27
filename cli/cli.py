@@ -3,8 +3,6 @@ import argparse
 
 from ..utils.consts import DEFAULT_DATA_DIRECTORY
 
-from ..plotting.consts import SortingMethods, Outputs
-
 
 # may pass arguments as a list (used in the telegram bot)
 def parse_args(args_list=None):
@@ -31,14 +29,6 @@ def parse_args(args_list=None):
 	grouping.add_argument("--group-by", type=str.lower, default="main_group", dest="group_by", help="Group events by some category")
 	grouping.add_argument("--list-group-by-options", action="store_true", dest="list_group_by_options", help="List the categories for --group-by")
 
-	grouping.add_argument("--sort-by", type=SortingMethods, default=SortingMethods.TotalTime, dest="sort_by", help="Sorting method for categories - total_time / num_events / alphabetical")
-	grouping.add_argument("--abc", action="store_true", dest="sorting_abc", help="short for '--sort-by=alphabetically`")
-
-
-	output = parser.add_argument_group("output")
-	output.add_argument("--output", type=Outputs, default=Outputs.Terminal, dest="output", help="The format of the output")
-	output.add_argument("--pie", action="store_true", dest="pie", help="short for `--output=pie`")
-
 	debug = parser.add_argument_group("debug")
 	debug.add_argument("--verbose", "-v", action="store_true", dest="verbose", help="verbosity")
 
@@ -51,12 +41,6 @@ def parse_args(args_list=None):
 	return post_process_args(args)
 
 def post_process_args(args: argparse.Namespace):
-	if args.pie:
-		args.output = Outputs.Pie
-
-	if args.sorting_abc:
-		args.sort_by = SortingMethods.Alphabetically
-
 	if args.verbose:
 		print(args)
 

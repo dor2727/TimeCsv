@@ -5,7 +5,7 @@ from pandas import DataFrame
 
 from .consts import SortingMethods
 
-from ..statistics import Statistics
+# from ..statistics import Statistics
 
 
 class FilteredDF:

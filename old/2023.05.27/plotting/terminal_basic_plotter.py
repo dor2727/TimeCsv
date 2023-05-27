@@ -1,6 +1,6 @@
 from pandas import DataFrame
 
-from .base_plotter import BasePlotter
+from .base_plotter import BasePlotter, FilteredDF
 from .consts import SortingMethods
 
 def sort_alphabetically(filtered_dfs: list[DataFrame]):
@@ -28,9 +28,15 @@ sort_function = {
 }
 
 class TerminalBasicPlotter(BasePlotter):
-	def print_single_line(self, filtered_df) -> str:
+	def _generate_titles(self, filtered_df: list[FilteredDF]):
+		# TODO
+		# import ipdb; ipdb.set_trace()
+		for f_df in filtered_df:
+			yield f_df, f_df.group_name
+
+	def print_single_line(self, filtered_df: FilteredDF, pretty_group_name: str) -> str:
 		print(f"%-{self.max_group_name_length}s (%4d) : %s" % (
-				filtered_df.group_name,
+				pretty_group_name,
 				filtered_df.statistics.num_events,
 				filtered_df.statistics.total_seconds_str
 			))
@@ -42,8 +48,14 @@ class TerminalBasicPlotter(BasePlotter):
 			self.df.shape[0],
 		))
 
+	@property
+	def sort_function(self):
+		return sort_function[self.sorting_method]
+
 	def basic_plot(self):
 		self.print_header()
 
-		for filtered_df in sort_function[self.sorting_method](self.filtered_dfs):
-			self.print_single_line(filtered_df)
+		sorted_filtered_df = self.sort_function(self.filtered_dfs)
+		filtered_df_and_titles = self._generate_titles(sorted_filtered_df)
+		for filtered_df, pretty_group_name in filtered_df_and_titles:
+			self.print_single_line(filtered_df, pretty_group_name)
