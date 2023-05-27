@@ -10,6 +10,9 @@ def get_all_sub_groups(df: DataFrame, *groups: str):
 	next_subgroup_index = len(groups)
 	return get_unique_values_at_index(filtered_df, "groups", next_subgroup_index)
 
+def get_all_sub_groups_at_index(df: DataFrame, index: int):
+	return get_unique_values_at_index(df, "groups", index)
+
 def get_all_description(df: DataFrame):
 	return get_unique_values(df, "description")
 
