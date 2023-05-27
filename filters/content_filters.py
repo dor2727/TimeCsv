@@ -56,6 +56,8 @@ def filter_has_extra_details(df: DataFrame):
 	return filter_dict_non_empty(df, "extra_details")
 def filter_has_extra_details_key(df: DataFrame, key: str):
 	return filter_dict_contains_key(df, "extra_details", key)
+def filter_has_extra_details_value_exact(df: DataFrame, key: str, value: str):
+	return filter_dict_value_in_key(df, "extra_details", key, value)
 
 def filter_duration(df: DataFrame, duration: float, operation):
 	return operation(df.total_seconds, duration)

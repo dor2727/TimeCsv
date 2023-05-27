@@ -39,6 +39,9 @@ def filter_list_contains(df: DataFrame, attr_name: str, value):
 def filter_list_equal_at_index(df: DataFrame, attr_name: str, index: int, value):
 	return getattr(df, attr_name).str[index] == value
 
+def filter_list_contains_at_index(df: DataFrame, attr_name: str, index: int, value):
+	return getattr(df, attr_name).str[index].str.contains(value, regex=False)
+
 #
 # dict
 #
@@ -46,6 +49,7 @@ filter_dict_length = filter_list_length
 filter_dict_non_empty = filter_list_non_empty
 filter_dict_contains_key = filter_list_contains
 filter_dict_value_at_key = filter_list_equal_at_index
+filter_dict_value_in_key = filter_list_contains_at_index
 
 
 #
