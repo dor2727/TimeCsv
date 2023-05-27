@@ -31,10 +31,13 @@ class DataItemParser(object):
 		if self._check_if_comment(items):
 			return
 
-		self._items = [
-			parser(item)
-			for parser, item in zip(self.PARSERS, items)
-		]
+		try:
+			self._items = [
+				parser(item)
+				for parser, item in zip(self.PARSERS, items)
+			]
+		except Exception as exc:
+			raise ParseError(self._format_error(f"Uncaught parsing error")) from exc
 
 	def __repr__(self):
 		if self.is_comment:
@@ -64,7 +67,12 @@ class DataItemParser(object):
 		return self.is_comment
 
 	def _format_error(self, text):
-		return f"[!] {text} in file \"{self._file_name}\" : {self._line} : < {self} >"
+		try:
+			self_repr = f"{self}"
+		except:
+			self_repr = "<self repr failed>"
+
+		return f"[!] {text} in file \"{self._file_name}\" : {self._line} : < {self_repr} >"
 
 
 	#
