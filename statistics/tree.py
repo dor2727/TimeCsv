@@ -1,6 +1,7 @@
 from pandas import DataFrame
 import numpy as np
 from datetime import datetime
+from collections import namedtuple
 
 from ..filters import *
 from ..grouping import *
@@ -20,9 +21,12 @@ class ExtraDetailsValue(str): pass
 Hirarchy = MainGroup | SubGroup | NoneSubGroup | Description | ExtraDetailsKey | ExtraDetailsValue
 
 NodePath = tuple[Hirarchy, ...]
-
-NodeValues = tuple[Hirarchy, DataFrame, "Tree"]
-Tree = dict[Hirarchy, NodeValues]
+Node = namedtuple("Node", [
+	"path",        # NodePath
+	"filtered_df", # DataFrame
+	"sub_trees",   # Tree
+])
+Tree = dict[Hirarchy, Node]
 
 def df_to_tree(df: DataFrame):
 	# root level: MainGroup
@@ -36,7 +40,7 @@ def _create_tree_at_level_main_group(df: DataFrame) -> Tree:
 		node_path = (node_value,)
 		filtered_df = df[filter_main_group(df, main_group)]
 		sub_trees = _create_tree_at_level_sub_group(filtered_df, node_path)
-		tree[node_value] = (node_path, filtered_df, sub_trees)
+		tree[node_value] = Node(node_path, filtered_df, sub_trees)
 
 	return tree
 
@@ -56,7 +60,7 @@ def _create_tree_at_level_sub_group(df: DataFrame, current_path: NodePath, sub_g
 			node_path = current_path + (node_value,)
 			filtered_df = df[filter_group_at_index(df, sub_group, sub_group_level)]
 			sub_trees = _create_tree_at_level_sub_group(filtered_df, node_path, sub_group_level+1)
-			tree[node_value] = (node_path, filtered_df, sub_trees)
+			tree[node_value] = Node(node_path, filtered_df, sub_trees)
 
 	return tree
 
@@ -68,7 +72,7 @@ def _create_tree_at_level_description(df: DataFrame, current_path: NodePath) -> 
 		node_path = current_path + (node_value,)
 		filtered_df = df[filter_description_exact(df, description)]
 		sub_trees = _create_tree_at_level_extra_details(filtered_df, node_path)
-		tree[node_value] = (node_path, filtered_df, sub_trees)
+		tree[node_value] = Node(node_path, filtered_df, sub_trees)
 
 	return tree
 
@@ -80,7 +84,7 @@ def _create_tree_at_level_extra_details(df: DataFrame, current_path: NodePath) -
 		node_path = current_path + (node_value,)
 		filtered_df = df[filter_has_extra_details_key(df, extra_details_key)]
 		sub_trees = _create_tree_at_level_extra_details_value(filtered_df, node_path, extra_details_key)
-		tree[node_value] = (node_path, filtered_df, sub_trees)
+		tree[node_value] = Node(node_path, filtered_df, sub_trees)
 
 	return tree
 
@@ -92,6 +96,6 @@ def _create_tree_at_level_extra_details_value(df: DataFrame, current_path: NodeP
 		node_path = current_path + (node_value,)
 		filtered_df = df[filter_has_extra_details_value_exact(df, extra_details_key, extra_details_value)]
 		sub_trees = {}
-		tree[node_value] = (node_path, filtered_df, sub_trees)
+		tree[node_value] = Node(node_path, filtered_df, sub_trees)
 
 	return tree
