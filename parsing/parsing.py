@@ -69,10 +69,20 @@ class DataItem(DataItemParser):
 
 		if not self.is_comment:
 			self._process_description_details()
+			self._process_special()
 
 	def _process_description_details(self):
 		for k, v in DETAIL_PARSERS.items():
 			setattr(self, k, v.extract_values(self))
+
+	def _process_special(self):
+		if (
+			len(self.groups) >= 2
+			and self.main_group == "Transportation"
+			and not self.vehicle
+		):
+			if (g := self.groups[1].lower()) in VEHICLES:
+				self.vehicle = g
 
 	@property
 	def description_stripped(self):
