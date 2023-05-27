@@ -1,101 +1,146 @@
+from typing import Type
+from collections.abc import Iterable
 from pandas import DataFrame
 import numpy as np
-from datetime import datetime
-from collections import namedtuple
 
+from .title_types import *
+from .title_types import Node, Hirarchy as Title
 from ..filters import *
 from ..grouping import *
 
-class MainGroup(str): pass
-class SubGroup(str): pass
-class NoneSubGroup(SubGroup):
-	# avoinding hash-collision on empty strings
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-		self._creation_time = datetime.now()
-	def __hash__(self):
-		return hash(self._creation_time)
-class Description(str): pass
-class ExtraDetailsKey(str): pass
-class ExtraDetailsValue(str): pass
-Hirarchy = MainGroup | SubGroup | NoneSubGroup | Description | ExtraDetailsKey | ExtraDetailsValue
 
-NodePath = tuple[Hirarchy, ...]
-Node = namedtuple("Node", [
-	"path",        # NodePath
-	"filtered_df", # DataFrame
-	"sub_trees",   # Tree
-])
-Tree = dict[Hirarchy, Node]
+class CreateTree:
+	NODE_VALUE_TYPE: Type[Title]
 
-def df_to_tree(df: DataFrame):
-	# root level: MainGroup
-	pass
-	
-def _create_tree_at_level_main_group(df: DataFrame) -> Tree:
-	tree = {}
+	def __init__(self, df: DataFrame, previous_path: NodePath=None):
+		self.df = df
+		self.previous_path = previous_path or ()
 
-	for main_group in get_all_main_group(df):
-		node_value = MainGroup(main_group)
-		node_path = (node_value,)
-		filtered_df = df[filter_main_group(df, main_group)]
-		sub_trees = _create_tree_at_level_sub_group(filtered_df, node_path)
-		tree[node_value] = Node(node_path, filtered_df, sub_trees)
+	def __call__(self) -> Tree:
+		return {
+			node.path[-1] : node
+			for node in self._iterate_nodes()
+		}
 
-	return tree
+	def _get_all_titles(self) -> list[Title]:
+		raise NotImplementedError
 
-def _create_tree_at_level_sub_group(df: DataFrame, current_path: NodePath, sub_group_level: int=1) -> Tree:
-	all_sub_groups = get_all_sub_groups_at_index(df, sub_group_level)
+	def _filter_by_title(self, title: Title) -> DataFrame:
+		raise NotImplementedError
 
-	if len(all_sub_groups) == 1 and isinstance(all_sub_groups[0], float) and np.isnan(all_sub_groups[0]):
-		tree = _create_tree_at_level_description(df, current_path)
-	else:
-		tree = {}
+	def _create_sub_tree(self, filtered_df: DataFrame, path: NodePath) -> Tree:
+		if hasattr(self, "CreateSubTree"):
+			return self.CreateSubTree(filtered_df, path)
 
-		for sub_group in all_sub_groups:
-			if isinstance(sub_group, float) and np.isnan(sub_group):
-				node_value = NoneSubGroup()
-			else:
-				node_value = SubGroup(sub_group)
-			node_path = current_path + (node_value,)
-			filtered_df = df[filter_group_at_index(df, sub_group, sub_group_level)]
-			sub_trees = _create_tree_at_level_sub_group(filtered_df, node_path, sub_group_level+1)
-			tree[node_value] = Node(node_path, filtered_df, sub_trees)
+		raise NotImplementedError
 
-	return tree
+	def _create_node_value(self, title: Title) -> Title:
+		if hasattr(self, "NODE_VALUE_TYPE"):
+			return self.NODE_VALUE_TYPE(title)
 
-def _create_tree_at_level_description(df: DataFrame, current_path: NodePath) -> Tree:
-	tree = {}
+		raise NotImplementedError
 
-	for description in get_all_description(df):
-		node_value = Description(description)
-		node_path = current_path + (node_value,)
-		filtered_df = df[filter_description_exact(df, description)]
-		sub_trees = _create_tree_at_level_extra_details(filtered_df, node_path)
-		tree[node_value] = Node(node_path, filtered_df, sub_trees)
+	def _create_node(self, title: Title) -> Node:
+		node_value = self._create_node_value(title)
+		node_path = self.previous_path + (node_value,)
 
-	return tree
+		filtered_df = self._filter_by_title(title)
+		sub_trees = self._create_sub_tree(filtered_df, node_path)
 
-def _create_tree_at_level_extra_details(df: DataFrame, current_path: NodePath) -> Tree:
-	tree = {}
+		return Node(node_path, filtered_df, sub_trees)
 
-	for extra_details_key in get_all_extra_details_keys(df):
-		node_value = ExtraDetailsKey(extra_details_key)
-		node_path = current_path + (node_value,)
-		filtered_df = df[filter_has_extra_details_key(df, extra_details_key)]
-		sub_trees = _create_tree_at_level_extra_details_value(filtered_df, node_path, extra_details_key)
-		tree[node_value] = Node(node_path, filtered_df, sub_trees)
+	def _iterate_nodes(self) -> Iterable[Node]:
+		for title in self._get_all_titles():
+			yield self._create_node(title)
 
-	return tree
+class CreateTree_ExtraDetailsValue(CreateTree):
+	NODE_VALUE_TYPE = ExtraDetailsValue
 
-def _create_tree_at_level_extra_details_value(df: DataFrame, current_path: NodePath, extra_details_key: str) -> Tree:
-	tree = {}
+	def __init__(self, df: DataFrame, previous_path: NodePath, extra_details_key: str):
+		super().__init__(df, previous_path)
+		self.extra_details_key = extra_details_key
 
-	for extra_details_value in get_all_extra_details_values(df, extra_details_key):
-		node_value = ExtraDetailsValue(extra_details_value)
-		node_path = current_path + (node_value,)
-		filtered_df = df[filter_has_extra_details_value_exact(df, extra_details_key, extra_details_value)]
-		sub_trees = {}
-		tree[node_value] = Node(node_path, filtered_df, sub_trees)
+	def _get_all_titles(self) -> list[Title]:
+		return get_all_extra_details_values(self.df, self.extra_details_key)
 
-	return tree
+	def _filter_by_title(self, title: Title) -> DataFrame:
+		return self.df[ filter_has_extra_details_value_exact(self.df, self.extra_details_key, title) ]
+
+	def _create_sub_tree(self, filtered_df: DataFrame, path: NodePath) -> Tree:
+		return {}
+
+class CreateTree_ExtraDetailsKey(CreateTree):
+	NODE_VALUE_TYPE = ExtraDetailsKey
+
+	def _get_all_titles(self) -> list[Title]:
+		return get_all_extra_details_keys(self.df)
+
+	def _filter_by_title(self, title: Title) -> DataFrame:
+		return self.df[ filter_has_extra_details_key(self.df, title) ]
+
+	def _create_sub_tree(self, filtered_df: DataFrame, path: NodePath) -> Tree:
+		extra_details_key = str(path[-1])
+		return CreateTree_ExtraDetailsValue(filtered_df, path, extra_details_key)()
+
+class CreateTree_Description(CreateTree):
+	NODE_VALUE_TYPE = Description
+
+	def _get_all_titles(self) -> list[Title]:
+		return get_all_description(self.df)
+
+	def _filter_by_title(self, title: Title) -> DataFrame:
+		return self.df[ filter_description_exact(self.df, title) ]
+
+	def _create_sub_tree(self, filtered_df: DataFrame, path: NodePath) -> Tree:
+		return CreateTree_ExtraDetailsKey(filtered_df, path)()
+
+class CreateTree_SubGroup(CreateTree):
+	NODE_VALUE_TYPE = SubGroup
+
+	def __init__(self, df: DataFrame, previous_path: NodePath, sub_group_level: int=1):
+		super().__init__(df, previous_path)
+		self.sub_group_level = sub_group_level
+
+	def __call__(self):
+		if self._is_end_of_sub_group():
+			# proxy the call to CreateTree_Description
+			return CreateTree_Description(self.df, self.previous_path)()
+		else:
+			return super().__call__()
+
+	def _is_end_of_sub_group(self):
+		all_sub_groups = self._get_all_titles()
+
+		return (
+			    len(all_sub_groups) == 1
+			and isinstance(all_sub_groups[0], float)
+			and np.isnan(all_sub_groups[0])
+		)
+
+	def _get_all_titles(self) -> list[Title]:
+		return get_all_sub_groups_at_index(self.df, self.sub_group_level)
+
+	def _filter_by_title(self, title: Title) -> DataFrame:
+		return self.df[ filter_group_at_index(self.df, title, self.sub_group_level) ]
+
+	def _create_sub_tree(self, filtered_df: DataFrame, path: NodePath) -> Tree:
+		return self.__class__(filtered_df, path, self.sub_group_level+1)()
+
+	def _create_node_value(self, title: Title) -> Title:
+		if isinstance(title, float) and np.isnan(title):
+			node_value = NoneSubGroup()
+		else:
+			node_value = self.NODE_VALUE_TYPE(title)
+		return node_value
+
+class CreateTree_MainGroup(CreateTree):
+	NODE_VALUE_TYPE = MainGroup
+
+	def _get_all_titles(self) -> list[Title]:
+		return get_all_main_group(self.df)
+
+	def _filter_by_title(self, title: Title) -> DataFrame:
+		return self.df[ filter_main_group(self.df, title) ]
+
+	def _create_sub_tree(self, filtered_df: DataFrame, path: NodePath) -> Tree:
+		return CreateTree_SubGroup(filtered_df, path)()
