@@ -31,6 +31,7 @@ NodePath = tuple[Title, ...]
 Node = namedtuple("Node", [
 	"path",        # NodePath
 	"filtered_df", # DataFrame
+	"stats",       # DFStats
 	"sub_trees",   # Tree
 ])
 Tree = dict[Title, Node]

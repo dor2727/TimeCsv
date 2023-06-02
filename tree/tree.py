@@ -6,6 +6,7 @@ import numpy as np
 from .title_types import *
 from ..filters import *
 from ..grouping import *
+from ..statistics import DFStats
 
 def create_tree(df: DataFrame) -> Tree:
 	return CreateTree_MainGroup(df)()
@@ -54,9 +55,10 @@ class CreateTree:
 		node_path = self.previous_path + (node_value,)
 
 		filtered_df = self._filter_by_title(title)
+		stats = DFStats(filtered_df)
 		sub_trees = self._create_sub_tree(filtered_df, node_path)
 
-		return Node(node_path, filtered_df, sub_trees)
+		return Node(node_path, filtered_df, stats, sub_trees)
 
 	def _iterate_nodes(self) -> Iterable[Node]:
 		for title in self._get_all_titles():
@@ -130,7 +132,10 @@ class CreateTree_SubGroup(CreateTree):
 		return get_all_sub_groups_at_index(self.df, self.sub_group_level)
 
 	def _filter_by_title(self, title: Title) -> DataFrame:
-		return self.df[ filter_group_at_index(self.df, title, self.sub_group_level) ]
+		if isinstance(title, float) and np.isnan(title):
+			return self.df[ filter_num_groups(self.df, self.sub_group_level) ]
+		else:
+			return self.df[ filter_group_at_index(self.df, title, self.sub_group_level) ]
 
 	def _create_sub_tree(self, filtered_df: DataFrame, path: NodePath) -> Tree:
 		return self.__class__(filtered_df, path, self.sub_group_level+1)()
