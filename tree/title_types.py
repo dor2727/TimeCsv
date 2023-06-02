@@ -1,9 +1,7 @@
 from datetime import datetime
 from collections import namedtuple
 
-from .colors import *
-
-class ColorizedStr:
+class Title:
 	def __init__(self, s: str):
 		self.s = s
 
@@ -15,13 +13,8 @@ class ColorizedStr:
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self.s})"
 
-	def colorize(self):
-		return single_color(self.s, self.color)
-
-class MainGroup(ColorizedStr):
-	color = H1
-class SubGroup(ColorizedStr):
-	color = H2
+class MainGroup(Title): pass
+class SubGroup(Title): pass
 class NoneSubGroup(SubGroup):
 	# avoinding hash-collision on empty strings
 	def __init__(self, *args, **kwargs):
@@ -30,18 +23,14 @@ class NoneSubGroup(SubGroup):
 	def __hash__(self):
 		return hash(self._creation_time)
 
-class Description(ColorizedStr):
-	color = H3
-class ExtraDetailsKey(ColorizedStr):
-	color = H4
-class ExtraDetailsValue(ColorizedStr):
-	color = H5
-Hirarchy = MainGroup | SubGroup | NoneSubGroup | Description | ExtraDetailsKey | ExtraDetailsValue
+class Description(Title): pass
+class ExtraDetailsKey(Title): pass
+class ExtraDetailsValue(Title): pass
 
-NodePath = tuple[Hirarchy, ...]
+NodePath = tuple[Title, ...]
 Node = namedtuple("Node", [
 	"path",        # NodePath
 	"filtered_df", # DataFrame
 	"sub_trees",   # Tree
 ])
-Tree = dict[Hirarchy, Node]
+Tree = dict[Title, Node]

@@ -7,7 +7,7 @@ class DFStats(object):
 		self.df = df
 
 	def stats(self):
-		return "Cool stats"
+		return f"Cool stats ({self.num_events})"
 
 
 	@property

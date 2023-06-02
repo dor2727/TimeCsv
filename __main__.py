@@ -1,9 +1,9 @@
 from pandas import DataFrame
 
-from .tree import create_tree, flatten_tree
-from .format_node_paths import format_all_paths_for_nodes
-from .get_edge_nodes import get_representative_nodes, NodeType
-from .dataframe_stats import DFStats
+from .tree import create_tree, flatten_tree, get_representative_nodes, NodeType
+from .statistics import DFStats
+from .plotting.terminal import format_all_paths_for_nodes
+from .parsing import DataFile
 
 def main(root_df: DataFrame, requested_type: NodeType=0):
 	tree = create_tree(root_df)
@@ -16,7 +16,6 @@ def main(root_df: DataFrame, requested_type: NodeType=0):
 		print(formatted_path, '-', DFStats(node.filtered_df).stats())
 
 if __name__ == '__main__':
-	import TimeCsv
-	df = TimeCsv.DataFile("data/Work/2023_classiq_20_percent.tcsv").to_dataframe()
+	df = DataFile("data/Work/2023_classiq_20_percent.tcsv").to_dataframe()
 	# main(df, "description")
 	main(df, 1)

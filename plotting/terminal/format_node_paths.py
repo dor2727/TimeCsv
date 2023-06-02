@@ -1,6 +1,7 @@
 from pandas import DataFrame
 
-from .title_types import *
+from ...tree.title_types import *
+from .colors import colorize
 
 
 def format_all_paths_for_nodes(nodes: list[Node], pad: bool=True) -> list[str]:
@@ -53,14 +54,14 @@ def format_path(path: NodePath, last_common_index: int) -> list[list[str]]:
 			 +
 			PIPE_GROUPS.split
 			 +
-			title.colorize()
+			colorize(title)
 		)
 	return res
 
 def format_first_path(path: NodePath) -> list[list[str]]:
 	res = []
 	for index, title in enumerate(path):
-		res.append(pad_start(index, index) + PIPE_GROUPS.first + title.colorize())
+		res.append(pad_start(index, index) + PIPE_GROUPS.first + colorize(title))
 	return res
 
 def _get_last_common_path_element(path1: NodePath, path2: NodePath) -> int:

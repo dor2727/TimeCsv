@@ -4,7 +4,6 @@ from pandas import DataFrame
 import numpy as np
 
 from .title_types import *
-from .title_types import Node, Hirarchy as Title
 from ..filters import *
 from ..grouping import *
 
