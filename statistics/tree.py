@@ -8,6 +8,16 @@ from .title_types import Node, Hirarchy as Title
 from ..filters import *
 from ..grouping import *
 
+def create_tree(df: DataFrame) -> Tree:
+	return CreateTree_MainGroup(df)()
+
+def flatten_tree(t: Tree) -> list[Node]:
+	all_nodes = []
+	for value in t.values():
+		all_nodes.append(value)
+		all_nodes.extend(flatten_tree(value.sub_trees))
+	return all_nodes
+
 
 class CreateTree:
 	NODE_VALUE_TYPE: Type[Title]
