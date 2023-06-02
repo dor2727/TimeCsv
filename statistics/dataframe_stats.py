@@ -3,11 +3,17 @@ from pandas import DataFrame
 from ..utils.times import seconds_to_time_str, Seconds, Days
 
 class DFStats(object):
-	def __init__(self, df: DataFrame):
+	def __init__(self, df: DataFrame, parent_df: DataFrame):
 		self.df = df
+		self.parent_df = parent_df
+		self.total_seconds_of_parent = self.parent_df.total_seconds.sum()
 
-	def stats(self):
-		return f"Cool stats ({self.num_events})"
+	def stats(self, total_seconds_of_root: int):
+		return (
+			f"({self.num_events:4d}) {self.total_seconds_str}"
+			f" ({self.percentage_of_seconds(self.total_seconds_of_parent):5.1f}% of parent)"
+			f" ({self.percentage_of_seconds(total_seconds_of_root):5.1f}% of all)"
+		)
 
 
 	@property

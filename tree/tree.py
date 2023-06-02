@@ -39,9 +39,6 @@ class CreateTree:
 		raise NotImplementedError
 
 	def _create_sub_tree(self, filtered_df: DataFrame, path: NodePath) -> Tree:
-		if hasattr(self, "CreateSubTree"):
-			return self.CreateSubTree(filtered_df, path)
-
 		raise NotImplementedError
 
 	def _create_node_value(self, title: Title) -> Title:
@@ -54,8 +51,9 @@ class CreateTree:
 		node_value = self._create_node_value(title)
 		node_path = self.previous_path + (node_value,)
 
+		unfiltered_df = self.df
 		filtered_df = self._filter_by_title(title)
-		stats = DFStats(filtered_df)
+		stats = DFStats(filtered_df, parent_df=self.df)
 		sub_trees = self._create_sub_tree(filtered_df, node_path)
 
 		return Node(node_path, filtered_df, stats, sub_trees)
