@@ -2,6 +2,8 @@
 __pycache__
 *.pyc
 
+old/
+
 # personal data
 data
 Telegram_Bot/Data
