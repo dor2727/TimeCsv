@@ -24,4 +24,6 @@ class DataGroupedStatistics(DataHolder):
 		)
 
 class DataFlattenGroupedStatistics(DataGroupedStatistics):
+	pass
 class DataRecursiveGroupedStatistics(DataGroupedStatistics):
+	pass

@@ -97,20 +97,3 @@ def pad_start(hirarchy_level: int, last_common_index: int) -> str:
 				res += PIPES.space
 			res += PIPES.space * 3
 		return res
-
-
-
-
-#
-# Old
-#
-def simple_format_path(path: NodePath) -> str:
-	return '-'.join(map(ColorizedStr.colorize, path))
-
-def get_max_sub_group_amount(nodes: list[Node]) -> int:
-	return max(
-		map(
-			lambda n: sum(isinstance(i, SubGroup) for i in n.path),
-			nodes
-		)
-	)
