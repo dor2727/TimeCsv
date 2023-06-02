@@ -18,7 +18,7 @@ def test_filter_group_at_index(df):
 	assert len(
 		df[filter_group_at_index(df, "Host", 1)]
 	) == 1
-	
+
 def test_filter_sub_groups(df):
 	assert len(
 		df[filter_sub_groups(df, "Friends", "Host")]
@@ -36,7 +36,7 @@ def test_filter_num_groups(df):
 	assert len(
 		df[filter_num_groups(df, 2)]
 	) == 2
-	
+
 def test_filter_description_contains(df):
 	assert len(
 		df[filter_description_contains(df, "night")]

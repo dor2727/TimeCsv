@@ -53,4 +53,3 @@ def _get_representative_nodes_extra_details_keys(nodes: list[Node]) -> list[Node
 
 def _get_representative_nodes_extra_details_values(nodes: list[Node]) -> list[Node]:
 	return _get_representative_nodes_by_type(nodes, ExtraDetailsValue)
-

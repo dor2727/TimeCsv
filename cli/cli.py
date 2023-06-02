@@ -1,4 +1,3 @@
-import sys
 import argparse
 
 from ..utils.consts import DEFAULT_DATA_DIRECTORY

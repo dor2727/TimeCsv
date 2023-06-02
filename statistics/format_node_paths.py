@@ -1,5 +1,4 @@
 from pandas import DataFrame
-from collections import namedtuple
 
 from .title_types import *
 

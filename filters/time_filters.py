@@ -1,6 +1,5 @@
 from pandas import DataFrame
 from datetime import datetime, timedelta
-import operator
 
 from .base_filters import *
 from ..utils.consts import WEEK_STARTS_AT_SUNDAY
@@ -13,7 +12,7 @@ def _get_today() -> datetime:
 def _get_last_week_start() -> datetime:
 	today = _get_today()
 
-	distance_to_week_start: Days = today.weekday() + WEEK_STARTS_AT_SUNDAY 
+	distance_to_week_start: Days = today.weekday() + WEEK_STARTS_AT_SUNDAY
 	distance_to_week_start %= 7
 
 	return today - timedelta(days=distance_to_week_start)

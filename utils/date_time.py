@@ -1,4 +1,3 @@
-import datetime
 
 def _get_ymd_tuple(d):
 	"ymd stands for Year, Month, Day"

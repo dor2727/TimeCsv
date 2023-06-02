@@ -18,4 +18,3 @@ def data_file():
 @pytest.fixture
 def df(data_file):
 	return data_file.to_dataframe()
-
