@@ -14,7 +14,10 @@ class DFStats(object):
 			f" ({self.percentage_of_seconds(self.total_seconds_of_parent):5.1f}% of parent)"
 			f" ({self.percentage_of_seconds(total_seconds_of_root):5.1f}% of all)"
 		)
-
+	def stats_short(self):
+		return (
+			f"({self.num_events:4d}) {self.total_seconds_str}"
+		)
 
 	@property
 	def num_events(self) -> int:
@@ -66,3 +69,14 @@ class DFStats(object):
 
 	def average_time_between_events_str(self, start_date=None, stop_date=None) -> str:
 		return seconds_to_time_str(self.average_time_between_events(start_date, stop_date))
+
+
+class NoParentDFStats(DFStats):
+	"""docstring for NoParentDFStats"""
+	def __init__(self, df: DataFrame):
+		super().__init__(df, df)
+
+	def stats(self):
+		return (
+			f"({self.num_events:4d}) {self.total_seconds_str}"
+		)
