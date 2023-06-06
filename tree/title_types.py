@@ -9,6 +9,13 @@ class Title:
 		return self.s
 	def __len__(self):
 		return len(self.s)
+	def __hash__(self):
+		return str.__hash__(self.s)
+	def __eq__(self, other):
+		if isinstance(other, str):
+			return self.s == other
+		else:
+			return super().__eq__(self, other)
 
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self.s})"
