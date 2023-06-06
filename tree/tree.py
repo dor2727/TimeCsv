@@ -51,7 +51,6 @@ class CreateTree:
 		node_value = self._create_node_value(title)
 		node_path = self.previous_path + (node_value,)
 
-		unfiltered_df = self.df
 		filtered_df = self._filter_by_title(title)
 		stats = DFStats(filtered_df, parent_df=self.df)
 		sub_trees = self._create_sub_tree(filtered_df, node_path)
