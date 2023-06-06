@@ -15,7 +15,7 @@ class Title:
 		if isinstance(other, str):
 			return self.s == other
 		else:
-			return super().__eq__(self, other)
+			return super().__eq__(other)
 
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self.s})"
