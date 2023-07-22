@@ -18,6 +18,10 @@ def filter_sub_groups(df: DataFrame, *sub_groups: str):
 	)
 def filter_sub_groups_from_str(df: DataFrame, sub_groups: str):
 	return filter_sub_groups(df, *sub_groups.split(GROUP_SEPERATOR))
+def filter_sub_groups_at_any_index(df: DataFrame, sub_group: str):
+	if sub_group.startswith(GROUP_SEPERATOR):
+		sub_group = sub_group[len(GROUP_SEPERATOR):] 
+	return filter_list_contains(df, "groups", sub_group)
 def filter_num_groups(df: DataFrame, amount: int):
 	return filter_list_length(df, "groups", amount)
 

@@ -42,6 +42,10 @@ _AUTO_FILTERS = (
 		str.islower
 	),
 	(
+		filter_sub_groups_at_any_index,
+		lambda s: s.startswith(GROUP_SEPERATOR)
+	),
+	(
 		filter_sub_groups_from_str,
 		lambda s: GROUP_SEPERATOR in s
 	),
