@@ -18,10 +18,9 @@ def parse_args(args_list=None):
 	time.add_argument("--time-use-and"   , action="store_true"    , dest="time_use_and", help="whether to use AND or OR when adding the filters (default - OR)")
 
 	# # filter content
-	# search = parser.add_argument_group("Search")
-	# search.add_argument("search_string", type=str, nargs=argparse.REMAINDER)
-	# search_advanced = parser.add_argument_group("Advanced search")
-	# search_advanced.add_argument("--search-use-or", action="store_true", dest="search_use_or", help="whether to use AND or OR when adding the filters. Default: AND")
+	search = parser.add_argument_group("Search")
+	search.add_argument("search_string", type=str, nargs=argparse.REMAINDER)
+	search.add_argument("--search-use-or", action="store_true", dest="search_use_or", help="whether to use AND or OR when adding the filters. Default: AND")
 
 	# Tree level
 	sorting = parser.add_argument_group("Tree level")
