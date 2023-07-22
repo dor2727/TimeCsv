@@ -6,6 +6,16 @@ from ..plotting.terminal import format_all_paths_for_nodes, print_nodes, print_s
 
 
 def handle_terminal(root_df: DataFrame, tree: Tree, edge_nodes: list[Node], args: Namespace):
+	if root_df.empty:
+		print("  No items were found :(")
+		print_summary_line(root_df)
+		return
+	if not edge_nodes:
+		print("  No edge nodes were found :(")
+		print_summary_line(root_df)
+		return
+
+
 	formatted_paths = format_all_paths_for_nodes(edge_nodes)
 	total_root_seconds = root_df.total_seconds.sum()
 
