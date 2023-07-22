@@ -6,6 +6,7 @@ from ..tree.title_types import Tree, Node
 
 from .files import open_data_file
 from .cli import parse_args
+from .filter_time import filter_df_by_time
 from .output_pie import handle_pie
 from .output_terminal import handle_terminal
 
@@ -27,6 +28,7 @@ def main():
 	args = parse_args()
 
 	root_df = get_df(args)
+	root_df = filter_df_by_time(root_df, args)
 	tree = get_tree(root_df, args)
 	edge_nodes = get_nodes(tree, args)
 
