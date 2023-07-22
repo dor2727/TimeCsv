@@ -10,6 +10,9 @@ NodeType = (
 )
 
 def get_representative_nodes(nodes: list[Node], requested_type: NodeType) -> list[Node]:
+	if isinstance(requested_type, str) and requested_type.isdigit():
+		requested_type = int(requested_type)
+
 	if isinstance(requested_type, int):
 		if requested_type == 0:
 			return _get_representative_nodes_main_group(nodes)
