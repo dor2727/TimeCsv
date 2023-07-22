@@ -32,10 +32,10 @@ def parse_args(args_list=None):
 	sorting.add_argument("--max-extra-details-values"    , action="store_true", dest="max_extra_details_values", help="short for `--max-hirarchy=extra_details_values`")
 
 	# Sorting
-	sorting = parser.add_argument_group("sorting")
-	sorting.add_argument("--sort_method", type=SortingMethods.__getitem__, default="total_time", dest="sort_method", help="How to sort titles")
+	sorting = parser.add_argument_group("Sorting")
+	sorting.add_argument("--sort-method", type=SortingMethods.__getitem__, default="total_time", dest="sort_method", help="How to sort titles", choices=[i.name for i in SortingMethods])
 	sorting.add_argument("--alphabetical", "--abc", action="store_true", dest="alphabetical", help="short for `--sort-method=alphabetical`")
-	sorting.add_argument("--total_time", "--time", action="store_true", dest="total_time", help="short for `--sort-method=total_time`")
+	sorting.add_argument("--total-time", "--time", action="store_true", dest="total_time", help="short for `--sort-method=total_time`")
 
 	# Output
 	output = parser.add_argument_group("output")
