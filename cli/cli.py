@@ -2,6 +2,7 @@ import argparse
 
 from ..utils.consts import DEFAULT_DATA_DIRECTORY
 from ..tree.sorting import SortingMethods
+from ..functions import FUNCTIONS
 
 # may pass arguments as a list (used in the telegram bot)
 def parse_args(args_list=None):
@@ -36,6 +37,10 @@ def parse_args(args_list=None):
 	sorting.add_argument("--sort-method", type=SortingMethods.__getitem__, default="total_time", dest="sort_method", help="How to sort titles", choices=[i.name for i in SortingMethods])
 	sorting.add_argument("--alphabetical", "--abc", action="store_true", dest="alphabetical", help="short for `--sort-method=alphabetical`")
 	sorting.add_argument("--total-time", "--time", action="store_true", dest="total_time", help="short for `--sort-method=total_time`")
+
+	# Special Features
+	special = parser.add_argument_group("Special Features")
+	special.add_argument("--function", type=str, default=None, dest="function", help=" Call special functions", choices=FUNCTIONS.keys())
 
 	# Output
 	output = parser.add_argument_group("output")

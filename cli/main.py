@@ -3,6 +3,7 @@ from argparse import Namespace
 
 from ..tree import create_tree, SORT_FUNCTIONS, flatten_tree, get_representative_nodes
 from ..tree.title_types import Tree, Node
+from ..functions import FUNCTIONS
 
 from .files import open_data_file
 from .cli import parse_args
@@ -34,6 +35,10 @@ def main():
 
 	tree = get_tree(root_df, args)
 	edge_nodes = get_nodes(tree, args)
+
+	if args.function:
+		FUNCTIONS[args.function](root_df, tree, edge_nodes)
+		return
 
 	if args.pie:
 		return handle_pie(root_df, tree, edge_nodes, args)

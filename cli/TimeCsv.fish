@@ -22,6 +22,7 @@ complete -c "TimeCsv"                     --no-files --long-option alphabetical
 complete -c "TimeCsv"                     --no-files --long-option abc
 complete -c "TimeCsv"                     --no-files --long-option total-time
 complete -c "TimeCsv"                     --no-files --long-option time
+complete -c "TimeCsv" --require-parameter --no-files --long-option function
 complete -c "TimeCsv"                     --no-files --long-option pie
 complete -c "TimeCsv"                     --no-files --long-option debug
 complete -c "TimeCsv"                     --no-files --long-option verbose
